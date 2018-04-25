@@ -16,6 +16,17 @@ import DistancesVolumes_twinAxes as twinAxes
 import distances_boxplots_all_lesions as bpLesions
 
 #%%
+# TO DO : input keyboard prompt user to choose how the distances are computer (ablation to tumor, tumor to ablation)
+#try:
+#    mode=int(input('Choose which distances should be calculated:'))
+#except ValueError:
+#    print("Not a number")
+
+flag_symmetric=False
+flag_ablation2tumor= False
+flag_tumor2ablation= True
+flag_plot = False
+#%%
 segmentation_data = [] # list of dictionaries containing the filepaths of the segmentations
 rootdir = "Z:/Public/Raluca&Radek/studyPatientsMasks/GroundTruthDB_ROI/"
 
@@ -53,24 +64,39 @@ bins_list = [] #store all the bins (ranges) in case visualization is needed
 #%%
 '''define empty structures for storing the data into'''
 df_metrics_all = pd.DataFrame()
+
+# define 4.lists for the following intervals 0:(<-10mm),1:(-10:-5),1:(-5:0),2:(0-5mm),3:(5-10mm),4:(greater than 10 mm) 
+bins_4intervals = [[] for x in range(6)]
 distanceMaps_allPatients =[]
 #%%
 '''iterate through the lesions&ablations segmentations; plot the histogram of distance'''
+    # set-up the flags wether one wants symmetrics distances or from Ablation2Tumor/Tumor2Ablation
+    # default value: distance Ablation2Tumor surface contour (flag_mask2reference=True)
     
 for idx, seg in enumerate(reference):
     
-    evalmetrics = DistanceMetrics(ablations[idx],reference[idx])
+    evalmetrics = DistanceMetrics(ablations[idx],reference[idx], flag_symmetric, flag_ablation2tumor, flag_tumor2ablation, flag_plot)
     evaloverlap = VolumeMetrics(ablations[idx],reference[idx])
-    df_distances_1set = evalmetrics.get_SitkDistances()
+    df_distances_1set = evalmetrics.get_Distances()
     df_volumes_1set = evaloverlap.get_VolumeMetrics()
     df_metrics = pd.concat([df_volumes_1set, df_distances_1set], axis=1)
     df_metrics_all = df_metrics_all.append(df_metrics)
-
-    title = 'Ablation to Tumor Euclidean Distances'
-    distanceMap = evalmetrics.get_surface_distances()
-    distanceMaps_allPatients.append(distanceMap)
-    num_surface_pixels = evalmetrics.num_tumor_surface_pixels
     
+    if flag_ablation2tumor is True:
+        title = 'Ablation to Tumor Euclidean Distances'
+        distanceMap = evalmetrics.get_seg2ref_distances()
+        distanceMaps_allPatients.append(distanceMap)
+        num_surface_pixels = evalmetrics.num_reference_surface_pixels
+        
+    elif flag_tumor2ablation is True:
+        title = 'Tumor to Ablation Euclidean Distances'
+        distanceMap = evalmetrics.get_ref2seg_distances()
+        distanceMaps_allPatients.append(distanceMap)
+        num_surface_pixels = evalmetrics.num_segmented_surface_pixels
+    else:
+        title = 'Symmetric Distances'
+        #to do : symmetric distances
+
     #%%
     '''extract the patient id from the folder/file path'''
     # where pats[idx] contains the name of the folder
@@ -89,12 +115,11 @@ for idx, seg in enumerate(reference):
     #%% 
     '''count the percentage of the bins between ranges; plot them wrt surface covered [%]'''
     # 1.iterate through bins. 2for each item in bins add it to new_list[item]+=cols_val
+    # careful with negative and positive list
     percent_cols = cols_val/num_surface_pixels * 100 # change to percentage by dividing each columb by the numbers of voxels on the contour (and in the DistanceMap) 
     
 #%%
     '''sum the bins for specific intervals (eg.0-5,5-10) of each patient then add them to a list for ranges'''   
-    # define 4.lists for the following intervals 0:(<-10mm),1:(-10:-5),1:(-5:0),2:(0-5mm),3:(5-10mm),4:(greater than 10 mm) 
-    bins_4intervals = [[] for x in range(6)]
     bins_smallerthan_minus10 = 0
     bins_minus10_minus5 = 0
     bins_minus5_0 = 0
