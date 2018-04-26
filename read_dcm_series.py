@@ -7,7 +7,7 @@ Created on Wed Apr 25 13:45:50 2018
 import os
 import SimpleITK as sitk
 import pydicom as dicom
-from resize_roi_image import resize_roi_image
+from paste_roi_image import paste_roi_image
 import resampling_hu_dcm as resample
 #%%
 
@@ -55,9 +55,9 @@ print("Slice Thickness: %f" % slices[0].SliceThickness)
 print("Pixel Spacing (row, col, slices): (%f, %f) " % (slices[0].PixelSpacing[0], slices[0].PixelSpacing[1]))
 
 #%%
-resizedTumorMask = resize_roi_image(source_img_plan,tumor_mask)
+resizedTumorMask = paste_roi_image(source_img_plan,tumor_mask)
 sitk.Show(resizedTumorMask)
-resizedAblationMask = resize_roi_image(source_img_validation,ablation_mask)
+resizedAblationMask = paste_roi_image(source_img_validation,ablation_mask)
 sitk.Show(resizedAblationMask)
 
 
