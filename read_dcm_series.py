@@ -15,7 +15,10 @@ def read_dcm_series(folder_path):
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(folder_path)
     reader.SetFileNames(dicom_names)
+#    reader.LoadPrivateTagsOn()  
+##    reader.ReadImageInformation();
     image = reader.Execute()
+
     return image
 
 def print_dimensions_img(title,image):
@@ -56,8 +59,10 @@ print("Pixel Spacing (row, col, slices): (%f, %f) " % (slices[0].PixelSpacing[0]
 
 #%%
 resizedTumorMask = paste_roi_image(source_img_plan,tumor_mask)
-sitk.Show(resizedTumorMask)
+#sitk.Show(resizedTumorMask)
 resizedAblationMask = paste_roi_image(source_img_validation,ablation_mask)
 sitk.Show(resizedAblationMask)
 
-
+# TO DO: make the masks have the same number of slices . choose the mask that has the greatest number of slices (tumor or ablation)
+# where to add more slices? padd with slices at the correct location (?!)
+# since it's a numpy array, just pad an empty black numpy array at the end? <-- must check if it's equal.
