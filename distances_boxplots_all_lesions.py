@@ -19,7 +19,7 @@ from collections import OrderedDict
 def plotBoxplots(data, rootdir):
     
     
-    fig, axes = plt.subplots(figsize=(12, 16))
+    fig, axes = plt.subplots(figsize=(22, 18))
     
     # Horizontal box plot
     bplot = plt.boxplot(data,
@@ -29,12 +29,12 @@ def plotBoxplots(data, rootdir):
                         
                          
     for element in ['medians','boxes', 'fliers', 'whiskers', 'caps']:
-        plt.setp(bplot[element], color='black',linewidth=1.5)
+        plt.setp(bplot[element], color='black',linewidth=2.5)
     
     plt.setp(bplot['whiskers'], linestyle='--')
-    plt.setp(bplot['fliers'], markersize=5)
+    plt.setp(bplot['fliers'], markersize=6)
     plt.setp(bplot['means'], marker='D', markeredgecolor='black',
-                      markerfacecolor='blue', label='Mean')
+                      markerfacecolor='blue', label='Average')
 
                          
     xlim = np.array(plt.gca().get_xlim())
@@ -49,12 +49,15 @@ def plotBoxplots(data, rootdir):
     
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(), fontsize=16)
+    plt.legend(by_label.values(), by_label.keys(), fontsize=36)
     
-    plt.title('Boxplots for Euclidean Distances between Tumor and Ablations. 10 Cases.', fontsize=16)
-    plt.xlabel('Lesion', fontsize=16,color='black')
-    plt.tick_params(labelsize=16, color='black')
-    plt.ylabel('[mm]', fontsize=16, color='black')
-    figpath = os.path.join(rootdir,'boxplots_forDistanceMaps.png')
+    plt.title('Surface-to-Surface Euclidean Distances for Tumor and Ablation', fontsize=36)
+    plt.xlabel('Lesion', fontsize=36,color='black')
+    plt.setp(axes.get_xticklabels(), color="black", fontsize=30)
+    plt.setp(axes.get_yticklabels(), color="black", fontsize=30)
+#    plt.tick_params(labelsize=30,color='black')
+#    axes.tick_params(labelsize=30, color='black')
+    plt.ylabel('[mm]', fontsize=36, color='black')
+    figpath = os.path.join(rootdir,'boxplots_forDistanceMaps.svg')
     plt.show()     
-    gh.save(figpath, width=12, height=10)                
+    gh.save(figpath, width=22, height=18)                

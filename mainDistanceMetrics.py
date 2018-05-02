@@ -10,14 +10,14 @@ import time
 import pandas as pd
 import plotHistDistances as pm
 import plotBoxplotSurface as bp
-from distancesv2 import DistanceMetrics 
+from distances import DistanceMetrics 
 from volumemetrics import VolumeMetrics
 import DistancesVolumes_twinAxes as twinAxes
 import distances_boxplots_all_lesions as bpLesions
 
 #%%
 segmentation_data = [] # list of dictionaries containing the filepaths of the segmentations
-rootdir = "Z:/Public/Raluca&Radek/studyPatientsMasks/GroundTruthDB_ROI/"
+rootdir = "Z:/Public/Raluca_Radek/GroundTruth_2017/"
 
 for subdir, dirs, files in os.walk(rootdir):
     tumorFilePath  = ''

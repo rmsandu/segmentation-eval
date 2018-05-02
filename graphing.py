@@ -83,7 +83,7 @@ def save(path, fignum=None, close=True, width=None, height=None,
 
         # Actually save the figure
 #        plt.savefig(savepath)
-        plt.savefig(savepath,pad_inches=0)
+        plt.savefig(savepath,pad_inches=0,dpi=300)
 
     # Close it
     if close:

@@ -15,7 +15,7 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , titl
 
     ''' PLOT THE HISTOGRAM FOR THE MAUERER EUCLIDIAN DISTANCES'''
 #        
-    figName_hist = pat_name + 'histogramDistances' + title
+    figName_hist = pat_name + 'histogramDistances' + title + '.svg'
     figpathHist = os.path.join(rootdir, figName_hist)
     
 
@@ -64,11 +64,11 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , titl
 
 #%%                   
     '''edit the axes limits and laels'''
-    plt.xlabel('[mm]', fontsize=14, color='black')
-    plt.tick_params(labelsize=14,color='black')
-    ax.tick_params(colors='black', labelsize=14)
+    plt.xlabel('[mm]', fontsize=36, color='black')
+    plt.tick_params(labelsize=30,color='black')
+    ax.tick_params(colors='black', labelsize=30)
     plt.grid(True)
-    ax.set_xlim([-10, 20])
+    ax.set_xlim([-10, 11])
 
     # edit the y-ticks: change to percentage of surface
     yticks, locs = plt.yticks()
@@ -79,14 +79,14 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , titl
     new_yticks[0] = 0
     plt.yticks(new_yticks, yticks_percent)
 #    plt.yticks(yticks,yticks_percent)
-    plt.ylabel('Percetange of surface voxels', fontsize=14,color='black')
+    plt.ylabel('Percetange of surface voxels', fontsize=36,color='black')
     
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(), fontsize=14, loc='best')
+    plt.legend(by_label.values(), by_label.keys(), fontsize=36, loc='best')
     
-    plt.title(title +' Patient ' + str(pat_idx), fontsize=14)
+    plt.title(title +'. Case ' + str(pat_idx), fontsize=36)
     
-    gh.save(figpathHist, width=12, height=10)
+    gh.save(figpathHist, width=22, height=18)
     
     return col_height, bins
