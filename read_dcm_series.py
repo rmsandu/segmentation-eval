@@ -5,21 +5,47 @@ Created on Wed Apr 25 13:45:50 2018
 @author: Raluca Sandu
 """
 import os
+import numpy as np
 import SimpleITK as sitk
 import pydicom as dicom
-from paste_roi_image import paste_roi_image
-import resampling_hu_dcm as resample
 #%%
+
+def read_dcm_series_MetaData(folder_path):
+     # currently not functional
+    series_reader = sitk.ImageSeriesReader()
+    series_IDs = series_reader.GetGDCMSeriesIDs(folder_path)
+     
+    if not series_IDs:
+        print("ERROR: given directory \""+folder_path+"\" does not contain a DICOM series.")
+        return('ERROR: no DICOM series in given directory')
+    series_file_names = series_reader.GetGDCMSeriesFileNames(folder_path, series_IDs[0])
+    
+    image_reader = sitk.ImageFileReader()
+    image_reader.LoadPrivateTagsOn()
+    image_list = []
+    for file_name in series_file_names:
+        image_reader.SetFileName(file_name)
+        image_list.append(image_reader.Execute())
+
+    # Pasting all of the slices into a 3D volume requires 2D image slices and not 3D slices
+    # The volume's origin and direction are taken from the first slice and the spacing from
+    # the difference between the first two slices. Note that we are assuming we are
+    # dealing with a volume represented by axial slices (z spacing is difference between images).
+    image_list2D = [image[:,:,0] for image in image_list]
+    image3D = sitk.JoinSeries(image_list2D, image_list[0].GetOrigin()[2], image_list[1].GetOrigin()[2] - image_list[0].GetOrigin()[2])
+    image3D.SetDirection(image_list[0].GetDirection())
+     
+    return image3D
+
+
 
 def read_dcm_series(folder_path):
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(folder_path)
     reader.SetFileNames(dicom_names)
-#    reader.LoadPrivateTagsOn()  
-##    reader.ReadImageInformation();
     image = reader.Execute()
-
     return image
+
 
 def print_dimensions_img(title,image):
     print('Dimensions of ' + title + ' image:', image.GetSize())
@@ -29,40 +55,18 @@ def print_dimensions_img(title,image):
     print('Pixel ID Value:',image.GetPixelIDValue())
 
 
-#%%
-folder_path_tumor = "C:/develop/data/Segmentation_tumor"
-tumor_mask = read_dcm_series(folder_path_tumor)
-folder_path_ablation = "C:/develop/data/Segmentation_ablation"
-ablation_mask = read_dcm_series(folder_path_ablation)
-source_img_plan = read_dcm_series("C:/develop/data/Source_CT_Plan")
-source_img_validation = read_dcm_series("C:/develop/data/Source_CT_Validation")
-#%%
-print_dimensions_img('tumor', tumor_mask)
-print('\n')
-print_dimensions_img('ablation', ablation_mask)
-print('\n')
-print_dimensions_img('plan', source_img_plan)
-print('\n')
-print_dimensions_img('validation', source_img_validation)
-#%%
-'''a different way of reading slice by slice and ordering slices based on index'''
-files = os.listdir(folder_path_tumor )
-slices = [dicom.read_file(os.path.join(folder_path_tumor , filename)) for filename in files]
-slices.sort(key = lambda x: int(x.InstanceNumber))
 
-patient = resample.load_scan(folder_path_tumor)
-imgs_hu = resample.get_pixels_hu(patient)
-
-#%%
-print("Slice Thickness: %f" % slices[0].SliceThickness)
-print("Pixel Spacing (row, col, slices): (%f, %f) " % (slices[0].PixelSpacing[0], slices[0].PixelSpacing[1]))
-
-#%%
-resizedTumorMask = paste_roi_image(source_img_plan,tumor_mask)
-#sitk.Show(resizedTumorMask)
-resizedAblationMask = paste_roi_image(source_img_validation,ablation_mask)
-sitk.Show(resizedAblationMask)
-
-# TO DO: make the masks have the same number of slices . choose the mask that has the greatest number of slices (tumor or ablation)
-# where to add more slices? padd with slices at the correct location (?!)
-# since it's a numpy array, just pad an empty black numpy array at the end? <-- must check if it's equal.
+def load_scan(path):
+    # Load the scans in given folder path
+    slices = [dicom.read_file(path + '/' + s) for s in os.listdir(path)]
+#    slices.sort(key = lambda x: float(x.ImagePositionPatient[2]))
+    slices.sort(key = lambda x: int(x.InstanceNumber))
+    try:
+        slice_thickness = np.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
+    except:
+        slice_thickness = np.abs(slices[0].SliceLocation - slices[1].SliceLocation)
+        
+    for s in slices:
+        s.SliceThickness = slice_thickness
+        
+    return slices
