@@ -9,13 +9,11 @@ import SimpleITK as sitk
 
 import sys, time, os
 
-
-
 # Read the original series. First obtain the series file names using the
 # image series reader. Then read each image using an image reader that is
 # set to load all DICOM tags (public+private). The resulting images contain
 # their DICOM meta-data dictionaries.
-def write_dcm(folderInput, folderOutput, img_pasted):
+def writeDICOMSeries(folderInput, folderOutput, img_pasted):
     data_directory = folderInput
     series_reader = sitk.ImageSeriesReader()
     series_IDs = series_reader.GetGDCMSeriesIDs(data_directory)
