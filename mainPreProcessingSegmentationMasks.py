@@ -41,13 +41,12 @@ resizedAblationMask = paste_roi_image( source_img_validation, ablation_mask)
 #writeDCM.writeDICOMSeries(folder_path_plan ,"C:/develop/data/Resized_Segmentation_Tumor/", resizedTumorMask)
 #writeDCM.writeDICOMSeries(folder_path_validation,"C:/develop/data/Resized_Segmentation_Ablation/", resizedAblationMask)
 
-#sitk.Show(resizedAblationMask)
-#sitk.Show(resizedTumorMask)
 #%%
 idxSlice = 122
 labelTumor = 1
 
 img_source_nda = sitk.GetArrayFromImage( source_img_plan ) 
+img_validation_nda = sitk.GetArrayFromImage( source_img_validation )
 mask_tumor_nda = sitk.GetArrayFromImage( resizedTumorMask )
 mask_ablation_nda = sitk.GetArrayFromImage( resizedAblationMask )
 
@@ -63,7 +62,8 @@ OverlaidImg = sitk.LabelOverlay(img_T1_255, seg)
 OverlaidImg_nda = sitk.GetArrayFromImage(OverlaidImg)
 #%%
 #
-oneSlice_source = imgHU_pydicom[122].astype(np.int32)
+#oneSlice_source = imgHU_pydicom[122].astype(np.int32)
+oneSlice_source =  img_source_nda[122,:,:]
 oneSlice_tumor = mask_tumor_nda[122,:,:].astype(np.float)
 oneSlice_ablation = mask_ablation_nda[70,:,:].astype(np.float)
 #
@@ -77,7 +77,7 @@ AblationOverlay[ AblationOverlay==0 ] = np.nan
 TumorOverlay[TumorOverlay ==0 ] = np.nan
 #%%
 plt.figure()
-plt.imshow(oneSlice_source, cmap=plt.cm.gray, interpolation='none')
-plt.imshow(TumorOverlay, cmap='RdYlBu', alpha=0.3, interpolation='none')
-plt.imshow(AblationOverlay, cmap='jet', alpha=0.4, interpolation='none')
+im1 = plt.imshow(oneSlice_source, cmap=plt.cm.gray, interpolation='none')
+im2 = plt.imshow(TumorOverlay, cmap='RdYlBu', alpha=0.3, interpolation='none')
+im3 = plt.imshow(AblationOverlay, cmap='jet', alpha=0.4, interpolation='none')
 #im._rgba_cache
