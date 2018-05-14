@@ -28,14 +28,7 @@ def writeDICOMSeries(folderInput, folderOutput, img_pasted):
     for file_name in series_file_names:
         image_reader.SetFileName(file_name)
         image_list.append(image_reader.Execute())
-    
-    # Pasting all of the slices into a 3D volume requires 2D image slices and not 3D slices
-    # The volume's origin and direction are taken from the first slice and the spacing from
-    # the difference between the first two slices. Note that we are assuming we are
-    # dealing with a volume represented by axial slices (z spacing is difference between images).
-    image_list2D = [image[:,:,0] for image in image_list]
-    image3D = sitk.JoinSeries(image_list2D, image_list[0].GetOrigin()[2], image_list[1].GetOrigin()[2] - image_list[0].GetOrigin()[2])
-    image3D.SetDirection(image_list[0].GetDirection())
+
     
     
     writer = sitk.ImageFileWriter()
@@ -44,13 +37,14 @@ def writeDICOMSeries(folderInput, folderOutput, img_pasted):
     writer.KeepOriginalImageUIDOn()
     modification_time = time.strftime("%H%M%S")
     modification_date = time.strftime("%Y%m%d")
+    
     for i in range(img_pasted.GetDepth()):
         image_slice = img_pasted[:,:,i]
         original_slice = image_list[i]
         # Copy the meta-data except the PixelSpacing, PatientPosition, SliceThickness
+#        if k!="0028|0030" and k!= "0018|5100" and k!="0018|0050" :
         for k in original_slice.GetMetaDataKeys():
-            if k!="0028|0030" and k!= "0018|5100" and k!="0018|0050" :
-                image_slice.SetMetaData(k, original_slice.GetMetaData(k))
+            image_slice.SetMetaData(k, original_slice.GetMetaData(k))
             
         # Set relevant keys indicating the change, modify or remove private tags as needed
         # Each of the UID components is a number (cannot start with zero) and separated by a '.'
