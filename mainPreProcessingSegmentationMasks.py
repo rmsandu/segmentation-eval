@@ -6,12 +6,10 @@ Created on Thu May  3 14:25:13 2018
 """
 
 import numpy as np
-import numpy.ma as ma
 import SimpleITK as sitk
 import read_dcm_series as reader
 import write_dcm_series_v2 as writeDCM
 from paste_roi_image import paste_roi_image
-from sitkShowSlice import sitk_show
 import resampling_hu_dcm as hu
 import matplotlib.pyplot as plt
 
@@ -38,8 +36,8 @@ reader.print_dimensions_img('validation', source_img_validation)
 resizedTumorMask = paste_roi_image( source_img_plan, tumor_mask )
 resizedAblationMask = paste_roi_image( source_img_validation, ablation_mask)
 
-#writeDCM.writeDICOMSeries(folder_path_plan ,"C:/develop/data/Resized_Segmentation_Tumor/", resizedTumorMask)
-#writeDCM.writeDICOMSeries(folder_path_validation,"C:/develop/data/Resized_Segmentation_Ablation/", resizedAblationMask)
+writeDCM.writeDICOMSeries(folder_path_plan ,"C:/develop/data/Resized_Segmentation_Tumor/", resizedTumorMask)
+writeDCM.writeDICOMSeries(folder_path_validation,"C:/develop/data/Resized_Segmentation_Ablation/", resizedAblationMask)
 
 #%%
 idxSlice = 122
@@ -67,10 +65,6 @@ oneSlice_source =  img_source_nda[122,:,:]
 oneSlice_tumor = mask_tumor_nda[122,:,:].astype(np.float)
 oneSlice_ablation = mask_ablation_nda[70,:,:].astype(np.float)
 #
-#indexesToMaskTumor = [oneSlice_tumor == 0]
-#indexesToMaskAblation = [oneSlice_ablation == 0]
-#TumorOverlay = ma.masked_array(oneSlice_tumor,  indexesToMaskTumor )
-#AblationOverlay = ma.masked_array(oneSlice_ablation, indexesToMaskAblation )
 AblationOverlay = oneSlice_ablation
 TumorOverlay = oneSlice_tumor
 AblationOverlay[ AblationOverlay==0 ] = np.nan
@@ -80,4 +74,4 @@ plt.figure()
 im1 = plt.imshow(oneSlice_source, cmap=plt.cm.gray, interpolation='none')
 im2 = plt.imshow(TumorOverlay, cmap='RdYlBu', alpha=0.3, interpolation='none')
 im3 = plt.imshow(AblationOverlay, cmap='jet', alpha=0.4, interpolation='none')
-#im._rgba_cache
+plt.grid(False)

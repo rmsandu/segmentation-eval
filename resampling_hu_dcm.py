@@ -4,15 +4,15 @@ Created on Thu Apr 26 16:03:34 2018
 
 @author: Raluca Sandu
 """
-import os
 import numpy as np
 import pydicom as dicom
 import scipy.ndimage
 
+
 def resample(image, scan, new_spacing=[1,1,1]):
     # Determine current pixel spacing
     spacing = np.array([scan[0].SliceThickness] + scan[0].PixelSpacing, dtype=np.float32)
-
+    print('spacing:', spacing)
     resize_factor = spacing / new_spacing
     new_real_shape = image.shape * resize_factor
     new_shape = np.round(new_real_shape)
@@ -22,19 +22,6 @@ def resample(image, scan, new_spacing=[1,1,1]):
     image = scipy.ndimage.interpolation.zoom(image, real_resize_factor, mode='nearest')
     
     return image, new_spacing
-
-def load_scan(path):
-    slices = [dicom.read_file(path + '/' + s) for s in os.listdir(path)]
-    slices.sort(key = lambda x: float(x.ImagePositionPatient[2]))
-    try:
-        slice_thickness = np.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
-    except:
-        slice_thickness = np.abs(slices[0].SliceLocation - slices[1].SliceLocation)
-        
-    for s in slices:
-        s.SliceThickness = slice_thickness
-        
-    return slices
 
 
 def get_pixels_hu(scans):

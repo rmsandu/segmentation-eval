@@ -59,7 +59,7 @@ def print_dimensions_img(title,image):
 def load_scan(path):
     # Load the scans in given folder path
     slices = [dicom.read_file(path + '/' + s) for s in os.listdir(path)]
-#    slices.sort(key = lambda x: float(x.ImagePositionPatient[2]))
+#    slices.sort(key = lambda x: float(x.ImagePositionPatient[2]), reverse=True)
     slices.sort(key = lambda x: int(x.InstanceNumber))
     try:
         slice_thickness = np.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
