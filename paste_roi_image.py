@@ -24,12 +24,14 @@ def paste_roi_image(image_source, image_roi):
     image_roi = caster.Execute(image_roi)
  
     # black 3D image
+    # TO DO: modify the pixel type!!
     outputImage = sitk.Image(newSize, sitk.sitkInt16)
     outputImage.SetOrigin(newOrigin)
     outputImage.SetSpacing(newSpacing)
     outputImage.SetDirection(newDirection)    
     # transform from physical point to index the origin of the ROI image
     destinationIndex = outputImage.TransformPhysicalPointToIndex(image_roi.GetOrigin())
+    # paste the roi mask into the re-sized image
     pasted_img = sitk.Paste(outputImage, image_roi, image_roi.GetSize(), destinationIndex=destinationIndex)
 
     return pasted_img
