@@ -18,12 +18,13 @@ def read_dcm_series(folder_path):
     if len(files) > 1:
         # DICOM Series
         reader = sitk.ImageSeriesReader()
+        print(folder_path)
         dicom_names = reader.GetGDCMSeriesFileNames(folder_path)
         reader.SetFileNames(dicom_names)
         image = reader.Execute()
     else:
         # single DICOM File
-        image = sitk.ReadImage(folder_path, sitk.sitkInt16)
+        image = sitk.ReadImage(os.path.normpath(folder_path), sitk.sitkInt16)
         
     return image
 
