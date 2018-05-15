@@ -13,20 +13,22 @@ Algorithm Pipeline :
         # maps contain non-zero values only on the surface (they can also contain zero on the surface)
 @author: Raluca Sandu
 """
-
 import numpy as np
 import pandas as pd
 from enum import Enum
 import SimpleITK as sitk
+import readDICOMFiles as reader
 
 class DistanceMetrics(object):
 
 
-    def __init__(self, ablationfile , tumorfile):
+    def __init__(self, ablationFilepath , tumorFilepath):
     
         ''' Read the images from the filepaths'''
-        tumor_segmentation = sitk.ReadImage(tumorfile, sitk.sitkUInt8)
-        ablation_segmentation = sitk.ReadImage(ablationfile,sitk.sitkUInt8)
+
+        tumor_segmentation = reader.read_dcm_series( tumorFilepath )
+        ablation_segmentation = reader.read_dcm_series( ablationFilepath )
+
         
         ''' init the enum fields for surface dist measures computer with simpleitk'''
         class SurfaceDistanceMeasuresITK(Enum):
