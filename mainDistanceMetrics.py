@@ -14,14 +14,13 @@ import DistancesVolumes_twinAxes as twinAxes
 import distances_boxplots_all_lesions as bpLesions
 
 
-def mainDistanceMetrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=True):
+def main_distance_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=True):
     
-    df_metrics = pd.DataFrame() # emtpy dataframe to append the segmentation metrics calculated
     ablations = df_patientdata['AblationFile'].tolist()
     reference = df_patientdata['TumorFile'].tolist()
     pats = df_patientdata['PatientName']
     pat_ids = []
-    bins_list = [] #store all the bins (ranges) in case visualization is needed
+
     df_metrics_all = pd.DataFrame()
     distanceMaps_allPatients =[]
     #%%
@@ -37,12 +36,12 @@ def mainDistanceMetrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=True):
         df_volumes_1set = evaloverlap.get_VolumeMetrics()
         df_metrics = pd.concat([df_volumes_1set, df_distances_1set], axis=1)
         df_metrics_all = df_metrics_all.append(df_metrics)
-    
-        title = 'Ablation to Tumor Euclidean Distances'
+        
+        
         distanceMap = evalmetrics.get_surface_distances()
         distanceMaps_allPatients.append(distanceMap)
         num_surface_pixels = evalmetrics.num_tumor_surface_pixels
-        
+
         #%%
         '''extract the patient id from the folder/file path'''
         # where pats[idx] contains the name of the folder
@@ -56,18 +55,18 @@ def mainDistanceMetrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=True):
             pat_id = "p1" + str(idx)
             pat_ids.append(pat_id)
         # plot the color coded histogram of the distances
-        cols_val, bins = pm.plotHistDistances(pats[idx], pat_id, rootdir,  distanceMap, num_surface_pixels, title)
-        bins_list.append(bins)
-    
+        title = 'Ablation to Tumor Euclidean Distances'
+        pm.plotHistDistances(pats[idx], pat_id, rootdir,  distanceMap, num_surface_pixels, title)
+
     #%%
     '''plot boxplots of the distanceMaps for each lesion'''
     # sort rows ascending based on pat_id
-    df_patientdata['PatientID']  = pat_ids
+    df_patientdata['PatientID'] = pat_ids
     df_patientdata['DistanceMaps'] = distanceMaps_allPatients
     df_patients_sorted = df_patientdata.sort_values(['PatientID'], ascending=True)
     data_toplot = df_patients_sorted['DistanceMaps'].tolist()
     bpLesions.plotBoxplots(data_toplot, rootdir)
-    twinAxes.plotBoxplots(data_toplot,rootdir)
+    # twinAxes.plotBoxplots(data_toplot,rootdir)
     #%% 
     ''' save to excel the average of the distance metrics '''
     if (FLAG_SAVE_TO_EXCEL):

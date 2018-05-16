@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 from enum import Enum
 import SimpleITK as sitk
-import readDICOMFiles as reader
+import readDICOMFiles as Reader
 
 class DistanceMetrics(object):
 
@@ -26,9 +26,8 @@ class DistanceMetrics(object):
     
         ''' Read the images from the filepaths'''
 
-        tumor_segmentation = reader.read_dcm_series( tumorFilepath )
-        ablation_segmentation = reader.read_dcm_series( ablationFilepath )
-
+        tumor_segmentation = Reader.read_dcm_series( tumorFilepath )
+        ablation_segmentation = Reader.read_dcm_series( ablationFilepath )
         
         ''' init the enum fields for surface dist measures computer with simpleitk'''
         class SurfaceDistanceMeasuresITK(Enum):
