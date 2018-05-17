@@ -55,7 +55,7 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , titl
     for b, p, col_val in zip(bins, patches, col_height):
         
         if b < 0:
-            plt.setp(p,'facecolor', 'darkred', label='Non-ablated Surface: '+ " %.2f" %  sum_perc_nonablated + '%')
+            plt.setp(p, 'facecolor', 'darkred', label='Non-ablated Surface: '+ " %.2f" %  sum_perc_nonablated + '%')
 
         elif b >= 0 and b < 5 :
             plt.setp(p, 'facecolor', 'orange', label='Insufficient Ablation Margin: '+ "%.2f" % sum_perc_insuffablated + '%')
@@ -66,7 +66,7 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , titl
 #%%                   
     '''edit the axes limits and laels'''
     plt.xlabel('[mm]', fontsize=36, color='black')
-    plt.tick_params(labelsize=30,color='black')
+    plt.tick_params(labelsize=30, color='black')
     ax.tick_params(colors='black', labelsize=30)
     plt.grid(True)
     ax.set_xlim([-10, 11])
@@ -89,5 +89,3 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , titl
     plt.title(title +'. Case ' + str(pat_idx), fontsize=36)
     
     gh.save(figpathHist, width=22, height=18)
-    
-    return col_height, bins

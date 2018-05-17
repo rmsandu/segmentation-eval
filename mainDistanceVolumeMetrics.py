@@ -31,9 +31,12 @@ def main_distance_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=True):
     for idx, seg in enumerate(reference):
         
         evalmetrics = DistanceMetrics(ablations[idx], reference[idx])
-        evaloverlap = VolumeMetrics(ablations[idx], reference[idx])
         df_distances_1set = evalmetrics.get_SitkDistances()
-        df_volumes_1set = evaloverlap.volume_metrics
+        evaloverlap = VolumeMetrics()
+        evaloverlap.set_image_object(ablations[idx], reference[idx])
+        evaloverlap.set_volume_metrics()
+        df_volumes_1set = evaloverlap.get_volume_metrics_df()
+
         df_metrics = pd.concat([df_volumes_1set, df_distances_1set], axis=1)
         df_metrics_all = df_metrics_all.append(df_metrics)
         distanceMap = evalmetrics.get_surface_distances()

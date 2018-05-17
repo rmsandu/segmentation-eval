@@ -28,8 +28,8 @@ class VolumeMetrics:
 
 
     def set_image_object(self, ablationFilepath, tumorFilepath):
-        self.tumorSegm = Reader.read_dcm_series(ablationFilepath)
-        self.ablationSegm = Reader.read_dcm_series(tumorFilepath)
+        self.tumorSegm = Reader.read_dcm_series(tumorFilepath)
+        self.ablationSegm = Reader.read_dcm_series(ablationFilepath)
 
 
     def get_volume_ml(self, image):
@@ -48,6 +48,7 @@ class VolumeMetrics:
     def get_volume_residual(self):
         # Find the set difference of two arrays.
         # Return the sorted, unique values in ar1 that are not in ar2.
+        # TO DO: implement volume coverage ratio
         tumorSegm_nda = sitk.GetArrayFromImage(self.tumorSegm)
         ablationSegm_nda = sitk.GetArrayFromImage(self.ablationSegm)
         difference_voxels = len(np.setdiff1d(tumorSegm_nda, ablationSegm_nda))
@@ -80,7 +81,9 @@ class VolumeMetrics:
             ' Tumour coverage ratio': self.coverage_ratio
         }
 
-        return pd.DataFrame(volumemetrics_dict)
+        return pd.DataFrame(data=volumemetrics_dict, index=list(range(1)),
+                            columns=[name for name in volumemetrics_dict.keys()])
+
 
 
 

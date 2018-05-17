@@ -6,7 +6,7 @@ Created on Mon May 14 11:01:48 2018
 """
 import os
 import pandas as pd
-import mainDistanceMetrics
+import mainDistanceVolumeMetrics
 
 #%%
 # rootdir = "Z:/Public/Raluca_Radek/GroundTruth_2017/"
@@ -38,4 +38,4 @@ for path, dirs, files in os.walk(rootdir):
 # convert the filepaths to data frame 
 df_patientdata = pd.DataFrame(FilepathsDictionary)
 # call the function for parsing distances
-mainDistanceMetrics.main_distance_metrics(df_patientdata, rootdir)
+mainDistanceVolumeMetrics.main_distance_metrics(df_patientdata, rootdir)
