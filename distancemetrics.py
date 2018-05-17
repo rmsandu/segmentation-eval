@@ -19,11 +19,10 @@ from enum import Enum
 import SimpleITK as sitk
 import readDICOMFiles as Reader
 
+
 class DistanceMetrics(object):
 
-
-    def __init__(self, ablationFilepath , tumorFilepath):
-    
+    def __init__(self, ablationFilepath, tumorFilepath):
         ''' Read the images from the filepaths'''
 
         tumor_segmentation = Reader.read_dcm_series( tumorFilepath )
@@ -38,8 +37,12 @@ class DistanceMetrics(object):
         tumor_surface = sitk.LabelContour(tumor_segmentation)
         tumor_surface_array = sitk.GetArrayFromImage(tumor_surface)
         tumor_surface_array_NonZero = tumor_surface_array.nonzero()
+
         self.num_tumor_surface_pixels = len(list(zip(tumor_surface_array_NonZero[0], tumor_surface_array_NonZero[1], tumor_surface_array_NonZero[2])))
-                        
+                   # check if there is actually an object present
+        if 0 >= self.num_tumor_surface_pixels:
+            raise Exception('The mask image does not seem to contain an object.')
+            
         # init signed mauerer distance as tumor metrics from SimpleITK
         self.tumor_distance_map = sitk.SignedMaurerDistanceMap(tumor_segmentation, squaredDistance=False, useImageSpacing=True)
         
@@ -56,6 +59,8 @@ class DistanceMetrics(object):
         # Get the number of pixels in the mask surface by counting all pixels that are non-zero
         self.num_ablation_surface_pixels = len(list(zip(ablation_mask_array_NonZero[0],ablation_mask_array_NonZero[1], ablation_mask_array_NonZero[2])))
         
+        if 0 >= self.num_ablation_surface_pixels:
+            raise Exception('The mask image does not seem to contain an object.')
         # init Mauerer Distance
         self.ablation_distance_map = sitk.SignedMaurerDistanceMap(ablation_segmentation, squaredDistance=False, useImageSpacing=True)
  
