@@ -33,11 +33,14 @@ def make_uid(entropy_srcs=None, prefix='2.25.'):
         entropy_srcs = [str(uuid.uuid1()),  # 128-bit from MAC/time/randomness
                         str(os.getpid()),  # Current process ID
                         random().hex()  # 64-bit randomness
-                       ]
-    hash_val = hashlib.sha256(''.join(entropy_srcs))
+                        ]
+
+    #   hash_val = hashlib.sha256(''.join(entropy_srcs))
+    entropy_srcs_val = ''.join(entropy_srcs)
+    hash_val = hashlib.sha256(str(entropy_srcs_val).encode('utf-8')).hexdigest()
     # Convert this to an int with the maximum available digits
     avail_digits = 64 - len(prefix)
-    int_val = int(hash_val.hexdigest(), 16) % (10 ** avail_digits)
+    int_val = int(hash_val, 16) % (10 ** avail_digits)
 
     return prefix + str(int_val)
 
@@ -70,7 +73,7 @@ class DicomWriter:
         direction = self.img_pasted.GetDirection()
         spacing = self.img_pasted.GetSpacing()
 
-        series_tag_values = [("0010|0020", self.patient_id),  # set patientID
+        series_tag_values = [("0010|0020", str(self.patient_id)),  # set patientID
                              ("0008|0031", modification_time),  # Series Time
                              ("0008|0021", modification_date),  # Series Date
                              ("0008,0016", '1.2.840.10008.5.1.4.1.1.66.4'),  # SOP Segmentation Class UID
@@ -78,7 +81,8 @@ class DicomWriter:
                              ("0020|000D", self.study_instance_uid + modification_time),  # Study Instance ID
                              ("0008|0008", "DERIVED\\SECONDARY"),  # Image Type
                              # Series Instance UID
-                             ("0020|000e", "1.2.826.0.1.3680043.2.1125." + modification_date + ".1" + modification_time),
+                             (
+                             "0020|000e", "1.2.826.0.1.3680043.2.1125." + modification_date + ".1" + modification_time),
                              # Image Orientation (Patient)
                              ("0020|0037", '\\'.join(map(str, (direction[0], direction[3], direction[6],
                                                                direction[1], direction[4], direction[7])))),
@@ -102,7 +106,8 @@ class DicomWriter:
             image_slice.SetMetaData("0008|0060", "CT")  # set the type to CT so the thickness is carried over
             # (0020, 0032) image position patient determines the 3D spacing between slices.
             # Image Position (Patient)
-            image_slice.SetMetaData("0020|0032", '\\'.join(map(str, self.img_pasted.TransformIndexToPhysicalPoint((0, 0, i)))))
+            image_slice.SetMetaData("0020|0032",
+                                    '\\'.join(map(str, self.img_pasted.TransformIndexToPhysicalPoint((0, 0, i)))))
             image_slice.SetMetaData("0020,0013", str(i))  # Instance Number
 
             # Write to the output directory and add the extension dcm, to force writing in DICOM format.
