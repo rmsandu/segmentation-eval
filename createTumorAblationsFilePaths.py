@@ -52,3 +52,4 @@ for path, dirs, files in os.walk(rootdir):
                     
 df_filepaths = pd.DataFrame(result)
 
+

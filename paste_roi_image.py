@@ -9,7 +9,7 @@ import SimpleITK as sitk
 
 
 def paste_roi_image(image_source, image_roi):
-    ''' Usage: newImage = resize_image(source_img_plan, roi_mask) '''
+    # Usage: newImage = resize_image(source_img_plan, roi_mask)
         
     newSize = image_source.GetSize()
     newOrigin = image_source.GetOrigin()   
@@ -36,10 +36,9 @@ def paste_roi_image(image_source, image_roi):
     return pasted_img
 
 
-
 def paste_roi_imageMaxSize( image_plan, image_validation, image_roi ):
     
-    ''' Usage: newImage = resize_image(source_img_plan, source_img_validation, ROI(ablation/tumor)_mask) '''
+    # Usage: newImage = resize_image(source_img_plan, source_img_validation, ROI(ablation/tumor)_mask)
         
     sizeP = image_plan.GetSize()
     sizeV = image_validation.GetSize()
@@ -53,10 +52,10 @@ def paste_roi_imageMaxSize( image_plan, image_validation, image_roi ):
     originV = image_validation.GetOrigin()   
     originP = image_plan.GetOrigin()
     
-    # create a new origin
+    # create a new origin tuple format
     newOrigin = ()
     for idx, val in enumerate(originP):
-        if  originP[idx] < originV[idx]:
+        if originP[idx] < originV[idx]:
             newOrigin = newOrigin + (originP[idx],)
         else:
             newOrigin = newOrigin + (originV[idx],)
@@ -66,8 +65,7 @@ def paste_roi_imageMaxSize( image_plan, image_validation, image_roi ):
     caster = sitk.CastImageFilter()
     caster.SetOutputPixelType( pixelID )
     image_roi = caster.Execute(image_roi)
- 
-    
+
     spacingP = image_plan.GetSpacing()
     directionP = image_plan.GetDirection()
     outputImage = sitk.Image(newSize, sitk.sitkInt16)
