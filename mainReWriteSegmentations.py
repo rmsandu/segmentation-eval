@@ -7,23 +7,10 @@ Created on Mon May 14 11:01:48 2018
 import os
 import csv
 import pandas as pd
-
+import resizeDICOMSegmentations as ReaderWriterClass
 #%%
 # rootdir = "Z:/Public/Raluca_Radek/GroundTruth_2017/"
 
-'''
-1. give the cochlea folder path as input where the masks are
-2. iterate through file and folders
-3. look for csv file open it and append the information to dictionary (?!)/dataframe/CSV (?!)
-4. open the csv and convert it to dataframe
-5. read the file paths - call the function reader
-6. call the function resizePaste
-7. call the function write to DICOM Series
- - create new folder for each patient where to write (write on server? write local repo?)
- - set name of folder accordingly
-
-'''
-#%%
 # rootdir = r"C:\develop\data"
 rootdir = r"Z:\Public\Raluca_Radek\GroundTruth_2018\GT_23042018"
 patientID = 0
@@ -51,5 +38,8 @@ for path, dirs, files in os.walk(rootdir):
                 result.setdefault('PatientID', []).append(patientID)
                     
 df_filepaths = pd.DataFrame(result)
+resize_object = ReaderWriterClass.ResizedSegmentations(df_filepaths)
+resize_object.save_images_to_disk()
+
 
 

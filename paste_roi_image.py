@@ -36,7 +36,7 @@ def paste_roi_image(image_source, image_roi):
     return pasted_img
 
 
-def paste_roi_imageMaxSize( image_plan, image_validation, image_roi ):
+def paste_roi_imageMaxSize(image_plan, image_validation, image_roi):
     
     # Usage: newImage = resize_image(source_img_plan, source_img_validation, ROI(ablation/tumor)_mask)
         
