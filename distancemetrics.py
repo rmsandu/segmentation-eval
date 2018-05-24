@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 from enum import Enum
 import SimpleITK as sitk
-import readDICOMFiles as Reader
+import DicomReader as Reader
 
 
 class DistanceMetrics(object):
@@ -39,7 +39,7 @@ class DistanceMetrics(object):
         tumor_surface_array_NonZero = tumor_surface_array.nonzero()
 
         self.num_tumor_surface_pixels = len(list(zip(tumor_surface_array_NonZero[0], tumor_surface_array_NonZero[1], tumor_surface_array_NonZero[2])))
-                   # check if there is actually an object present
+        # check if there is actually an object present
         if 0 >= self.num_tumor_surface_pixels:
             raise Exception('The mask image does not seem to contain an object.')
             
@@ -69,7 +69,7 @@ class DistanceMetrics(object):
         # compute the contours multiplied with the euclidean distances 
         self.ablation2tumor_distance_map = ablation_distance_map_array*tumor_surface_array
           
-        #remove the zeros from the surface contour(indexes) from the distance maps '''
+        # remove the zeros from the surface contour(indexes) from the distance maps '''
         self.surface_distances = list(self.ablation2tumor_distance_map[tumor_surface_array_NonZero]/-255) 
 
         #%% 
@@ -95,4 +95,3 @@ class DistanceMetrics(object):
     
     def get_surface_distances(self):
         return self.surface_distances
-    

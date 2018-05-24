@@ -7,9 +7,8 @@ Created on Mon May 14 11:01:48 2018
 import os
 import csv
 import pandas as pd
-import resizeDICOMSegmentations as ReaderWriterClass
+import ResizeSegmentations as ReaderWriterClass
 #%%
-# rootdir = "Z:/Public/Raluca_Radek/GroundTruth_2017/"
 
 # rootdir = r"C:\develop\data"
 rootdir = r"Z:\Public\Raluca_Radek\GroundTruth_2018\GT_23042018"
@@ -38,7 +37,7 @@ for path, dirs, files in os.walk(rootdir):
                 result.setdefault('PatientID', []).append(patientID)
                     
 df_filepaths = pd.DataFrame(result)
-resize_object = ReaderWriterClass.ResizedSegmentations(df_filepaths)
+resize_object = ReaderWriterClass.ResizeSegmentations(df_filepaths)
 resize_object.save_images_to_disk()
 
 

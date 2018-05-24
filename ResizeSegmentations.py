@@ -6,16 +6,16 @@ Created on Wed May 23 14:42:27 2018
 """
 
 import os
-import readDICOMFiles as Reader
-import writeToDICOMSeries as WriterClass
-import paste_roi_image as PasteROI
+import DicomReader as Reader
+import DicomWriter as DicomWriter
+import PasteRoiImage as PasteRoi
 
 
-class ResizedSegmentations:
+class ResizeSegmentations:
 
     def __init__(self, df_folderpaths):
-        self.ablation_paths = df_folderpaths['Ablation Segmentation Path'].tolist()
-        self.tumor_paths = df_folderpaths['Tumor Segmentation Path'].tolist()
+        self.ablation_paths = df_folderpaths[' Ablation Segmentation Path'].tolist()
+        self.tumor_paths = df_folderpaths[' Tumour Segmentation Path'].tolist()
         self.folder_path_plan = df_folderpaths['Plan Images Path'].tolist()
         self.folder_path_validation = df_folderpaths['Validation Images Path'].tolist()
         self.patients = df_folderpaths['PatientID']
@@ -28,9 +28,9 @@ class ResizedSegmentations:
             source_img_plan = Reader.read_dcm_series(self.folder_path_plan[idx])
             source_img_validation = Reader.read_dcm_series(self.folder_path_validation[idx])
             # resize the Segmentation Mask to the dimensions of the source images they were derived from '''
-            resized_tumor_mask = PasteROI.paste_roi_imageMaxSize(source_img_plan, source_img_validation,
+            resized_tumor_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan, source_img_validation,
                                                                  tumor_mask)
-            resized_ablation_mask = PasteROI.paste_roi_imageMaxSize(source_img_plan, source_img_validation,
+            resized_ablation_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan, source_img_validation,
                                                                     ablation_mask)
 
             # create new folder path in C:/develop/data/PatID
@@ -47,12 +47,12 @@ class ResizedSegmentations:
                     os.makedirs(child_directory_ablation)
 
             # Save the Re-sized Segmentations to DICOM Series
-            obj_writer1 = WriterClass.DicomWriter(resized_tumor_mask, source_img_plan,
+            obj_writer1 = DicomWriter.DicomWriter(resized_tumor_mask, source_img_plan,
                                                   child_directory_tumor,
                                                   'tumorSegm', str(self.patients[idx]))
             obj_writer1.save_image_to_file()
 
-            obj_writer2 = WriterClass.DicomWriter(resized_ablation_mask, source_img_validation,
+            obj_writer2 = DicomWriter.DicomWriter(resized_ablation_mask, source_img_validation,
                                                   child_directory_ablation,
                                                   'ablationSegm', str(self.patients[idx]))
             obj_writer2.save_image_to_file()
