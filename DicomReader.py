@@ -14,18 +14,16 @@ import pydicom as dicom
 
 def read_dcm_series(folder_path):
     
-    paths, dirs, files = os.walk(folder_path).__next__()
-    
-    if len(files) > 1:
-        # DICOM Series
-        reader = sitk.ImageSeriesReader()
-        dicom_names = reader.GetGDCMSeriesFileNames(os.path.normpath(folder_path))
-        reader.SetFileNames(dicom_names)
-        image = reader.Execute()
-    else:
+    if next(os.walk(folder_path),None) is None:
+        print('single file')
         # single DICOM File
         image = sitk.ReadImage(os.path.normpath(folder_path), sitk.sitkInt16)
-        
+        return image
+    # DICOM Series
+    reader = sitk.ImageSeriesReader()
+    dicom_names = reader.GetGDCMSeriesFileNames(os.path.normpath(folder_path))
+    reader.SetFileNames(dicom_names)
+    image = reader.Execute()
     return image
 
 
