@@ -10,6 +10,57 @@ import pandas as pd
 import ResizeSegmentations as ReaderWriterClass
 import mainDistanceVolumeMetrics as Metrics
 #%%
+def splitall(path):
+    allparts = []
+    while 1:
+        parts = os.path.split(path)
+        if parts[0] == path:  # sentinel for absolute paths
+            allparts.insert(0, parts[0])
+            break
+        elif parts[1] == path:  # sentinel for relative paths
+            allparts.insert(0, parts[1])
+            break
+        else:
+            path = parts[0]
+            allparts.insert(0, parts[1])
+    return allparts
+#%%
+# for Spheres
+rootdir = r"C:\develop\data\sphres"
+filepaths = []
+tumorFilePath = ''
+ablationFilePath = ''
+typeSphere = ''
+patient_name = ''
+
+for path, dirs, files in os.walk(rootdir):
+    for file in files:
+        fileName, fileExtension = os.path.splitext(file)
+        if 'Mask' in fileName:
+            allparts = splitall(path)
+            if 'ablation' in path:
+                ablationFilePath = os.path.normpath((os.path.join(path, file)))
+                typeSphere = allparts[5]
+                patient_name = allparts[4]
+            if 'lession' in path:
+                tumorFilePath = os.path.normpath((os.path.join(path, file)))
+                typeSphere = allparts[5]
+                patient_name = allparts[4]
+
+    if tumorFilePath and ablationFilePath:
+        allparts = splitall(path)
+        data = {'PatientName': patient_name,
+                'Type': typeSphere,
+                ' Tumour Segmentation Path': tumorFilePath,
+                ' Ablation Segmentation Path': ablationFilePath
+                }
+        tumorFilePath = ''
+        ablationFilePath = ''
+        filepaths.append(data)
+
+df_filepaths = pd.DataFrame(filepaths)
+Metrics.main_distance_volume_metrics(df_filepaths, rootdir)
+#%%
 # for GT 2017
 
 dictionary_filepaths = [] # list of dictionaries containing the filepaths of the segmentations
@@ -27,13 +78,13 @@ for subdir, dirs, files in os.walk(rootdir):
             ablationFilePath = os.path.normpath(FilePathName)
         else:
             print("")
-        
-    if (tumorFilePath) and (ablationFilePath):
+        # TODO: create csv with filepath for tumor(s), ablations, trajectories, plan, validation , xml (?)
+    if tumorFilePath and ablationFilePath:
         dir_name = os.path.dirname(ablationFilePath)
         dirname2 = os.path.split(dir_name)[1]
         data = {'PatientName' : dirname2,
-                'TumorFile' : tumorFilePath,
-                'AblationFile' : ablationFilePath
+                ' Tumour Segmentation Path' : tumorFilePath,
+                ' Ablation Segmentation Path': ablationFilePath
                 }
         dictionary_filepaths.append(data)  
 
