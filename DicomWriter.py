@@ -72,6 +72,10 @@ class DicomWriter:
         modification_date = time.strftime("%Y%m%d")
         direction = self.img_pasted.GetDirection()
         spacing = self.img_pasted.GetSpacing()
+        # TODO: get patient sex (0010,0040)
+        # TODO: get patient year's of birth (0010,0030)
+        # TODO: Study ID: 0
+        # TODO: Keep all CT tags (Exposure time,  X-ray tube content)
 
         series_tag_values = [("0010|0020", str(self.patient_id)),  # set patientID
                              ("0008|0031", modification_time),  # Series Time
