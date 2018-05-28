@@ -23,7 +23,10 @@ class ResizeSegmentations:
     def save_images_to_disk(self):
 
         for idx, ablation_path in enumerate(self.ablation_paths):
+
+            print(str(self.patients[idx]))
             tumor_mask = Reader.read_dcm_series(self.tumor_paths[idx])
+     
             ablation_mask = Reader.read_dcm_series(ablation_path)
             source_img_plan = Reader.read_dcm_series(self.folder_path_plan[idx])
             source_img_validation = Reader.read_dcm_series(self.folder_path_validation[idx])
