@@ -24,7 +24,7 @@ class DistanceMetrics(object):
 
     def __init__(self, ablationFilepath, tumorFilepath):
         ''' Read the images from the filepaths'''
-
+        
         tumor_segmentation = Reader.read_dcm_series( tumorFilepath )
         ablation_segmentation = Reader.read_dcm_series( ablationFilepath )
         
@@ -34,7 +34,8 @@ class DistanceMetrics(object):
 
         surface_distance_results = np.zeros((1,len(SurfaceDistanceMeasuresITK.__members__.items())))
         #%%
-        tumor_surface = sitk.LabelContour(tumor_segmentation)
+        tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=True)
+        
         tumor_surface_array = sitk.GetArrayFromImage(tumor_surface)
         tumor_surface_array_NonZero = tumor_surface_array.nonzero()
 
