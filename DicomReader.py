@@ -15,7 +15,6 @@ import pydicom as dicom
 def read_dcm_series(folder_path):
     
     if next(os.walk(folder_path),None) is None:
-        print('single file')
         # single DICOM File
         image = sitk.ReadImage(os.path.normpath(folder_path), sitk.sitkInt16)
         return image

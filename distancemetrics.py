@@ -22,34 +22,40 @@ import DicomReader as Reader
 
 class DistanceMetrics(object):
 
-    def __init__(self, ablationFilepath, tumorFilepath):
+    def __init__(self, ablation_path, tumor_path):
         ''' Read the images from the filepaths'''
-        
-        tumor_segmentation = Reader.read_dcm_series( tumorFilepath )
-        ablation_segmentation = Reader.read_dcm_series( ablationFilepath )
+
+        tumor_segmentation = Reader.read_dcm_series(tumor_path)
+        ablation_segmentation = Reader.read_dcm_series(ablation_path)
         
         ''' init the enum fields for surface dist measures computer with simpleitk'''
         class SurfaceDistanceMeasuresITK(Enum):
-            hausdorff_distance, max_distance, min_surface_distance, mean_surface_distance, median_surface_distance, std_surface_distance = range(6)
+            hausdorff_distance, max_distance, min_surface_distance, mean_surface_distance,\
+             median_surface_distance, std_surface_distance = range(6)
 
-        surface_distance_results = np.zeros((1,len(SurfaceDistanceMeasuresITK.__members__.items())))
+        surface_distance_results = np.zeros((1, len(SurfaceDistanceMeasuresITK.__members__.items())))
         #%%
         tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=True)
         
         tumor_surface_array = sitk.GetArrayFromImage(tumor_surface)
         tumor_surface_array_NonZero = tumor_surface_array.nonzero()
 
-        self.num_tumor_surface_pixels = len(list(zip(tumor_surface_array_NonZero[0], tumor_surface_array_NonZero[1], tumor_surface_array_NonZero[2])))
+        self.num_tumor_surface_pixels = len(list(zip(tumor_surface_array_NonZero[0],
+                                                     tumor_surface_array_NonZero[1],
+                                                     tumor_surface_array_NonZero[2])))
         # check if there is actually an object present
         if 0 >= self.num_tumor_surface_pixels:
             raise Exception('The mask image does not seem to contain an object.')
             
         # init signed mauerer distance as tumor metrics from SimpleITK
-        self.tumor_distance_map = sitk.SignedMaurerDistanceMap(tumor_segmentation, squaredDistance=False, useImageSpacing=True)
+        self.tumor_distance_map = sitk.SignedMaurerDistanceMap(tumor_segmentation,
+                                                               squaredDistance=False,
+                                                               useImageSpacing=True)
         
         hausdorff_distance_filter = sitk.HausdorffDistanceImageFilter()
         hausdorff_distance_filter.Execute(tumor_segmentation, ablation_segmentation)
-        surface_distance_results[0,SurfaceDistanceMeasuresITK.hausdorff_distance.value] = hausdorff_distance_filter.GetHausdorffDistance()
+        surface_distance_results[0, SurfaceDistanceMeasuresITK.hausdorff_distance.value] =\
+            hausdorff_distance_filter.GetHausdorffDistance()
             
         #%%
         ''' Mauerer Distance Map for the Ablation Object '''
@@ -58,12 +64,16 @@ class DistanceMetrics(object):
         ablation_mask_array_NonZero = ablation_surface_mask_array.nonzero()
         
         # Get the number of pixels in the mask surface by counting all pixels that are non-zero
-        self.num_ablation_surface_pixels = len(list(zip(ablation_mask_array_NonZero[0],ablation_mask_array_NonZero[1], ablation_mask_array_NonZero[2])))
+        self.num_ablation_surface_pixels = len(list(zip(ablation_mask_array_NonZero[0],
+                                                        ablation_mask_array_NonZero[1],
+                                                        ablation_mask_array_NonZero[2])))
         
         if 0 >= self.num_ablation_surface_pixels:
             raise Exception('The mask image does not seem to contain an object.')
         # init Mauerer Distance
-        self.ablation_distance_map = sitk.SignedMaurerDistanceMap(ablation_segmentation, squaredDistance=False, useImageSpacing=True)
+        self.ablation_distance_map = sitk.SignedMaurerDistanceMap(ablation_segmentation,
+                                                                  squaredDistance=False,
+                                                                  useImageSpacing=True)
  
         ablation_distance_map_array = sitk.GetArrayFromImage(self.ablation_distance_map)
        
@@ -75,15 +85,19 @@ class DistanceMetrics(object):
 
         #%% 
         ''' Compute the surface distances max, min, mean, median, std '''
-        surface_distance_results[0,SurfaceDistanceMeasuresITK.max_distance.value] = np.max(self.surface_distances)
-        surface_distance_results[0,SurfaceDistanceMeasuresITK.min_surface_distance.value] = np.min(self.surface_distances)
-        surface_distance_results[0,SurfaceDistanceMeasuresITK.mean_surface_distance.value] = np.mean(self.surface_distances)
-        surface_distance_results[0,SurfaceDistanceMeasuresITK.median_surface_distance.value] = np.median(self.surface_distances)
-        surface_distance_results[0,SurfaceDistanceMeasuresITK.std_surface_distance.value] = np.std(self.surface_distances)
+        surface_distance_results[0, SurfaceDistanceMeasuresITK.max_distance.value] = np.max(self.surface_distances)
+        surface_distance_results[0, SurfaceDistanceMeasuresITK.min_surface_distance.value] = \
+            np.min(self.surface_distances)
+        surface_distance_results[0, SurfaceDistanceMeasuresITK.mean_surface_distance.value] = \
+            np.mean(self.surface_distances)
+        surface_distance_results[0, SurfaceDistanceMeasuresITK.median_surface_distance.value] = \
+            np.median(self.surface_distances)
+        surface_distance_results[0, SurfaceDistanceMeasuresITK.std_surface_distance.value] = \
+            np.std(self.surface_distances)
         
         # Save to DataFrame
         self.surface_distance_results_df = pd.DataFrame(data=surface_distance_results, index = list(range(1)),
-                                      columns=[name for name, _ in SurfaceDistanceMeasuresITK.__members__.items()])
+                                           columns=[name for name, _ in SurfaceDistanceMeasuresITK.__members__.items()])
         # change the name of the columns
         self.surface_distance_results_df.columns = ['Hausdorff_AT', 'Maximum_AT', 'Minimum_AT', 'Mean_AT', 'Median_AT', 'Std_AT']
 

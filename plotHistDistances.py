@@ -6,25 +6,26 @@ Created on Wed Nov 15 16:15:51 2017
 """
 import os
 import numpy as np
+np.seterr(divide='ignore', invalid='ignore')
 import graphing as gh
 import matplotlib.pyplot as plt
 from collections import OrderedDict
-#plt.style.use('ggplot')
+# plt.style.use('ggplot')
 #%%
 
 
-def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , title):
+def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels, title):
 
     # PLOT THE HISTOGRAM FOR THE MAUERER EUCLIDIAN DISTANCES
 
-    figName_hist = str(pat_name) + 'histogramDistances' + title
-    figpathHist = os.path.join(rootdir, figName_hist)
+    figName_hist = str(pat_name) + str(pat_idx)+ '_histogramDistances_' + title
 
     min_val = int(np.floor(min(distanceMap)))
     max_val = int(np.ceil(max(distanceMap)))
     
-    fig, ax = plt.subplots()
-#    col_height, bins, patches = ax.hist(distanceMap, ec='darkgrey')
+    fig, ax = plt.subplots(figsize=(24, 20))
+    # col_height, bins, patches = ax.hist(distanceMap, ec='darkgrey')
+    # TODO: fix column height percentage. now it's above 100% sometimes. because of calculation or display?
     col_height, bins, patches = ax.hist(distanceMap, ec='darkgrey', bins=range(min_val-1, max_val+1))
     
     voxels_nonablated = []
@@ -34,9 +35,9 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , titl
     for b, p, col_val in zip(bins, patches, col_height):
         if b < 0:
             voxels_nonablated.append(col_val)
-        elif b >=0 and b < 5 :
+        elif b in range(0, 5):
             voxels_insuffablated.append(col_val)
-        elif b>=5:
+        elif b >= 5:
             voxels_ablated.append(col_val)
             
 #%%
@@ -45,31 +46,27 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , titl
     voxels_insuffablated = np.asarray(voxels_insuffablated)
     voxels_ablated = np.asarray(voxels_ablated)
     
-    sum_perc_nonablated = ((voxels_nonablated /num_voxels) * 100).sum()
-    sum_perc_insuffablated =  ((voxels_insuffablated/num_voxels) * 100).sum()
+    sum_perc_nonablated = ((voxels_nonablated / num_voxels) * 100).sum()
+    sum_perc_insuffablated = ((voxels_insuffablated/num_voxels) * 100).sum()
     sum_perc_ablated = ((voxels_ablated/num_voxels) * 100).sum()
-
 
 #%%
     '''iterate through the bins to change the colors of the patches bases on the range [mm]'''
     for b, p, col_val in zip(bins, patches, col_height):
-        
         if b < 0:
-            plt.setp(p, 'facecolor', 'darkred', label='Non-ablated Surface: '+ " %.2f" %  sum_perc_nonablated + '%')
-
-        elif b >= 0 and b < 5 :
-            plt.setp(p, 'facecolor', 'orange', label='Insufficient Ablation Margin: '+ "%.2f" % sum_perc_insuffablated + '%')
-
+            plt.setp(p, 'facecolor', 'darkred', label='Non-ablated Surface: ' + " %.2f" % sum_perc_nonablated + '%')
+        elif b in range(0, 5):
+            plt.setp(p, 'facecolor', 'orange', label='Insufficient Ablation Margin: ' + "%.2f" % sum_perc_insuffablated + '%')
         elif b >= 5:
-            plt.setp(p, 'facecolor', 'darkgreen', label='Sufficient Ablation Margin: '+ " %.2f" % sum_perc_ablated + '%')
+            plt.setp(p, 'facecolor', 'darkgreen', label='Sufficient Ablation Margin: ' + " %.2f" % sum_perc_ablated + '%')
 
 #%%                   
-    '''edit the axes limits and laels'''
-    plt.xlabel('[mm]', fontsize=36, color='black')
-    plt.tick_params(labelsize=30, color='black')
-    ax.tick_params(colors='black', labelsize=30)
+    '''edit the axes limits and labels'''
+    plt.xlabel('[mm]', fontsize=38, color='black')
+    plt.tick_params(labelsize=36, color='black')
+    ax.tick_params(colors='black', labelsize=36)
     plt.grid(True)
-    ax.set_xlim([-10, 11])
+    # ax.set_xlim([-10, 11])
 
     # edit the y-ticks: change to percentage of surface
     yticks, locs = plt.yticks()
@@ -80,12 +77,14 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels , titl
     new_yticks[0] = 0
     plt.yticks(new_yticks, yticks_percent)
 #    plt.yticks(yticks,yticks_percent)
-    plt.ylabel('Percetange of surface voxels', fontsize=36,color='black')
+    plt.ylabel('Percetange of surface voxels', fontsize=38, color='black')
     
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(), fontsize=36, loc='best')
+    plt.legend(by_label.values(), by_label.keys(), fontsize=38, loc='best')
     
-    plt.title(title +'. Case ' + str(pat_idx), fontsize=36)
-    
-    gh.save(figpathHist, width=22, height=18)
+    # plt.title(title + '. Case ' + str(pat_idx), fontsize=36)
+    figpathHist = os.path.join(rootdir, figName_hist + '.png')
+    gh.save(figpathHist, width=24, height=20)
+    figpathHist = os.path.join(rootdir, figName_hist + '.svg')
+    gh.save(figpathHist, width=24, height=20)
