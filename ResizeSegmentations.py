@@ -18,9 +18,11 @@ class ResizeSegmentations:
         self.tumor_paths = df_folderpaths[' Tumour Segmentation Path'].tolist()
         self.folder_path_plan = df_folderpaths['Plan Images Path'].tolist()
         self.folder_path_validation = df_folderpaths['Validation Images Path'].tolist()
-        self.patients = df_folderpaths['PatientID']
+        self.trajectoryID = df_folderpaths['TrajectoryID'].tolist()
+        self.patients = df_folderpaths['PatientID'].tolist()
+        # tolist() might be unnecessary
 
-    def save_images_to_disk(self):
+    def save_images_to_disk(self, root_path_to_save):
 
         for idx, ablation_path in enumerate(self.ablation_paths):
 
@@ -36,17 +38,29 @@ class ResizeSegmentations:
             resized_ablation_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan, source_img_validation,
                                                                     ablation_mask)
 
-            # create new folder path in C:/develop/data/PatID
-            root_path = r"C:/develop/data/"
-            parent_directory = os.path.join(root_path, 'Pat_GTDB_' + str(self.patients[idx]))
-            child_directory_tumor = os.path.join(parent_directory, 'Resized_Tumor_Segmentation')
-            child_directory_ablation = os.path.join(parent_directory, 'Resized_Ablation_Segmentation')
+            parent_directory = os.path.join(root_path_to_save,
+                                            'Pat_GTDB_' + str(self.patients[idx]))
+
+            child_directory_trajectory = os.path.join(parent_directory, 'Trajectory' + str(self.trajectoryID[idx]))
+            child_directory_tumor = os.path.join(parent_directory,
+                                                 child_directory_trajectory,
+                                                 'Resized_Tumor_Segmentation')
+            child_directory_ablation = os.path.join(parent_directory,
+                                                    child_directory_trajectory,
+                                                    'Resized_Ablation_Segmentation')
 
             if not os.path.exists(parent_directory):
                 os.makedirs(parent_directory)
+                os.makedirs(child_directory_trajectory)
+                os.makedirs(child_directory_tumor)
+                os.makedirs(child_directory_ablation)
+            else:
+                # the patient folder already exists, create new trajectory folder with lesion and ablation folder
+                if not os.path.exists(child_directory_trajectory):
+                    os.makedirs(child_directory_trajectory)
                 if not os.path.exists(child_directory_tumor):
+                    # trajectory folder exists, re-write segmentations
                     os.makedirs(child_directory_tumor)
-                if not os.path.exists(child_directory_ablation):
                     os.makedirs(child_directory_ablation)
 
             # Save the Re-sized Segmentations to DICOM Series
