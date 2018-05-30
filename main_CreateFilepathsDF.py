@@ -25,7 +25,7 @@ def splitall(path):
     return allparts
 #%%
 # for Spheres
-rootdir = r"C:\develop\data\balls"
+rootdir = r"C:\develop\data\new_shift"
 filepaths = []
 tumorFilePath = ''
 ablationFilePath = ''
