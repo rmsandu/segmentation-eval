@@ -6,23 +6,21 @@ Created on Wed Nov 15 16:15:51 2017
 """
 import os
 import numpy as np
+# TODO: check why and when division by zero occurs
 np.seterr(divide='ignore', invalid='ignore')
 import graphing as gh
 import matplotlib.pyplot as plt
 from collections import OrderedDict
-# plt.style.use('ggplot')
+plt.style.use('ggplot')
 #%%
 
 
 def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels, title):
 
     # PLOT THE HISTOGRAM FOR THE MAUERER EUCLIDIAN DISTANCES
-
-    figName_hist = str(pat_name) + str(pat_idx)+ '_histogramDistances_' + title
-
+    figName_hist = 'Pat' + str(pat_name) + '_Trajectory' + str(pat_idx) + '_histogramDistances'
     min_val = int(np.floor(min(distanceMap)))
     max_val = int(np.ceil(max(distanceMap)))
-    
     fig, ax = plt.subplots(figsize=(24, 20))
     # col_height, bins, patches = ax.hist(distanceMap, ec='darkgrey')
     # TODO: fix column height percentage. now it's above 100% sometimes. because of calculation or display?
@@ -39,7 +37,6 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels, title
             voxels_insuffablated.append(col_val)
         elif b >= 5:
             voxels_ablated.append(col_val)
-            
 #%%
     '''calculate the total percentage of surface for ablated, non-ablated, insufficently ablated'''
     voxels_nonablated = np.asarray(voxels_nonablated)
@@ -49,7 +46,6 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels, title
     sum_perc_nonablated = ((voxels_nonablated / num_voxels) * 100).sum()
     sum_perc_insuffablated = ((voxels_insuffablated/num_voxels) * 100).sum()
     sum_perc_ablated = ((voxels_ablated/num_voxels) * 100).sum()
-
 #%%
     '''iterate through the bins to change the colors of the patches bases on the range [mm]'''
     for b, p, col_val in zip(bins, patches, col_height):
@@ -59,14 +55,13 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels, title
             plt.setp(p, 'facecolor', 'orange', label='Insufficient Ablation Margin: ' + "%.2f" % sum_perc_insuffablated + '%')
         elif b >= 5:
             plt.setp(p, 'facecolor', 'darkgreen', label='Sufficient Ablation Margin: ' + " %.2f" % sum_perc_ablated + '%')
-
 #%%                   
     '''edit the axes limits and labels'''
     plt.xlabel('[mm]', fontsize=38, color='black')
     plt.tick_params(labelsize=36, color='black')
     ax.tick_params(colors='black', labelsize=36)
     plt.grid(True)
-    # ax.set_xlim([-10, 11])
+    ax.set_xlim([-15, 15])
 
     # edit the y-ticks: change to percentage of surface
     yticks, locs = plt.yticks()
@@ -83,8 +78,7 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels, title
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys(), fontsize=38, loc='best')
     
-    # plt.title(title + '. Case ' + str(pat_idx), fontsize=36)
+    plt.title(title + '. Case ' + str(pat_name), fontsize=36)
     figpathHist = os.path.join(rootdir, figName_hist + '.png')
     gh.save(figpathHist, width=24, height=20)
-    figpathHist = os.path.join(rootdir, figName_hist + '.svg')
-    gh.save(figpathHist, width=24, height=20)
+
