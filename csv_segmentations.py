@@ -12,22 +12,22 @@ import mainDistanceVolumeMetrics as Metrics
 # read filepaths from both csv
 # make new_data_frame
 # compute the metrics
-
+pd.options.mode.chained_assignment = None
 file_2018 = r"C:\PatientDatasets_GroundTruth_Database\GroundTruth_2018\FilepathsResizedGTSegmentations_114101-20180531.xlsx"
 file_2017 = r"C:\PatientDatasets_GroundTruth_Database\GroundTruthDB_2017\FilepathsGTSegmentations2017_120657-20180531.xlsx"
 
-df_2018 = pd.read_excel(file_2018, index = list(range(10,12)))
+df_2018 = pd.read_excel(file_2018)
 df_2017 = pd.read_excel(file_2017)
 
 df_new1 = df_2018[[' Ablation Segmentation Path Resized',
                   ' Tumour Segmentation Path Resized',
                   'PatientID',
                   'TrajectoryID']]
-df_new1.rename(columns={' Ablation Segmentation Path Resized':' Ablation Segmentation Path',
-                        ' Tumour Segmentation Path Resized':' Tumour Segmentation Path'}, inplace=True)
+df_new1.rename(columns={' Ablation Segmentation Path Resized': ' Ablation Segmentation Path',
+                        ' Tumour Segmentation Path Resized': ' Tumour Segmentation Path'}, inplace=True)
 
 # create new dataframe with selected columns
-#df.rename(columns={'oldName1': 'newName1', 'oldName2': 'newName2'}, inplace=True)
+# df.rename(columns={'oldName1': 'newName1', 'oldName2': 'newName2'}, inplace=True)
 df_final = df_2017.append(df_new1)
 df_final = df_final.reset_index()
 #%%
