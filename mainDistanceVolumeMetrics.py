@@ -4,7 +4,8 @@ Created on Tue Nov 14 11:43:36 2017
 
 @author: Raluca Sandu
 """
-import os, re, time
+import os
+import time
 import pandas as pd
 import plotHistDistances as pm
 from distancemetrics import DistanceMetrics
@@ -18,6 +19,7 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
     ablations = df_patientdata[' Ablation Segmentation Path'].tolist()
     tumors = df_patientdata[' Tumour Segmentation Path'].tolist()
     trajectory = df_patientdata['TrajectoryID']
+    pats = df_patientdata['PatientID'].tolist()
     df_metrics_all = pd.DataFrame()
     distanceMaps_allPatients = []
     #%%
@@ -36,10 +38,9 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
         distanceMap = evalmetrics.get_surface_distances()
         distanceMaps_allPatients.append(distanceMap)
         num_surface_pixels = evalmetrics.num_tumor_surface_pixels
-
         #  plot the color coded histogram of the distances
         title = 'Ablation to Tumor Euclidean Distances'
-        # pm.plotHistDistances(pats[idx], trajectory[idx], rootdir, distanceMap, num_surface_pixels, title)
+        pm.plotHistDistances(pats[idx], trajectory[idx], rootdir, distanceMap, num_surface_pixels, title)
     #%%
     # add the Distance Map to the input dataframe. to be written to Excel
     df_patientdata['DistanceMaps'] = distanceMaps_allPatients

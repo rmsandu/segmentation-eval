@@ -8,10 +8,6 @@ import os
 import numpy as np
 import graphing as gh
 import matplotlib.pyplot as plt
-
-
-# plt.style.use('classic')
-# plt.style.use('seaborn')
 # %%
 
 
@@ -57,8 +53,6 @@ def plotBoxplots(data_distances, tumor_volume_coverage_list, rootdir):
     plt.ylabel('Tumour Volume Coverage Ratio', fontsize=16, color='black')
     plt.setp(ax2.get_yticklabels(), color='k')
     plt.xlabel('Case', fontsize=16, color='black')
-    #    plt.subplots_adjust(wspace=0, hspace=0)
     figpath = os.path.join(rootdir, 'DistanceMapsBoxplots_vs_ScatterPlotVolume.png')
     plt.show()
-    gh.save(figpath)
-    # plt.close()
+    gh.save(figpath, width=26, height=24)

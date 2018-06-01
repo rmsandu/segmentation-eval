@@ -31,8 +31,6 @@ class VolumeMetrics:
 
     def get_volume_ml(self, image):
         x_spacing, y_spacing, z_spacing = image.GetSpacing()
-        z_spacing = x_spacing
-        y_spacing = x_spacing
         image_nda = sitk.GetArrayFromImage(image)
         imageSegm_nda_NonZero = image_nda.nonzero()
         num_voxels = len(list(zip(imageSegm_nda_NonZero[0],
@@ -56,9 +54,9 @@ class VolumeMetrics:
         # perform intersection on the common voxel coordinates between tumor and ablation
         intersection_tumor_ablation = np.array([x for x in tumor_set & ablation_set])
         num_voxels_intersection_non_zero = len(intersection_tumor_ablation)
+
+        # Get the spacing
         x_spacing, y_spacing, z_spacing = self.tumorSegm.GetSpacing()
-        y_spacing = x_spacing
-        z_spacing = x_spacing
         # volume_residual = volume_tumor - volume_intersection ablation and tumor
         volume_intersection = (num_voxels_intersection_non_zero * x_spacing * y_spacing * z_spacing) / 1000
         volume_tumor = self.get_volume_ml(self.tumorSegm)

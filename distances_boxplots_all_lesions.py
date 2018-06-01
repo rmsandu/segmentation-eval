@@ -6,15 +6,9 @@ Created on Wed Nov 29 19:15:03 2017
 """
 import os
 import numpy as np
-import pandas as pd
 import graphing as gh
-import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from collections import OrderedDict
-
-
-# plt.style.use('classic')
-# plt.style.use('seaborn')
 # %%
 def plotBoxplots(data, rootdir):
     fig, axes = plt.subplots()
@@ -54,5 +48,5 @@ def plotBoxplots(data, rootdir):
     plt.ylabel('[mm]', fontsize=36, color='black')
     figpath_png = os.path.join(rootdir, 'boxplots_forDistanceMaps.png')
     plt.show()
-    gh.save(figpath_png)
+    gh.save(figpath_png, width=30, height=28)
 

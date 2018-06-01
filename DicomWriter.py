@@ -85,8 +85,7 @@ class DicomWriter:
                              ("0020|000D", self.study_instance_uid + modification_time),  # Study Instance ID
                              ("0008|0008", "DERIVED\\SECONDARY"),  # Image Type
                              # Series Instance UID
-                             (
-                             "0020|000e", "1.2.826.0.1.3680043.2.1125." + modification_date + ".1" + modification_time),
+                             ("0020|000e", "1.2.826.0.1.3680043.2.1125." + modification_date + ".1" + modification_time),
                              # Image Orientation (Patient)
                              ("0020|0037", '\\'.join(map(str, (direction[0], direction[3], direction[6],
                                                                direction[1], direction[4], direction[7])))),
