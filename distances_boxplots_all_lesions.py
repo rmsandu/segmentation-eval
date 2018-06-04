@@ -26,9 +26,11 @@ def plotBoxplots(data, rootdir):
     plt.setp(bplot['fliers'], markersize=6)
     plt.setp(bplot['means'], marker='D', markeredgecolor='black',
              markerfacecolor='blue', label='Average')
-
+    
+    axes.set_ylim([-15, 15])
     xlim = np.array(plt.gca().get_xlim())
     ylim = np.array(plt.gca().get_ylim())
+    
     plt.fill_between(xlim, y1=([ylim[0], ylim[0]]), y2=([0, 0]),
                      color="#EC7063", zorder=0)
     plt.fill_between(xlim, y1=([0, 0]), y2=([5, 5]),
@@ -36,7 +38,7 @@ def plotBoxplots(data, rootdir):
     plt.fill_between(xlim, y1=([5, 5]), y2=(ylim[1], ylim[1]),
                      color="#ABEBC6", zorder=0)
     plt.margins(0)
-    axes.set_ylim([-15, 15])
+    
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys(), fontsize=36)
