@@ -45,9 +45,11 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
     #%%
     # add the Distance Map to the input dataframe. to be written to Excel
     df_patientdata['DistanceMaps'] = distanceMaps_allPatients
-    df_patients_sorted = df_patientdata.sort_values(['PatientID'], ascending=True)
+    df_metrics_all.index = list(range(len(df_metrics_all)))
+    df_final = pd.concat([df_patientdata, df_metrics_all], axis=1)
+    df_patients_sorted = df_final.sort_values(['PatientID'], ascending=True)
     data_distances_to_plot = df_patients_sorted['DistanceMaps'].tolist()
-    data_volumes_to_plot = df_metrics_all[' Tumour coverage ratio']
+    data_volumes_to_plot = df_patients_sorted[' Tumour coverage ratio']
     # plot Boxplot per patient
     bpLesions.plotBoxplots(data_distances_to_plot, rootdir)
     # plot distances in Boxplot vs Tumor Coverage Ratio
@@ -55,12 +57,9 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
     #%% 
     ''' save to excel the average of the distance metrics '''
     if FLAG_SAVE_TO_EXCEL:
-        print('writing to Excel....')
-        print(rootdir)
-        df_metrics_all.index = list(range(len(df_metrics_all)))
-        df_final = pd.concat([df_patientdata, df_metrics_all], axis=1)
+        print('writing to Excel....', rootdir)
         timestr = time.strftime("%H%M%S-%Y%m%d")
         filename = 'DistanceVolumeMetrics_Pooled_' + title + '-' + timestr + '.xlsx'
         filepath_excel = os.path.join(rootdir, filename)
         writer = pd.ExcelWriter(filepath_excel)
-        df_final.to_excel(writer, index=False, float_format='%.2f')
+        df_patients_sorted.to_excel(writer, index=False, float_format='%.2f')
