@@ -8,10 +8,6 @@ Created on Thu May 31 13:30:11 2018
 import pandas as pd
 import mainDistanceVolumeMetrics as Metrics
 #%%
-# TODO:
-# read filepaths from both csv
-# make new_data_frame
-# compute the metrics
 pd.options.mode.chained_assignment = None
 file_2018 = r"C:\PatientDatasets_GroundTruth_Database\GroundTruth_2018\FilepathsResizedGTSegmentations_114101-20180531.xlsx"
 file_2017 = r"C:\PatientDatasets_GroundTruth_Database\GroundTruthDB_2017\FilepathsGTSegmentations2017_120657-20180531.xlsx"
@@ -35,3 +31,5 @@ df_final = df_final.reset_index()
 # call distance metrics
 rootdir = r"C:\PatientDatasets_GroundTruth_Database"
 Metrics.main_distance_volume_metrics(df_final, rootdir)
+#df_patientdata = df_final
+#def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=True)

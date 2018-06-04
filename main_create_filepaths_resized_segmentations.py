@@ -9,7 +9,7 @@ rootdir = r"C:\PatientDatasets_GroundTruth_Database\GroundTruth_2018\GT_23042018
 patientID = 10
 # list of dictionaries containing the filepaths of the segmentations
 dictionary_filepaths = {}
-
+# the filepaths are already saved in a CSV
 for path, dirs, files in os.walk(rootdir):
     tumorFilePath = ''
     ablationFilePath = ''
@@ -38,9 +38,9 @@ resize_object.save_images_to_disk(folder_path_saving)
 df_new_filepaths = resize_object.get_new_filepaths()
 
 #%%
-timestr = time.strftime("%H%M%S-%Y%m%d")
-filename = 'FilepathsResizedGTSegmentations' + '_' + timestr + '.xlsx'
-filepathExcel = os.path.join(rootdir, filename)
-writer = pd.ExcelWriter(filepathExcel)
-df_new_filepaths.to_excel(writer, index=False)
-print("success")
+#timestr = time.strftime("%H%M%S-%Y%m%d")
+#filename = 'FilepathsResizedGTSegmentations' + '_' + timestr + '.xlsx'
+#filepathExcel = os.path.join(rootdir, filename)
+#writer = pd.ExcelWriter(filepathExcel)
+#df_new_filepaths.to_excel(writer, index=False)
+#print("success")
