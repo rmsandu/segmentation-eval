@@ -38,19 +38,22 @@ ax1.tick_params(colors='black', labelsize=14)
 #%%
 '''tumor vol vs residual tumor vol - rainbow scatter plot'''
 fig2, ax2 = plt.subplots()
-colors = iter(cm.tab10(np.linspace(0, 1, len(y))))
+colors = iter(cm.gist_ncar(np.linspace(0, 1, len(y))))
 labels = df_volumes['PatientID'].tolist()
 labels_1 = ['Case ' + str(x) for x in range(1, len(labels)+1)]
-
+i =1
 for xs, ys, lab in zip(x, y2, labels_1):
     ax2.scatter(xs, ys, s=200, marker='o', color=next(colors), label=lab)
+    # annotate the markers
+    plt.text(xs * (1 + 0.01), ys * (1 + 0.01) , i, fontsize=12)
+    i +=1
 # use logarithmic scale because tumor volume coverage ratio is [0-1] volume is in ml
 ax2.set_ylim([0, 1.04])
 ax2.set_xlim([0.09, 40])
 ax2.set_xscale('log')
 plt.xlabel(' Tumour Volume (ml)', fontsize=14, color='black')
 plt.ylabel(' Tumour Volume Coverage Ratio', fontsize=14, color='black')
-plt.title('Tumor Volume Coverage Ratio with respect to Tumor volume. 10 Cases')
+plt.title('Tumor Volume Coverage Ratio with respect to Tumor volume. 21 Cases')
 plt.tick_params(labelsize=14, color='black')
 ax2.tick_params(colors='black', labelsize=14)
 
@@ -60,5 +63,5 @@ leg = plt.legend(by_label.values(), by_label.keys(), fontsize=12, loc='lower lef
 leg.get_frame().set_edgecolor('k')
 
 # save figure
-figPath = os.path.join('ScatterPlot_volumes.png')
-gh.save(figPath, width=12, height=10)
+#figPath = os.path.join('ScatterPlot_volumes.png')
+#gh.save(figPath, width=12, height=10)

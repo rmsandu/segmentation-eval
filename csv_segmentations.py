@@ -22,7 +22,8 @@ df_2017 = pd.read_excel(file_2017)
 df_new1 = df_2018[[' Ablation Segmentation Path Resized',
                   ' Tumour Segmentation Path Resized',
                   'PatientID',
-                  'TrajectoryID']]
+                  'TrajectoryID',
+                  'Pathology']]
 df_new1.rename(columns={' Ablation Segmentation Path Resized': ' Ablation Segmentation Path',
                         ' Tumour Segmentation Path Resized': ' Tumour Segmentation Path'}, inplace=True)
 

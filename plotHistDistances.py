@@ -15,7 +15,7 @@ plt.style.use('ggplot')
 #%%
 
 
-def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels, title):
+def plotHistDistances(pat_name, pat_idx, pathology, rootdir, distanceMap, num_voxels, title):
 
     # PLOT THE HISTOGRAM FOR THE MAUERER EUCLIDIAN DISTANCES
     figName_hist = 'Pat' + str(pat_name) + '_Trajectory' + str(pat_idx) + '_histogramDistances'
@@ -78,7 +78,7 @@ def plotHistDistances(pat_name, pat_idx, rootdir, distanceMap, num_voxels, title
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys(), fontsize=38, loc='best')
     
-    plt.title(title + '. Case ' + str(pat_name), fontsize=36)
+    plt.title(title + '. Case ' + str(pat_name) +'. '+ str(pathology), fontsize=36)
     figpathHist = os.path.join(rootdir, figName_hist + '.png')
     gh.save(figpathHist, width=24, height=20)
 
