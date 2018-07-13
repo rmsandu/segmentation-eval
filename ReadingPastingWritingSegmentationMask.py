@@ -7,9 +7,9 @@ Created on Thu May  3 14:25:13 2018
 
 import numpy as np
 import SimpleITK as sitk
-import readDICOMFiles as reader
-import writeToDICOMSeries as WriterClass
-import paste_roi_image as pasteROI
+import DicomReader as reader
+import DicomWriter as WriterClass
+import PasteRoiImage as pasteROI
 import resampling_hu_dcm as hu
 import matplotlib.pyplot as plt
 
@@ -81,4 +81,5 @@ plt.figure()
 im1 = plt.imshow(oneSlice_source, cmap=plt.cm.gray, interpolation='none')
 im2 = plt.imshow(TumorOverlay, cmap='RdYlBu', alpha=0.3, interpolation='none')
 im3 = plt.imshow(AblationOverlay, cmap='jet', alpha=0.4, interpolation='none')
+im4 = plt.imshow(a)
 plt.grid(False)

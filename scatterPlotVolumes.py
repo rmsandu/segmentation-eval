@@ -5,7 +5,7 @@ Created on Fri Jan 19 10:43:21 2018
 
 @author: Raluca Sandu
 """
-import os
+
 import pandas as pd
 import numpy as np
 import graphing as gh
@@ -45,8 +45,8 @@ i =1
 for xs, ys, lab in zip(x, y2, labels_1):
     ax2.scatter(xs, ys, s=200, marker='o', color=next(colors), label=lab)
     # annotate the markers
-    plt.text(xs * (1 + 0.01), ys * (1 + 0.01) , i, fontsize=12)
-    i +=1
+#    plt.text(xs * (1 + 0.01), ys * (1 + 0.01) , i, fontsize=12)
+#    i +=1
 # use logarithmic scale because tumor volume coverage ratio is [0-1] volume is in ml
 ax2.set_ylim([0, 1.04])
 ax2.set_xlim([0.09, 40])

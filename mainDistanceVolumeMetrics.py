@@ -41,7 +41,7 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
         num_surface_pixels = evalmetrics.num_tumor_surface_pixels
         #  plot the color coded histogram of the distances
         title = 'Ablation to Tumor Euclidean Distances'
-#        pm.plotHistDistances(pats[idx], trajectory[idx], pathology[idx], rootdir, distanceMap, num_surface_pixels, title)
+        pm.plotHistDistances(pats[idx], trajectory[idx], pathology[idx], rootdir, distanceMap, num_surface_pixels, title)
     #%%
     # add the Distance Map to the input dataframe. to be written to Excel
     df_patientdata['DistanceMaps'] = distanceMaps_allPatients

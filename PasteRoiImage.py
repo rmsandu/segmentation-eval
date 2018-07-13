@@ -9,8 +9,9 @@ import SimpleITK as sitk
 
 
 def paste_roi_image(image_source, image_roi):
-    # Usage: newImage = resize_image(source_img_plan, roi_mask)
-        
+    """ Resize ROI binary mask to size, dimension, origin of its source/original img.
+        Usage: newImage = resize_image(source_img_plan, roi_mask)
+    """   
     newSize = image_source.GetSize()
     newOrigin = image_source.GetOrigin()   
     # we assume we have the same spacing as the images have been taken with the same scanner    
@@ -38,7 +39,9 @@ def paste_roi_image(image_source, image_roi):
 
 def paste_roi_imageMaxSize(image_plan, image_validation, image_roi):
     
-    # Usage: newImage = resize_image(source_img_plan, source_img_validation, ROI(ablation/tumor)_mask)
+    """ Resize all the masks to the same dimensions, spacing and origin.
+        Usage: newImage = resize_image(source_img_plan, source_img_validation, ROI(ablation/tumor)_mask)
+    """
         
     sizeP = image_plan.GetSize()
     sizeV = image_validation.GetSize()
@@ -59,13 +62,13 @@ def paste_roi_imageMaxSize(image_plan, image_validation, image_roi):
             newOrigin = newOrigin + (originP[idx],)
         else:
             newOrigin = newOrigin + (originV[idx],)
-   
+       
     # re-cast the pixel type of the roi mask
     pixelID = image_plan.GetPixelID()
     caster = sitk.CastImageFilter()
     caster.SetOutputPixelType( pixelID )
     image_roi = caster.Execute(image_roi)
-
+    
     spacingP = image_plan.GetSpacing()
     directionP = image_plan.GetDirection()
     outputImage = sitk.Image(newSize, sitk.sitkInt16)

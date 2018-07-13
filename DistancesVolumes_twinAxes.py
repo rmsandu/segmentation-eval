@@ -24,7 +24,9 @@ def plotBoxplots(data_distances, tumor_volume_coverage_list, rootdir):
 
     plt.setp(bplot['whiskers'], linestyle='--')
     plt.setp(bplot['fliers'], markersize=5)
-
+    
+    ax1.set_ylim([-15, 15])
+    
     xlim = np.array(plt.gca().get_xlim())
     ylim = np.array(plt.gca().get_ylim())
     plt.fill_between(xlim, y1=([ylim[0], ylim[0]]), y2=([0, 0]),
@@ -34,7 +36,6 @@ def plotBoxplots(data_distances, tumor_volume_coverage_list, rootdir):
     plt.fill_between(xlim, y1=([5, 5]), y2=(ylim[1], ylim[1]),
                      color="#ABEBC6", zorder=0)
     plt.margins(0)
-    ax1.set_ylim([-15, 15])
     ax1.margins(0)
     plt.title('Surface Distance Distribution and Tumor Volume Coverage Ratio. 21 Cases.', fontsize=26)
     plt.tick_params(labelsize=24, color='black')

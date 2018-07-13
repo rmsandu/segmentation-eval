@@ -26,7 +26,6 @@ for needle in mwa_needle_info:
         acculis_needle = needle
         ablation_params = acculis_needle.AblationParameters.Geometry.Shape
         for idx, ablation_param in enumerate(ablation_params):
-            print(ablation_param)
             mwa_info = {     'NeedleType': "Acculis MTA",
                              'Shape': idx,
                              'Type': ablation_param["type"],
@@ -39,3 +38,7 @@ for needle in mwa_needle_info:
             dict_mwa_info.append(mwa_info)
             
 df_mwa = pd.DataFrame(dict_mwa_info)
+#%%
+filename = 'MWA_Acculis_Ellipsoid_Info.xlsx' 
+writer = pd.ExcelWriter(filename)
+df_mwa.to_excel(writer, sheet_name='Ellipsoid_Info', index=False, na_rep='NaN')
