@@ -109,29 +109,29 @@ folder_output = r"C:\PatientDatasets_GroundTruth_Database\GroundTruth_2018\ellip
 
 for i in range(outputImage.GetDepth()):
 
-            image_slice = outputImage[:, :, i]
+        image_slice = outputImage[:, :, i]
             
-            while (i >= start_slice and i <= end_slice):
-                img_nda = sitk.GetArrayFromImage(image_slice)
-                ellipse_outer = ((origin_ellipse[0], origin_ellipse[0]),
-                                 (a*2, b*2), rotation_angle)
-                ellipse_nda = cv2.ellipse(img_nda, ellipse_outer, 255, -1, cv2.LINE_AA)
-                # replice the slice with the created ellipse
-                image_slice = sitk.GetImageFromArray(ellipse_nda)
+        if (i >= start_slice and i <= end_slice):
+            img_nda = sitk.GetArrayFromImage(image_slice)
+            ellipse_outer = ((origin_ellipse[0], origin_ellipse[0]),
+                             (a*2, b*2), rotation_angle)
+            ellipse_nda = cv2.ellipse(img_nda, ellipse_outer, 255, -1, cv2.LINE_AA)
+            # replice the slice with the created ellipse
+            image_slice = sitk.GetImageFromArray(ellipse_nda)
 
-            image_slice.SetMetaData("0008|0012", time.strftime("%Y%m%d"))  # Instance Creation Date
-            image_slice.SetMetaData("0008|0013", time.strftime("%H%M%S"))  # Instance Creation Time
-            # Setting the type to CT preserves the slice location.
-            image_slice.SetMetaData("0008|0060", "CT")  # set the type to CT so the thickness is carried over
-            # (0020, 0032) image position patient determines the 3D spacing between slices.
-            # Image Position (Patient)
-            image_slice.SetMetaData("0020|0032",
-                                    '\\'.join(map(str, outputImage.TransformIndexToPhysicalPoint((0, 0, i)))))
-            image_slice.SetMetaData("0020,0013", str(i))  # Instance Number
+        image_slice.SetMetaData("0008|0012", time.strftime("%Y%m%d"))  # Instance Creation Date
+        image_slice.SetMetaData("0008|0013", time.strftime("%H%M%S"))  # Instance Creation Time
+        # Setting the type to CT preserves the slice location.
+        image_slice.SetMetaData("0008|0060", "CT")  # set the type to CT so the thickness is carried over
+        # (0020, 0032) image position patient determines the 3D spacing between slices.
+        # Image Position (Patient)
+        image_slice.SetMetaData("0020|0032",
+                                '\\'.join(map(str, image_source.TransformIndexToPhysicalPoint((0, 0, i)))))
+        image_slice.SetMetaData("0020,0013", str(i))  # Instance Number
 
-            # Write to the output directory and add the extension dcm, to force writing in DICOM format.
-            writer.SetFileName(os.path.normpath(folder_output + '/' + file_name + str(i) + '.dcm'))
-            writer.Execute(image_slice)
+        # Write to the output directory and add the extension dcm, to force writing in DICOM format.
+        writer.SetFileName(os.path.normpath(folder_output + '/' + file_name + str(i) + '.dcm'))
+        writer.Execute(image_slice)
 
 #%%
 plt.figure()
