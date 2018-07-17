@@ -24,14 +24,6 @@ def angle_between(epNeedle1,tpNeedle1,epNeedle2,tpNeedle2):
 #        vector1 = TargetPoint-EntryPoint
 #        vector2 = TargetPoint-EntryPoint
 
-#    try:
-#         epNeedle1 = np.array([float(i) for i in epNeedle1.split()])
-#         tpNeedle1 = np.array([float(i) for i in tpNeedle1.split()])
-#        
-#         epNeedle2 = np.array([float(i) for i in epNeedle2.split()])
-#         tpNeedle2 = np.array([float(i) for i in tpNeedle2.split()])
-#    except Exception:
-        
     if tpNeedle1 is None or epNeedle1 is None or tpNeedle2  is None or epNeedle2 is None:
         return np.nan
         
