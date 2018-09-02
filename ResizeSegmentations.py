@@ -21,29 +21,34 @@ class ResizeSegmentations:
     def save_images_to_disk(self, root_path_to_save):
         # TODO: change to single and enumerate outside the function!
         ablation_paths = self.df_folderpaths['AblationPath'].tolist()
-        tumor_paths = self.df_folderpaths['TumourPath'].tolist()
-        folder_path_plan = self.df_folderpaths['SourceTumorPath'].tolist()
-        folder_path_validation = self.df_folderpaths['SourceAblationPath'].tolist()
+        tumor_paths = self.df_folderpaths['TumorPath'].tolist()
+        folder_path_plan = self.df_folderpaths['PlanTumorPath'].tolist()
+        # folder_path_plan = self.df_folderpaths['SourceTumorPath'].tolist()
+        folder_path_validation = self.df_folderpaths['ValidationAblationPath'].tolist()
         trajectoryID = self.df_folderpaths['NeedleNr'].tolist()
         patients = self.df_folderpaths['PatientID'].tolist()
         # TODO: create artificial patient id (e.g. 1, 2, 3, etc...)
         
-        for idx, ablation_path in enumerate(ablation_paths):
+        for idx in range(0,len(ablation_paths)):
+            flag_tumor =  False
+            flag_ablation = False
+            if tumor_paths[idx] and ablation_paths[idx]:
+                tumor_mask = Reader.read_dcm_series(tumor_paths[idx])
+                source_img_plan = Reader.read_dcm_series(folder_path_plan[idx])
+                ablation_mask = Reader.read_dcm_series(ablation_paths[idx])
+                source_img_validation = Reader.read_dcm_series(folder_path_validation[idx])
+                # resize the Segmentation Mask to the dimensions of the source images they were derived from '''
+                resized_tumor_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan,
+                                                                     source_img_validation,
+                                                                     tumor_mask)
 
-            tumor_mask = Reader.read_dcm_series(tumor_paths[idx])
-            ablation_mask = Reader.read_dcm_series(ablation_path)
-            source_img_plan = Reader.read_dcm_series(folder_path_plan[idx])
-            source_img_validation = Reader.read_dcm_series(folder_path_validation[idx])
+                resized_ablation_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan,
+                                                                        source_img_validation,
+                                                                        ablation_mask)
+                flag_tumor = True
+                flag_ablation = True
 
-            # resize the Segmentation Mask to the dimensions of the source images they were derived from '''
-            resized_tumor_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan, 
-                                                                 source_img_validation,
-                                                                 tumor_mask)
-            resized_ablation_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan, 
-                                                                    source_img_validation,
-                                                                    ablation_mask)
-            # TODO: resize the segmentation mask to same size as their source
-            
+
             # create folder directories to write the new segmentations
             parent_directory = os.path.join(root_path_to_save,
                                             "Pat_GTDB_" + str(patients[idx]))
@@ -69,6 +74,10 @@ class ResizeSegmentations:
                     os.makedirs(child_directory_tumor)
                     os.makedirs(child_directory_ablation)
             # save new filepaths to dictionary
+            if flag_tumor is False :
+                child_directory_tumor = None
+            if flag_ablation  is False:
+                child_directory_ablation = None
             dict_paths = {
                     " Tumour Segmentation Path Resized":  child_directory_tumor,
                     " Ablation Segmentation Path Resized": child_directory_ablation
