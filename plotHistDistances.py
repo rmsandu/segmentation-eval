@@ -31,9 +31,9 @@ def plotHistDistances(pat_name, pat_idx, pathology, rootdir, distanceMap, num_vo
     voxels_ablated = []
     
     for b, p, col_val in zip(bins, patches, col_height):
-        if b <= 0:
+        if b < 0:
             voxels_nonablated.append(col_val)
-        elif 0 < b < 5:
+        elif 0 <= b < 5:
             voxels_insuffablated.append(col_val)
         elif b >= 5:
             voxels_ablated.append(col_val)
@@ -49,9 +49,9 @@ def plotHistDistances(pat_name, pat_idx, pathology, rootdir, distanceMap, num_vo
 #%%
     '''iterate through the bins to change the colors of the patches bases on the range [mm]'''
     for b, p, col_val in zip(bins, patches, col_height):
-        if b <= 0:
+        if b < 0:
             plt.setp(p, label='Non-ablated Surface: ' + " %.2f" % sum_perc_nonablated + '%')
-        elif 0 < b < 5:
+        elif 0 <= b < 5:
             plt.setp(p, 'facecolor', 'orange', label='Insufficient Ablation Margin: ' + "%.2f" % sum_perc_insuffablated + '%')
         elif b >= 5:
             plt.setp(p, 'facecolor', 'darkgreen', label='Sufficient Ablation Margin: ' + " %.2f" % sum_perc_ablated + '%')

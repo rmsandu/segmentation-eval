@@ -6,6 +6,7 @@ Created on Wed May 23 14:42:27 2018
 """
 
 import os
+import numpy as np
 import pandas as pd
 import DicomReader as Reader
 import DicomWriter as DicomWriter
@@ -23,6 +24,7 @@ class ResizeSegmentations:
         ablation_paths = self.df_folderpaths['AblationPath'].tolist()
         tumor_paths = self.df_folderpaths['TumorPath'].tolist()
         folder_path_plan = self.df_folderpaths['PlanTumorPath'].tolist()
+        patients_names = self.df_folderpaths['PatientName'].tolist()
         # folder_path_plan = self.df_folderpaths['SourceTumorPath'].tolist()
         folder_path_validation = self.df_folderpaths['ValidationAblationPath'].tolist()
         trajectoryID = self.df_folderpaths['NeedleNr'].tolist()
@@ -32,7 +34,10 @@ class ResizeSegmentations:
         for idx in range(0,len(ablation_paths)):
             flag_tumor =  False
             flag_ablation = False
-            if tumor_paths[idx] and ablation_paths[idx]:
+            # ((a == b) | (numpy.isnan(a) & numpy.isnan(b))).all()
+            # TODO: if only path available do what??
+            if not (str(tumor_paths[idx])=='nan') and not(str(ablation_paths[idx])=='nan'): # if both paths exists
+                # TODO: does it go on else?
                 tumor_mask = Reader.read_dcm_series(tumor_paths[idx])
                 source_img_plan = Reader.read_dcm_series(folder_path_plan[idx])
                 ablation_mask = Reader.read_dcm_series(ablation_paths[idx])
@@ -48,32 +53,42 @@ class ResizeSegmentations:
                 flag_tumor = True
                 flag_ablation = True
 
+                # create folder directories to write the new segmentations
+                parent_directory = os.path.join(root_path_to_save,
+                                                "Pat_GTDB_" + str(patients_names[idx])+ '_' + str(patients[idx]))
+                child_directory_trajectory = os.path.join(parent_directory, "Trajectory" + str(trajectoryID[idx]))
+                child_directory_tumor = os.path.join(parent_directory,
+                                                     child_directory_trajectory,
+                                                     "Resized_Tumor_Segmentation")
+                child_directory_ablation = os.path.join(parent_directory,
+                                                        child_directory_trajectory,
+                                                        "Resized_Ablation_Segmentation")
 
-            # create folder directories to write the new segmentations
-            parent_directory = os.path.join(root_path_to_save,
-                                            "Pat_GTDB_" + str(patients[idx]))
-            child_directory_trajectory = os.path.join(parent_directory, "Trajectory" + str(trajectoryID[idx]))
-            child_directory_tumor = os.path.join(parent_directory,
-                                                 child_directory_trajectory,
-                                                 "Resized_Tumor_Segmentation")
-            child_directory_ablation = os.path.join(parent_directory,
-                                                    child_directory_trajectory,
-                                                    "Resized_Ablation_Segmentation")
-
-            if not os.path.exists(parent_directory):
-                os.makedirs(parent_directory)
-                os.makedirs(child_directory_trajectory)
-                os.makedirs(child_directory_tumor)
-                os.makedirs(child_directory_ablation)
-            else:
-                # the patient folder already exists, create new trajectory folder with lesion and ablation folder
-                if not os.path.exists(child_directory_trajectory):
+                if not os.path.exists(parent_directory):
+                    os.makedirs(parent_directory)
                     os.makedirs(child_directory_trajectory)
-                if not os.path.exists(child_directory_tumor):
-                    # trajectory folder exists, re-write segmentations
                     os.makedirs(child_directory_tumor)
                     os.makedirs(child_directory_ablation)
-            # save new filepaths to dictionary
+                else:
+                    # the patient folder already exists, create new trajectory folder with lesion and ablation folder
+                    if not os.path.exists(child_directory_trajectory):
+                        os.makedirs(child_directory_trajectory)
+                    if not os.path.exists(child_directory_tumor):
+                        # trajectory folder exists, re-write segmentations
+                        os.makedirs(child_directory_tumor)
+                        os.makedirs(child_directory_ablation)
+
+                #%% Save the Re-sized Segmentations to DICOM Series
+                obj_writer1 = DicomWriter.DicomWriter(resized_tumor_mask, source_img_plan,
+                                                      child_directory_tumor,
+                                                      "tumorSegm", str(patients[idx]))
+                obj_writer1.save_image_to_file()
+
+                obj_writer2 = DicomWriter.DicomWriter(resized_ablation_mask, source_img_validation,
+                                                      child_directory_ablation,
+                                                      "ablationSegm", str(patients[idx]))
+                obj_writer2.save_image_to_file()
+            #%% save new filepaths to dictionary
             if flag_tumor is False :
                 child_directory_tumor = None
             if flag_ablation  is False:
@@ -84,16 +99,6 @@ class ResizeSegmentations:
                 }
             self.new_filepaths.append(dict_paths)
 
-            # Save the Re-sized Segmentations to DICOM Series
-            obj_writer1 = DicomWriter.DicomWriter(resized_tumor_mask, source_img_plan,
-                                                  child_directory_tumor,
-                                                  "tumorSegm", str(patients[idx]))
-            obj_writer1.save_image_to_file()
-
-            obj_writer2 = DicomWriter.DicomWriter(resized_ablation_mask, source_img_validation,
-                                                  child_directory_ablation,
-                                                  "ablationSegm", str(patients[idx]))
-            obj_writer2.save_image_to_file()
 
     def get_new_filepaths(self):
         df_new_filepaths = pd.DataFrame(self.new_filepaths)

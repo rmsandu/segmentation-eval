@@ -39,7 +39,7 @@ df_folderpaths= pd.read_excel(filename_excel)
 # df_filepaths = pd.DataFrame(dictionary_filepaths)
 # Call The ReaderWriterClass to Resize Segmentations
 resize_object = ReaderWriterClass.ResizeSegmentations(df_folderpaths)
-folder_path_saving = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\maverric_processed"
+folder_path_saving = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\maverric_processed_no_registration"
 resize_object.save_images_to_disk(folder_path_saving)
 df_new_filepaths = resize_object.get_new_filepaths()
 
@@ -50,19 +50,20 @@ filepathExcel = os.path.join(folder_path_saving, filename)
 #filepathExcel = os.path.join(rootdir, filename)
 writer = pd.ExcelWriter(filepathExcel)
 df_new_filepaths.to_excel(writer, index=False)
+writer.save()
 print("success")
 
-#%%
-
-# # call distance metrics
-# df_final = pd.read_excel(r"C:\PatientDatasets_GroundTruth_Database\GroundTruth_2018\GT_MAVERRIC_Danderyd_June\FilepathsResizedGTSegmentations_121717-20180704.xlsx")
-# df_new1 = df_final[[' Ablation Segmentation Path Resized',
-#                   ' Tumour Segmentation Path Resized',
-#                   'PatientID',
-#                   'TrajectoryID',
-#                   'Pathology']]
+#%% call distance metrics
+df_final = pd.read_excel(r"C:\PatientDatasets_GroundTruth_Database\Stockholm\maverric_processed_no_registration\Filepaths_Resized_GTSegmentations_Stockholm_June.xlsx")
+df_new1 = df_final[[' Ablation Segmentation Path Resized',
+                  ' Tumour Segmentation Path Resized',
+                  'PatientID',
+                  'TrajectoryID',
+                  'Pathology']]
 # df_new1.rename(columns={' Ablation Segmentation Path Resized': ' Ablation Segmentation Path',
 #                         ' Tumour Segmentation Path Resized': ' Tumour Segmentation Path'}, inplace=True)
-# rootdir = r"C:\PatientDatasets_GroundTruth_Database\GroundTruth_2018\GT_MAVERRIC_Danderyd_June"
-# Metrics.main_distance_volume_metrics(df_new1, rootdir)
-#df_patientdata = df_final
+
+rootdir = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\maverric_processed_no_registration\Plots"
+Metrics.main_distance_volume_metrics(df_new1, rootdir)
+
+df_patientdata = df_final

@@ -16,32 +16,51 @@ import distances_boxplots_all_lesions as bpLesions
 
 def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=True):
     
-    ablations = df_patientdata[' Ablation Segmentation Path'].tolist()
-    tumors = df_patientdata[' Tumour Segmentation Path'].tolist()
+    ablations = df_patientdata[' Ablation Segmentation Path Resized'].tolist()
+    tumors = df_patientdata[' Tumour Segmentation Path Resized'].tolist()
     trajectory = df_patientdata['TrajectoryID']
     pats = df_patientdata['PatientID'].tolist()
+    df_patientdata['Pathology'] = 'Metastases'
     pathology = df_patientdata['Pathology'].tolist()
     df_metrics_all = pd.DataFrame()
     distanceMaps_allPatients = []
     #%%
     # iterate through the lesions&ablations segmentations paths
-    for idx, seg in enumerate(tumors):
-        # call function to compute distance metrics
-        evalmetrics = DistanceMetrics(ablations[idx], tumors[idx])
-        df_distances_1set = evalmetrics.get_SitkDistances()
-        # call function to compute volume metrics
-        evaloverlap = VolumeMetrics()
-        evaloverlap.set_image_object(ablations[idx], tumors[idx])
-        evaloverlap.set_volume_metrics()
-        df_volumes_1set = evaloverlap.get_volume_metrics_df()
-        df_metrics = pd.concat([df_volumes_1set, df_distances_1set], axis=1)
-        df_metrics_all = df_metrics_all.append(df_metrics)
-        distanceMap = evalmetrics.get_surface_distances()
-        distanceMaps_allPatients.append(distanceMap)
-        num_surface_pixels = evalmetrics.num_tumor_surface_pixels
-        #  plot the color coded histogram of the distances
-        title = 'Ablation to Tumor Euclidean Distances'
-        pm.plotHistDistances(pats[idx], trajectory[idx], pathology[idx], rootdir, distanceMap, num_surface_pixels, title)
+    # len(tumors)
+    for idx in range(0, len(tumors)):
+        if not (str(tumors[idx]) == 'nan') and not (str(ablations[idx]) == 'nan'):
+            # TODO: update patient id in the plots
+            # TODO: resample to isotropic
+            # call function to compute distance metrics
+            try:
+                evalmetrics = DistanceMetrics(ablations[idx], tumors[idx])
+                df_distances_1set = evalmetrics.get_SitkDistances()
+                # call function to compute volume metrics
+                evaloverlap = VolumeMetrics()
+                evaloverlap.set_image_object(ablations[idx], tumors[idx])
+                evaloverlap.set_volume_metrics()
+                df_volumes_1set = evaloverlap.get_volume_metrics_df()
+                df_metrics = pd.concat([df_volumes_1set, df_distances_1set], axis=1)
+                df_metrics_all = df_metrics_all.append(df_metrics)
+                distanceMap = evalmetrics.get_surface_distances()
+                distanceMaps_allPatients.append(distanceMap)
+                num_surface_pixels = evalmetrics.num_tumor_surface_pixels
+                #  plot the color coded histogram of the distances
+                title = 'Ablation to Tumor Euclidean Distances'
+                pm.plotHistDistances(pats[idx], trajectory[idx], pathology[idx], rootdir, distanceMap, num_surface_pixels, title)
+
+            except Exception:
+                # append empty dataframe
+                numRows, numCols = df_metrics_all.shape
+                numRows = 1
+                df_empty = pd.DataFrame(index=range(numRows), columns=range(numCols))
+                df_metrics_all = df_metrics_all.append(df_empty)
+                # append empty DataFrame
+                distanceMaps_allPatients.append([])
+                # TODO: need to set the columns as well
+                print(str(pats[idx]), 'inputs do not occupy the same physical space')
+                continue
+
     #%%
     # add the Distance Map to the input dataframe. to be written to Excel
     df_patientdata['DistanceMaps'] = distanceMaps_allPatients
@@ -63,3 +82,4 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
         filepath_excel = os.path.join(rootdir, filename)
         writer = pd.ExcelWriter(filepath_excel)
         df_patients_sorted.to_excel(writer, index=False, float_format='%.2f')
+        writer.save()

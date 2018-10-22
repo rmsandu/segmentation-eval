@@ -47,7 +47,7 @@ def make_uid(entropy_srcs=None, prefix='2.25.'):
 
 class DicomWriter:
 
-    def __init__(self, img_pasted, img_source, folder_output, file_name, patient_id):
+    def __init__(self, img_pasted=None, img_source=None, folder_output=None, file_name=None, patient_id=None):
         """
         :type img_pasted: re-sized binary segmentation image in SimpleITK format
         :type img_source: source image in SimpleITK format
@@ -116,3 +116,34 @@ class DicomWriter:
             # Write to the output directory and add the extension dcm, to force writing in DICOM format.
             writer.SetFileName(os.path.normpath(self.folder_output + '/' + self.file_name + str(i) + '.dcm'))
             writer.Execute(image_slice)
+
+    def save_simple_img(self, image):
+        writer = sitk.ImageFileWriter()
+        writer.KeepOriginalImageUIDOn()
+        tags_to_copy = ["0010|0010",  # Patient Name
+                        "0010|0020",  # Patient ID
+                        "0010|0030",  # Patient Birth Date
+                        "0020|000D",  # Study Instance UID, for machine consumption
+                        "0020|0010",  # Study ID, for human consumption
+                        "0008|0020",  # Study Date
+                        "0008|0030",  # Study Time
+                        "0008|0050",  # Accession Number
+                        "0008|0060"  # Modality
+                        ]
+        for i in range(image.GetDepth()):
+            image_slice = image[:, :, i]
+            # Write to the output directory and add the extension dcm, to force writing in DICOM format.
+            writer.SetFileName(os.path.normpath(self.folder_output + '/' + self.file_name + str(i) + '.dcm'))
+            writer.Execute(image_slice)
+            for tag, value in tags_to_copy:
+                image_slice.SetMetaData(tag, value)
+            image_slice.SetMetaData("0008|0060", "CT")
+            image_slice.SetMetaData("0020,0013", str(i))  # Instance Number
+            # Write to the output directory and add the extension dcm, to force writing in DICOM format.
+            writer.SetFileName(os.path.normpath(self.folder_output + '/' + self.file_name + str(i) + '.dcm'))
+            writer.Execute(image_slice)
+
+
+
+
+
