@@ -13,17 +13,25 @@ import pydicom as dicom
 
 
 def read_dcm_series(folder_path):
-    
-    if next(os.walk(folder_path),None) is None:
-        # single DICOM File
-        image = sitk.ReadImage(os.path.normpath(folder_path), sitk.sitkInt16)
-        return image
+
+    try:
+        if next(os.walk(folder_path), None) is None:
+            # single DICOM File
+            image = sitk.ReadImage(os.path.normpath(folder_path), sitk.sitkInt16)
+            return image
+    except Exception:
+        print('Non-readable DICOM Data: ', folder_path)
+        return None
     # DICOM Series
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(os.path.normpath(folder_path))
     reader.SetFileNames(dicom_names)
-    image = reader.Execute()
-    return image
+    try:
+        image = reader.Execute()
+        return image
+    except Exception:
+        print('Non-readable DICOM Data: ', folder_path)
+        return None
 
 
 def print_dimensions_img(title,image):
