@@ -38,12 +38,17 @@ def paste_roi_image(image_source, image_roi):
 
 
 def paste_roi_imageMaxSize(image_plan, image_validation, image_roi,  tumor_path,ablation_path, flag_source_img):
-    # TODO : set the spacing based on the image it was derived from
-    
+
     """ Resize all the masks to the same dimensions, spacing and origin.
         Usage: newImage = resize_image(source_img_plan, source_img_validation, ROI(ablation/tumor)_mask)
+        1. translate to same origin
+        2. largest number of slices and interpolate the others.
+        3. same resolution 1x1x1 mm3 - resample
+        4. (physical space)
+
     """
-        
+        # 1. translate to same origin
+        # 2.
     sizeP = image_plan.GetSize()
     sizeV = image_validation.GetSize()
     # we assume that the number of rol and cols  is always 512x512

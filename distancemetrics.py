@@ -4,7 +4,9 @@ Created on Thu Nov  9 13:43:49 2017
 
 Mauerer Distance Map for the tumor Object (deemed as "tumor in this particular case")
 Algorithm Pipeline :
-    1. compute the contour surface of the object (6-pixel-connectivity neighborhood)
+    1. compute the contour surface of the object (
+    face+edge+vertex connectivity : fullyConnected=True
+    face connectivity only : fullyConnected=False
     2. convert from SimpleITK format to Numpy Array Img
     3. remove the zeros from the contour of the object, NOT from the distance map
     4. compute the number of 1's pixels in the contour

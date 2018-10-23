@@ -12,7 +12,6 @@ Missing scripts (TODO):
  - create DICOM Predicted Ellipsoid Mask
 """
 # %%
-
 import os
 import csv
 import time
