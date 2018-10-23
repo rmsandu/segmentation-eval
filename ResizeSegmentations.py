@@ -6,7 +6,6 @@ Created on Wed May 23 14:42:27 2018
 """
 
 import os
-import numpy as np
 import pandas as pd
 import DicomReader as Reader
 import DicomWriter as DicomWriter
@@ -98,7 +97,6 @@ class ResizeSegmentations:
                     " Ablation Segmentation Path Resized": child_directory_ablation
                 }
             self.new_filepaths.append(dict_paths)
-
 
     def get_new_filepaths(self):
         df_new_filepaths = pd.DataFrame(self.new_filepaths)
