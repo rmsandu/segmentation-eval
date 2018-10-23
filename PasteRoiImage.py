@@ -37,12 +37,18 @@ def paste_roi_image(image_source, image_roi):
     return pasted_img
 
 
-def paste_roi_imageMaxSize(image_plan, image_validation, image_roi):
-    
+def paste_roi_imageMaxSize(image_plan, image_validation, image_roi,  tumor_path,ablation_path, flag_source_img):
+
     """ Resize all the masks to the same dimensions, spacing and origin.
         Usage: newImage = resize_image(source_img_plan, source_img_validation, ROI(ablation/tumor)_mask)
+        1. translate to same origin
+        2. largest number of slices and interpolate the others.
+        3. same resolution 1x1x1 mm3 - resample
+        4. (physical space)
+
     """
-        
+        # 1. translate to same origin
+        # 2.
     sizeP = image_plan.GetSize()
     sizeV = image_validation.GetSize()
     # we assume that the number of rol and cols  is always 512x512
@@ -68,9 +74,24 @@ def paste_roi_imageMaxSize(image_plan, image_validation, image_roi):
     caster = sitk.CastImageFilter()
     caster.SetOutputPixelType( pixelID )
     image_roi = caster.Execute(image_roi)
-    
+
     spacingP = image_plan.GetSpacing()
-    directionP = image_plan.GetDirection()
+    spacingV = image_validation.GetSpacing()
+
+    if (spacingP != spacingV):
+        print('the spacing of the 2 images differ')
+        print('ablation_path',ablation_path)
+        print('tumor_path', tumor_path)
+
+    # set spacing from the source image that the mask was derived from
+    if flag_source_img == 0:
+        # tumor mask so use image plan where it was derived from
+        image = image_plan
+    elif flag_source_img == 1:
+        image = image_validation
+
+    spacingP = image.GetSpacing()
+    directionP = image.GetDirection()
     outputImage = sitk.Image(newSize, sitk.sitkInt16)
     outputImage.SetOrigin(newOrigin)
     outputImage.SetSpacing(spacingP)
