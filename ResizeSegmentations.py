@@ -42,15 +42,23 @@ class ResizeSegmentations:
                 # execute the condition when true and all image sources could be read
                 if not(not(tumor_mask and ablation_mask and source_img_plan and source_img_validation)):
                     # resize the Segmentation Mask to the dimensions of the source images they were derived from
+                    flag_tumor = True
+                    flag_ablation = True
+
                     resized_tumor_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan,
                                                                          source_img_validation,
-                                                                         tumor_mask)
+                                                                         tumor_mask,
+                                                                         tumor_paths[idx],
+                                                                         ablation_paths[idx],
+                                                                         flag_source_img=0)
+
 
                     resized_ablation_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan,
                                                                             source_img_validation,
-                                                                            ablation_mask)
-                    flag_tumor = True
-                    flag_ablation = True
+                                                                            ablation_mask,
+                                                                            tumor_paths[idx],
+                                                                            ablation_paths[idx],
+                                                                            flag_source_img=1)
 
                     # create folder directories to write the new segmentations
                     parent_directory = os.path.join(root_path_to_save,
