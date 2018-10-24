@@ -6,6 +6,7 @@ Created on Wed May 23 14:42:27 2018
 """
 
 import os
+import collections
 import pandas as pd
 import DicomReader as Reader
 import DicomWriter as DicomWriter
@@ -44,21 +45,14 @@ class ResizeSegmentations:
                     # resize the Segmentation Mask to the dimensions of the source images they were derived from
                     flag_tumor = True
                     flag_ablation = True
+                    tuple_imgs = collections.namedtuple('tuple_imgs',
+                                                        ['img_plan',
+                                                         'img_validation',
+                                                         'ablation_mask',
+                                                         'tumor_mask'])
+                    images = tuple_imgs(source_img_plan, source_img_validation, ablation_mask, tumor_mask)
+                    images_resized = PasteRoi.paste_roi_imageMaxSize(images)
 
-                    resized_tumor_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan,
-                                                                         source_img_validation,
-                                                                         tumor_mask,
-                                                                         tumor_paths[idx],
-                                                                         ablation_paths[idx],
-                                                                         flag_source_img=0)
-
-
-                    resized_ablation_mask = PasteRoi.paste_roi_imageMaxSize(source_img_plan,
-                                                                            source_img_validation,
-                                                                            ablation_mask,
-                                                                            tumor_paths[idx],
-                                                                            ablation_paths[idx],
-                                                                            flag_source_img=1)
 
                     # create folder directories to write the new segmentations
                     parent_directory = os.path.join(root_path_to_save,
@@ -86,12 +80,12 @@ class ResizeSegmentations:
                             os.makedirs(child_directory_ablation)
 
                     #%% Save the Re-sized Segmentations to DICOM Series
-                    obj_writer1 = DicomWriter.DicomWriter(resized_tumor_mask, source_img_plan,
+                    obj_writer1 = DicomWriter.DicomWriter(images_resized.tumor_mask_resized, source_img_plan,
                                                           child_directory_tumor,
                                                           "tumorSegm", str(patients[idx]))
                     obj_writer1.save_image_to_file()
 
-                    obj_writer2 = DicomWriter.DicomWriter(resized_ablation_mask, source_img_validation,
+                    obj_writer2 = DicomWriter.DicomWriter(images_resized.ablation_mask_resized, source_img_validation,
                                                           child_directory_ablation,
                                                           "ablationSegm", str(patients[idx]))
                     obj_writer2.save_image_to_file()
