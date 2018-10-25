@@ -10,7 +10,7 @@ import collections
 import pandas as pd
 import DicomReader as Reader
 import DicomWriter as DicomWriter
-import PasteRoiImage as PasteRoi
+import Resize_Resample as PasteRoi
 
 
 class ResizeSegmentations:
@@ -51,7 +51,7 @@ class ResizeSegmentations:
                                                          'ablation_mask',
                                                          'tumor_mask'])
                     images = tuple_imgs(source_img_plan, source_img_validation, ablation_mask, tumor_mask)
-                    images_resized = PasteRoi.paste_roi_imageMaxSize(images)
+                    images_resized = PasteRoi.resize_resample_images(images)
 
                     #%% create folder directories to write the new segmentations
                     parent_directory = os.path.join(root_path_to_save,

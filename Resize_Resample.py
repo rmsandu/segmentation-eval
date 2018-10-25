@@ -38,7 +38,7 @@ def paste_roi_image(image_source, image_roi):
     return pasted_img
 
 
-def paste_roi_imageMaxSize(images):
+def resize_resample_images(images):
     """ Resize all the images to the same dimensions, spacing and origin.
         Usage: newImage = resize_image(source_img_plan, source_img_validation, ROI(ablation/tumor)_mask)
         1. translate to same origin
