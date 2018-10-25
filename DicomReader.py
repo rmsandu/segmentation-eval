@@ -26,9 +26,11 @@ def read_dcm_series(folder_path):
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(os.path.normpath(folder_path))
     reader.SetFileNames(dicom_names)
+    reader.MetaDataDictionaryArrayUpdateOn()
+    reader.LoadPrivateTagsOn()
     try:
         image = reader.Execute()
-        return image
+        return image, reader
     except Exception:
         print('Non-readable DICOM Data: ', folder_path)
         return None

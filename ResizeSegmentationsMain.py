@@ -35,10 +35,10 @@ class ResizeSegmentations:
             flag_tumor =  False
             flag_ablation = False
             if not (str(tumor_paths[idx])=='nan') and not(str(ablation_paths[idx])=='nan'): # if both paths exists
-                tumor_mask = Reader.read_dcm_series(tumor_paths[idx])
-                source_img_plan = Reader.read_dcm_series(folder_path_plan[idx])
-                ablation_mask = Reader.read_dcm_series(ablation_paths[idx])
-                source_img_validation = Reader.read_dcm_series(folder_path_validation[idx])
+                tumor_mask, tumor_reader = Reader.read_dcm_series(tumor_paths[idx])
+                source_img_plan, img_plan_reader = Reader.read_dcm_series(folder_path_plan[idx])
+                ablation_mask, ablation_reader = Reader.read_dcm_series(ablation_paths[idx])
+                source_img_validation, img_validation_reader = Reader.read_dcm_series(folder_path_validation[idx])
                 # check if any of the variables are empty, then skip, else resize the metrics
                 # execute the condition when true and all image sources could be read
                 if not(not(tumor_mask and ablation_mask and source_img_plan and source_img_validation)):
@@ -53,24 +53,31 @@ class ResizeSegmentations:
                     images = tuple_imgs(source_img_plan, source_img_validation, ablation_mask, tumor_mask)
                     images_resized = PasteRoi.paste_roi_imageMaxSize(images)
 
-
-                    # create folder directories to write the new segmentations
+                    #%% create folder directories to write the new segmentations
                     parent_directory = os.path.join(root_path_to_save,
                                                     "Pat_GTDB_" + str(patients_names[idx])+ '_' + str(patients[idx]))
+
                     child_directory_trajectory = os.path.join(parent_directory, "Trajectory" + str(trajectoryID[idx]))
+
                     child_directory_tumor = os.path.join(parent_directory,
                                                          child_directory_trajectory,
                                                          "Resized_Tumor_Segmentation")
                     child_directory_ablation = os.path.join(parent_directory,
                                                             child_directory_trajectory,
                                                             "Resized_Ablation_Segmentation")
+                    child_directory_img_plan = os.path.join(parent_directory, 'CT_Planning')
+                    child_directory_img_validation = os.path.join(parent_directory, 'CT_Validation')
 
                     if not os.path.exists(parent_directory):
                         os.makedirs(parent_directory)
                         os.makedirs(child_directory_trajectory)
                         os.makedirs(child_directory_tumor)
                         os.makedirs(child_directory_ablation)
+                        os.makedirs(child_directory_img_plan)
+                        os.makedirs(child_directory_img_validation)
                     else:
+                        os.makedirs(child_directory_img_validation)
+                        os.makedirs(child_directory_img_plan)
                         # the patient folder already exists, create new trajectory folder with lesion and ablation folder
                         if not os.path.exists(child_directory_trajectory):
                             os.makedirs(child_directory_trajectory)
@@ -80,16 +87,36 @@ class ResizeSegmentations:
                             os.makedirs(child_directory_ablation)
 
                     #%% Save the Re-sized Segmentations to DICOM Series
-                    # TODO: rewrite the source images as well
-                    obj_writer1 = DicomWriter.DicomWriter(images_resized.tumor_mask,
-                                                          child_directory_tumor,
-                                                          "tumorSegm", str(patients[idx]))
-                    obj_writer1.save_image_to_file()
+                    obj_writer = DicomWriter.DicomWriter(image=images_resized.tumor_mask,
+                                                         folder_output=child_directory_tumor,
+                                                         file_name="tumorSegm",
+                                                         patient_id=str(patients[idx]),
+                                                         series_reader=tumor_reader)
+                    obj_writer.save_mask_image_to_file()
 
-                    obj_writer2 = DicomWriter.DicomWriter(images_resized.ablation_mask,
-                                                          child_directory_ablation,
-                                                          "ablationSegm", str(patients[idx]))
-                    obj_writer2.save_image_to_file()
+                    obj_writer1 = DicomWriter.DicomWriter(image=images_resized.ablation_mask,
+                                                         folder_output=child_directory_ablation,
+                                                         file_name="ablationSegm",
+                                                         patient_id=str(patients[idx]),
+                                                         series_reader=ablation_reader)
+                    obj_writer1.save_mask_image_to_file()
+
+                    obj_writer2 = DicomWriter.DicomWriter(image=images_resized.img_plan,
+                                                          folder_output=child_directory_img_plan,
+                                                          file_name="CT_Plan",
+                                                          patient_id=str(patients[idx]),
+                                                          series_reader=img_plan_reader)
+                    obj_writer2.save_source_img_to_file()
+
+                    obj_writer3 = DicomWriter.DicomWriter(image=images_resized.img_validation,
+                                                          folder_output=child_directory_img_validation,
+                                                          file_name="CT_Validation",
+                                                          patient_id=str,
+                                                          series_reader=img_validation_reader)
+                    obj_writer3.save_source_img_to_file()
+
+
+
             #%% save new filepaths to dictionary
             if flag_tumor is False :
                 child_directory_tumor = None
