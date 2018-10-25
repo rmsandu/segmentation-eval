@@ -2,7 +2,7 @@ import os
 import time
 import csv
 import pandas as pd
-import ResizeSegmentations as ReaderWriterClass
+import ResizeSegmentationsMain as ReaderWriterClass
 import mainDistanceVolumeMetrics as Metrics
 pd.options.mode.chained_assignment = None
 #%%

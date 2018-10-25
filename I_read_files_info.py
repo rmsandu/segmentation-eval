@@ -13,11 +13,10 @@ Missing scripts (TODO):
 """
 # %%
 import os
-import csv
 import time
 import pandas as pd
 import mainDistanceVolumeMetrics as Metrics
-import ResizeSegmentations as ReaderWriterClass
+import ResizeSegmentationsMain as ReaderWriterClass
 
 pd.options.mode.chained_assignment = None
 

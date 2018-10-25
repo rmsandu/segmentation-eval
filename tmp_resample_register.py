@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import DicomReader as Reader
 import DicomWriter as DicomWriter
-import PasteRoiImage as PasteRoi
+import Resize_Resample as PasteRoi
 import SimpleITK as sitk
 #%%
 def resample(image, transform):

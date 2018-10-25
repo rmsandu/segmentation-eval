@@ -9,7 +9,7 @@ import numpy as np
 import SimpleITK as sitk
 import DicomReader as reader
 import DicomWriter as WriterClass
-import PasteRoiImage as pasteROI
+import Resize_Resample as pasteROI
 import resampling_hu_dcm as hu
 import matplotlib.pyplot as plt
 
@@ -34,8 +34,8 @@ print('\n')
 reader.print_dimensions_img('validation', source_img_validation)
 # %%
 ''' resize the Segmentation Mask to the dimensions of the source images they were derived from '''
-resizedTumorMask = pasteROI.paste_roi_imageMaxSize(source_img_plan, source_img_validation, tumor_mask)
-resizedAblationMask = pasteROI.paste_roi_imageMaxSize(source_img_plan, source_img_validation, ablation_mask)
+resizedTumorMask = pasteROI.resize_resample_images(source_img_plan, source_img_validation, tumor_mask)
+resizedAblationMask = pasteROI.resize_resample_images(source_img_plan, source_img_validation, ablation_mask)
 # Write the DICOM Series to Folder
 obj_writer1 = WriterClass.DicomWriter(resizedTumorMask, source_img_plan,
                                       'C:/develop/data/Resized_Segmentation_Tumor/',

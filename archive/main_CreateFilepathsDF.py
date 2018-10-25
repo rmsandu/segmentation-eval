@@ -7,7 +7,7 @@ Created on Mon May 14 11:01:48 2018
 import os
 import time
 import pandas as pd
-import ResizeSegmentations as ReaderWriterClass
+import ResizeSegmentationsMain as ReaderWriterClass
 #%%
 def splitall(path):
     allparts = []
