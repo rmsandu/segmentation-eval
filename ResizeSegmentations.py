@@ -80,12 +80,13 @@ class ResizeSegmentations:
                             os.makedirs(child_directory_ablation)
 
                     #%% Save the Re-sized Segmentations to DICOM Series
-                    obj_writer1 = DicomWriter.DicomWriter(images_resized.tumor_mask_resized, source_img_plan,
+                    # TODO: rewrite the source images as well
+                    obj_writer1 = DicomWriter.DicomWriter(images_resized.tumor_mask,
                                                           child_directory_tumor,
                                                           "tumorSegm", str(patients[idx]))
                     obj_writer1.save_image_to_file()
 
-                    obj_writer2 = DicomWriter.DicomWriter(images_resized.ablation_mask_resized, source_img_validation,
+                    obj_writer2 = DicomWriter.DicomWriter(images_resized.ablation_mask,
                                                           child_directory_ablation,
                                                           "ablationSegm", str(patients[idx]))
                     obj_writer2.save_image_to_file()

@@ -59,16 +59,18 @@ def paste_roi_imageMaxSize(images):
                                                  'tumor_mask'])
     # %% Create Reference image with zero origin, identity direction cosine matrix and isotropic dimension
     dimension = images[0].GetDimension()  #
-    reference_physical_size = np.zeros(dimension)
     reference_direction = np.identity(dimension).flatten()
     reference_size = [512] * dimension
     reference_origin = np.zeros(dimension)
-    data = [images.image_plan, images.image_validation, images.ablation_image, images.tumor_image]
-    for img in data:
-        reference_physical_size[:] = [(sz - 1) * spc if sz * spc > mx else mx for sz, spc, mx in
-                                      zip(img.GetSize(), img.GetSpacing(), reference_physical_size)]
-    reference_spacing = [phys_sz / (sz - 1) for sz, phys_sz in zip(reference_size, reference_physical_size)]
-    # reference_spacing = [1,1,1]
+    data = [images.img_plan, images.img_validation, images.ablation_mask, images.tumor_mask]
+
+    # reference_physical_size = np.zeros(dimension)
+    # for img in data:
+    #     reference_physical_size[:] = [(sz - 1) * spc if sz * spc > mx else mx for sz, spc, mx in
+    #                                   zip(img.GetSize(), img.GetSpacing(), reference_physical_size)]
+    # reference_spacing = [phys_sz / (sz - 1) for sz, phys_sz in zip(reference_size, reference_physical_size)]
+
+    reference_spacing = np.ones(dimension) # resize to isotropic size
     reference_image = sitk.Image(reference_size, images[0].GetPixelIDValue())
     reference_image.SetOrigin(reference_origin)
     reference_image.SetSpacing(reference_spacing)
@@ -78,7 +80,7 @@ def paste_roi_imageMaxSize(images):
 
     # %%  Apply transforms
     data_resized = []
-    for img in data:
+    for idx,img in enumerate(data):
         transform = sitk.AffineTransform(dimension)
         transform.SetMatrix(img.GetDirection())
         transform.SetTranslation(np.array(img.GetOrigin()) - reference_origin)
@@ -91,7 +93,13 @@ def paste_roi_imageMaxSize(images):
         # Using the linear interpolator as these are intensity images, if there is a need to resample a ground truth
         # segmentation then the segmentation image should be resampled using the NearestNeighbor interpolator so that
         # no new labels are introduced.
-        resampled_img = sitk.Resample(img, reference_image, centered_transform, sitk.sitkLinear, 0.0)
+        # tmp = [getattr(images, x) for x in images._fields if x == 'img_plan'][0]
+        # img == getattr(images, 'tumor_mask') or img == getattr(images, 'ablation_mask')
+        if (idx==1 or idx==2): # temporary solution to resample the GT image with NearestNeighbour
+            resampled_img = sitk.Resample(img, reference_image, centered_transform, sitk.sitkNearestNeighbor, 0.0)
+        else:
+             resampled_img = sitk.Resample(img, reference_image, centered_transform, sitk.sitkLinear, 0.0)
+        # append to list
         data_resized.append(resampled_img)
 
     # assuming the order stays the same, reassigng back to tuple
