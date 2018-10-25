@@ -11,14 +11,17 @@ import SimpleITK as sitk
 
 def paste_roi_image(image_source, image_roi):
     """ Resize ROI binary mask to size, dimension, origin of its source/original img.
-        Usage: newImage = resize_image(source_img_plan, roi_mask)
+        Usage: newImage = paste_roi_image(source_img_plan, roi_mask)
+        !!! We assume that the mask has the same dimensions as the file it has been derived from. !!!
     """
     newSize = image_source.GetSize()
     newOrigin = image_source.GetOrigin()
     # we assume we have the same spacing as the images have been taken with the same scanner    
-    newSpacing = image_source.GetSpacing()
-    newDirection = image_source.GetDirection()
+    newSpacing = image_roi.GetSpacing()
+    newDirection = image_roi.GetDirection()
 
+    if image_source.GetSpacing() != image_roi.GetSpacing():
+        print('the spacing of the source and derived mask differ')
     # re-cast the pixel type of the roi mask
     pixelID = image_source.GetPixelID()
     caster = sitk.CastImageFilter()
@@ -26,8 +29,7 @@ def paste_roi_image(image_source, image_roi):
     image_roi = caster.Execute(image_roi)
 
     # black 3D image
-    # TO DO: modify the pixel type!!
-    outputImage = sitk.Image(newSize, sitk.sitkInt16)
+    outputImage = sitk.Image(newSize, image_source.GetPixelIDValue())
     outputImage.SetOrigin(newOrigin)
     outputImage.SetSpacing(newSpacing)
     outputImage.SetDirection(newDirection)
@@ -77,6 +79,9 @@ def resize_resample_images(images):
     reference_center = np.array(
         reference_image.TransformContinuousIndexToPhysicalPoint(np.array(reference_image.GetSize()) / 2.0))
 
+    #%% Paste the GT segmentation masks before transformation
+    images[3]._replace(paste_roi_image(images.img_plan, images.tumor_mask))
+    images[2]._replace(paste_roi_image(images.img_validation, images.ablation_mask))
     # %%  Apply transforms
     data_resized = []
     for idx,img in enumerate(data):
