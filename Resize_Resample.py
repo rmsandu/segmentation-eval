@@ -9,7 +9,7 @@ import collections
 import SimpleITK as sitk
 import PasteROI as PasteROI
 
-def resize_resample_images(images):
+def resize_resample_images(images, reference_spacing, reference_size):
     """ Resize all the images to the same dimensions, spacing and origin.
         Usage: newImage = resize_image(source_img_plan, source_img_validation, ROI(ablation/tumor)_mask)
         1. translate to same origin
@@ -29,20 +29,9 @@ def resize_resample_images(images):
                                                  'ablation_mask',
                                                  'tumor_mask'])
     # %% Create Reference image with zero origin, identity direction cosine matrix and isotropic dimension
-
     dimension = images.img_plan.GetDimension()  #
     reference_direction = np.identity(dimension).flatten()
-    reference_size_x = 512
     reference_origin = np.zeros(dimension)
-    data = [images.img_plan, images.img_validation, images.ablation_mask, images.tumor_mask]
-
-    reference_physical_size = np.zeros(dimension)
-    for img in data:
-        reference_physical_size[:] = [(sz - 1) * spc if sz * spc > mx else mx for sz, spc, mx in
-                                      zip(img.GetSize(), img.GetSpacing(), reference_physical_size)]
-    reference_spacing = [reference_physical_size[0] / (reference_size_x - 1)] * dimension
-    reference_size = [int(phys_sz/(spc) + 1) for phys_sz,spc in zip(reference_physical_size, reference_spacing)]
-
     reference_image = sitk.Image(reference_size, images.img_plan.GetPixelIDValue())
     reference_image.SetOrigin(reference_origin)
     reference_image.SetSpacing(reference_spacing)
@@ -50,39 +39,53 @@ def resize_resample_images(images):
     reference_center = np.array(
         reference_image.TransformContinuousIndexToPhysicalPoint(np.array(reference_image.GetSize()) / 2.0))
 
-    # print('REFERENCE:')
-    # print('segmentation direction', reference_image.GetDirection())
-    # print('segmentation origin', reference_image.GetOrigin())
-    # print('segmentation spacing', reference_image.GetSpacing())
-    # print('segmentation size', reference_image.GetSize())
-    #
-    # print('TUMOR Original:')
-    # print('segmentation direction', images.tumor_mask.GetDirection())
-    # print('segmentation origin', images.tumor_mask.GetOrigin())
-    # print('segmentation spacing', images.tumor_mask.GetSpacing())
-    # print('segmentation size', images.tumor_mask.GetSize())
-    #
-    # print('ABLATION Original:')
-    # print('ablation direction', images.ablation_mask.GetDirection())
-    # print('ablation origin', images.ablation_mask.GetOrigin())
-    # print('ablation spacing', images.ablation_mask.GetSpacing())
-    # print('ablation size', images.ablation_mask.GetSize())
-    #
-    # print('IMAGE PLAN ORIGINAL:')
-    # print('image direction', images.img_plan.GetDirection())
-    # print('image origin', images.img_plan.GetOrigin())
-    # print('image spacing', images.img_plan.GetSpacing())
-    # print('image size', images.img_plan.GetSize())
-    #%% Paste the GT segmentation masks before transformation
-    tumor_mask_paste = (PasteROI.paste_roi_image(images.img_plan, images.tumor_mask))
-    ablation_mask_paste = (PasteROI.paste_roi_image(images.img_validation, images.ablation_mask))
-    images.tumor_mask = tumor_mask_paste
-    images.ablation_mask = ablation_mask_paste
+    print('REFERENCE:')
+    print('segmentation direction', reference_image.GetDirection())
+    print('segmentation origin', reference_image.GetOrigin())
+    print('segmentation spacing', reference_image.GetSpacing())
+    print('segmentation size', reference_image.GetSize())
+
     print('TUMOR Original:')
     print('segmentation direction', images.tumor_mask.GetDirection())
     print('segmentation origin', images.tumor_mask.GetOrigin())
     print('segmentation spacing', images.tumor_mask.GetSpacing())
     print('segmentation size', images.tumor_mask.GetSize())
+
+    print('IMAGE PLAN ORIGINAL:')
+    print('image direction', images.img_plan.GetDirection())
+    print('image origin', images.img_plan.GetOrigin())
+    print('image spacing', images.img_plan.GetSpacing())
+    print('image size', images.img_plan.GetSize())
+
+    print('ABLATION Original:')
+    print('ablation direction', images.ablation_mask.GetDirection())
+    print('ablation origin', images.ablation_mask.GetOrigin())
+    print('ablation spacing', images.ablation_mask.GetSpacing())
+    print('ablation size', images.ablation_mask.GetSize())
+
+    print('IMAGE VALIDATION Original:')
+    print('ablation direction', images.img_validation.GetDirection())
+    print('ablation origin', images.img_validation.GetOrigin())
+    print('ablation spacing', images.img_validation.GetSpacing())
+    print('ablation size', images.img_validation.GetSize())
+    #%% Paste the GT segmentation masks before transformation
+    # tumor_mask_paste = (PasteROI.paste_roi_image(images.img_plan, images.tumor_mask))
+    # ablation_mask_paste = (PasteROI.paste_roi_image(images.img_validation, images.ablation_mask))
+    # Resample the segmentations to the size of their original image
+    images.tumor_mask = PasteROI.resize_segmentation(images.img_plan, images.tumor_mask)
+    images.ablation_mask = PasteROI.resize_segmentation(images.img_validation, images.ablation_mask)
+
+    print('TUMOR Resized:')
+    print('segmentation direction', images.tumor_mask.GetDirection())
+    print('segmentation origin', images.tumor_mask.GetOrigin())
+    print('segmentation spacing', images.tumor_mask.GetSpacing())
+    print('segmentation size', images.tumor_mask.GetSize())
+
+    print('ABLATION Resized:')
+    print('segmentation direction', images.ablation_mask.GetDirection())
+    print('segmentation origin', images.ablation_mask.GetOrigin())
+    print('segmentation spacing', images.ablation_mask.GetSpacing())
+    print('segmentation size', images.ablation_mask.GetSize())
     # %%  Apply transforms
     # UPDATE DATA
     data = [images.img_plan, images.img_validation, images.ablation_mask, images.tumor_mask]
@@ -91,18 +94,13 @@ def resize_resample_images(images):
         #%% Set Transformation
         transformTranslation = sitk.AffineTransform(dimension) # use affine transform with 3 dimensions
         transformTranslation.SetMatrix(img.GetDirection()) # set the cosine direction matrix
-        # transformTranslation.SetTranslation(reference_origin - np.array(img.GetOrigin())) # set the translation.
         transformTranslation.SetTranslation(np.array(img.GetOrigin() - reference_origin))
         transformTranslation.SetCenter(reference_center)
-        print('Transform Matrix3:', transformTranslation.GetMatrix())
-        print('Params after translation', transformTranslation.GetParameters())
-        print('translation3', transformTranslation.GetTranslation())
         centering_transform = sitk.TranslationTransform(dimension)
         img_center = np.array(img.TransformContinuousIndexToPhysicalPoint(np.array(img.GetSize()) / 2.0))
         centering_transform.SetOffset(np.array(transformTranslation.GetInverse().TransformPoint(img_center) - reference_center))
         centered_transform = sitk.Transform(transformTranslation)
         centered_transform.AddTransform(centering_transform)
-        print('Params after Centering', centered_transform.GetParameters())
         #%% set all  output image parameters: origin, spacing, direction, starting index, and size.
         resampler = sitk.ResampleImageFilter()
         resampler.SetReferenceImage(reference_image)
@@ -112,7 +110,6 @@ def resize_resample_images(images):
         # resampler.SetOutputSpacing(reference_image.GetSpacing())
         # resampler.SetOutputOrigin(reference_image.GetOrigin())
         # resampler.SetOutputDirection(reference_image.GetDirection())
-
         if idx==0 or idx==1:
             resampler.SetInterpolator(sitk.sitkLinear)
 

@@ -39,3 +39,17 @@ def recast_pixel_val(image_source, image_roi):
     caster.SetOutputPixelType(pixelID)
     image_roi = caster.Execute(image_roi)
     return image_roi
+
+def resize_segmentation(image_source, image_roi):
+
+    image_roi = recast_pixel_val(image_source, image_roi)
+
+    new_segmentation = sitk.Resample(image_roi, image_source.GetSize(),
+                                     sitk.Transform(),
+                                     sitk.sitkNearestNeighbor,
+                                     image_source.GetOrigin(),
+                                     image_source.GetSpacing(),
+                                     image_source.GetDirection(),
+                                     0,
+                                     image_roi.GetPixelID())
+    return new_segmentation
