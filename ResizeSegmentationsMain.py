@@ -8,6 +8,7 @@ Created on Wed May 23 14:42:27 2018
 import os
 import collections
 import pandas as pd
+from recordtype import recordtype
 import DicomReader as Reader
 import DicomWriter as DicomWriter
 import Resize_Resample as PasteRoi
@@ -45,7 +46,7 @@ class ResizeSegmentations:
                     # resize the Segmentation Mask to the dimensions of the source images they were derived from
                     flag_tumor = True
                     flag_ablation = True
-                    tuple_imgs = collections.namedtuple('tuple_imgs',
+                    tuple_imgs = recordtype('tuple_imgs',
                                                         ['img_plan',
                                                          'img_validation',
                                                          'ablation_mask',
