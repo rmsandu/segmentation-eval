@@ -25,7 +25,7 @@ patientID = 10
 #             reader = csv.DictReader(open(filepath_csv))
 #             for row in reader:
 #                 for column, value in row.items():
-#                     if column != 'TrajectoryID':
+#                     if column != 'NeedleNr':
 #                         file_value = path + value
 #                     else:
 #                         file_value = value
@@ -58,7 +58,7 @@ df_final = pd.read_excel(r"C:\PatientDatasets_GroundTruth_Database\Stockholm\mav
 df_new1 = df_final[[' Ablation Segmentation Path Resized',
                   ' Tumour Segmentation Path Resized',
                   'PatientID',
-                  'TrajectoryID',
+                  'NeedleNr',
                   'Pathology']]
 # df_new1.rename(columns={' Ablation Segmentation Path Resized': ' Ablation Segmentation Path',
 #                         ' Tumour Segmentation Path Resized': ' Tumour Segmentation Path'}, inplace=True)

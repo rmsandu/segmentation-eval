@@ -19,7 +19,7 @@ df_2017 = pd.read_excel(file_2017)
 df_new1 = df_2018[[' Ablation Segmentation Path Resized',
                   ' Tumour Segmentation Path Resized',
                   'PatientID',
-                  'TrajectoryID',
+                  'NeedleNr',
                   'Pathology']]
 df_new1.rename(columns={' Ablation Segmentation Path Resized': ' Ablation Segmentation Path',
                         ' Tumour Segmentation Path Resized': ' Tumour Segmentation Path'}, inplace=True)
@@ -34,7 +34,7 @@ df_final = pd.read_excel(r"C:\PatientDatasets_GroundTruth_Database\GroundTruth_2
 df_new1 = df_final[[' Ablation Segmentation Path Resized',
                   ' Tumour Segmentation Path Resized',
                   'PatientID',
-                  'TrajectoryID',
+                  'NeedleNr',
                   'Pathology']]
 df_new1.rename(columns={' Ablation Segmentation Path Resized': ' Ablation Segmentation Path',
                         ' Tumour Segmentation Path Resized': ' Tumour Segmentation Path'}, inplace=True)
