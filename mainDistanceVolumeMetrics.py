@@ -18,7 +18,7 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
     
     ablations = df_patientdata[' Ablation Segmentation Path Resized'].tolist()
     tumors = df_patientdata[' Tumour Segmentation Path Resized'].tolist()
-    trajectory = df_patientdata['TrajectoryID']
+    trajectory = df_patientdata['NeedleNr']
     pats = df_patientdata['PatientID'].tolist()
     df_patientdata['Pathology'] = 'Metastases'
     pathology = df_patientdata['Pathology'].tolist()
@@ -47,8 +47,13 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
                 num_surface_pixels = evalmetrics.num_tumor_surface_pixels
                 #  plot the color coded histogram of the distances
                 title = 'Ablation to Tumor Euclidean Distances'
-                pm.plotHistDistances(pats[idx], trajectory[idx], pathology[idx], rootdir, distanceMap, num_surface_pixels, title)
-
+                pm.plotHistDistances(pat_name=pats[idx],
+                                     pat_idx=idx,
+                                     pathology=pathology[idx],
+                                     rootdir=rootdir,
+                                     distanceMap=distanceMap,
+                                     num_voxels=num_surface_pixels,
+                                     title=title)
             except Exception:
                 # append empty dataframe
                 numRows, numCols = df_metrics_all.shape
@@ -58,9 +63,16 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
                 # append empty DataFrame
                 distanceMaps_allPatients.append([])
                 # TODO: need to set the columns as well
-                print(str(pats[idx]), 'inputs do not occupy the same physical space')
+                print(str(pats[idx]), 'error computing the distances and volumes')
                 continue
-
+        else:
+            #if the segmentation path and ablation are empty
+            numRows, numCols = df_metrics_all.shape
+            numRows = 1
+            df_empty = pd.DataFrame(index=range(numRows), columns=range(numCols))
+            df_metrics_all = df_metrics_all.append(df_empty)
+            # append empty DataFrame
+            distanceMaps_allPatients.append([])
     #%%
     # add the Distance Map to the input dataframe. to be written to Excel
     df_patientdata['DistanceMaps'] = distanceMaps_allPatients
@@ -70,9 +82,9 @@ def main_distance_volume_metrics(df_patientdata, rootdir, FLAG_SAVE_TO_EXCEL=Tru
     data_distances_to_plot = df_patients_sorted['DistanceMaps'].tolist()
     data_volumes_to_plot = df_patients_sorted[' Tumour coverage ratio']
     # plot Boxplot per patient
-    bpLesions.plotBoxplots(data_distances_to_plot, rootdir)
+    #bpLesions.plotBoxplots(data_distances_to_plot, rootdir)
     # plot distances in Boxplot vs Tumor Coverage Ratio
-    twinAxes.plotBoxplots(data_distances_to_plot, data_volumes_to_plot, rootdir)
+    #twinAxes.plotBoxplots(data_distances_to_plot, data_volumes_to_plot, rootdir)
     #%% 
     ''' save to excel the average of the distance metrics '''
     if FLAG_SAVE_TO_EXCEL:
