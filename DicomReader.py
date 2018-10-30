@@ -18,10 +18,10 @@ def read_dcm_series(folder_path):
         if next(os.walk(folder_path), None) is None:
             # single DICOM File
             image = sitk.ReadImage(os.path.normpath(folder_path), sitk.sitkInt16)
-            return image
+            return image, None
     except Exception:
         print('Non-readable DICOM Data: ', folder_path)
-        return None
+        # return None
     # DICOM Series
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(os.path.normpath(folder_path))
@@ -33,10 +33,10 @@ def read_dcm_series(folder_path):
         return image, reader
     except Exception:
         print('Non-readable DICOM Data: ', folder_path)
-        return None
+        return None, None
 
 
-def print_dimensions_img(title,image):
+def print_dimensions_img(title, image):
     print('Dimensions of ' + title + ' image:', image.GetSize())
     print('Spacing of ' + title + ' image:', image.GetSpacing())
     print('Origin of '+ title + ' image:', image.GetOrigin())
