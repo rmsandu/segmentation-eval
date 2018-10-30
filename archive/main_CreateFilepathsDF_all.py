@@ -109,7 +109,7 @@ Metrics.main_distance_volume_metrics(df_filepaths, rootdir)
 #             reader = csv.DictReader(open(filepath_csv))
 #             for row in reader:
 #                 for column, value in row.items():
-#                     if column != 'TrajectoryID':
+#                     if column != 'NeedleNr':
 #                         file_value = path + value
 #                     else:
 #                         file_value = value

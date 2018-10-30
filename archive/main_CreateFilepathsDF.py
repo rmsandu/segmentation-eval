@@ -47,7 +47,7 @@ for subdir, dirs, files in os.walk(rootdir):
          dir_name = os.path.dirname(ablationFilePath)
          dirname2 = os.path.split(dir_name)[1]
          data = {'PatientName' : dirname2,
-                 'TrajectoryID': 1,
+                 'NeedleNr': 1,
                  ' Tumour Segmentation Path' : tumorFilePath,
                  ' Ablation Segmentation Path': ablationFilePath
                  }
