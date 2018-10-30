@@ -27,8 +27,8 @@ class DistanceMetrics(object):
     def __init__(self, ablation_path, tumor_path):
         ''' Read the images from the filepaths'''
 
-        tumor_segmentation = Reader.read_dcm_series(tumor_path)
-        ablation_segmentation = Reader.read_dcm_series(ablation_path)
+        tumor_segmentation, series_reader = Reader.read_dcm_series(tumor_path)
+        ablation_segmentation, series_reader = Reader.read_dcm_series(ablation_path)
         
         ''' init the enum fields for surface dist measures computer with simpleitk'''
         class SurfaceDistanceMeasuresITK(Enum):
