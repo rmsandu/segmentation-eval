@@ -16,7 +16,7 @@ import os
 import time
 import pandas as pd
 import mainDistanceVolumeMetrics as Metrics
-import ResizeSegmentationsMain as ReaderWriterClass
+import II_Resize_Resample_Images as ResizerClass
 
 pd.options.mode.chained_assignment = None
 
@@ -25,11 +25,11 @@ rootdir = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_ma
 input_filepaths = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_maverric\maverric\MAVERRIC_Stockholm_October_all_patients.xlsx"
 df_folderpaths = pd.read_excel(input_filepaths)
 
-# %% 2. Call The ReaderWriterClass to Resize Segmentations
-resize_object = ReaderWriterClass.ResizeSegmentations(df_folderpaths)
+# %% 2. Call The ResizerClass to Resize Segmentations
+resize_object = ResizerClass.ResizeSegmentations(df_folderpaths)
 # TODO: create new folder for resized segmentations-append_datetime_ and the name of the excel file.
 folder_path_saving = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\resized"
-resize_object.save_images_to_disk(folder_path_saving)
+resize_object.I_call_resize_resample_all_images(folder_path_saving)
 df_resized_filepaths = resize_object.get_new_filepaths()
 # %% 3. Apply Registration
 # TODO: apply registration
@@ -43,18 +43,18 @@ df_resized_filepaths.to_excel(writer, index=False)
 writer.save()
 print("success")
 
-# %% 4. call distance metrics
+# %% 4. call distance metrics. Plot HIstograms
 df_final = pd.read_excel(
-    r"C:\PatientDatasets_GroundTruth_Database\Stockholm\maverric_processed_no_registration\Filepaths_Resized_GTSegmentations_Stockholm_June.xlsx")
+    r"C:\PatientDatasets_GroundTruth_Database\Stockholm\resized\FilepathsResizedGTSegmentations.xlsx")
+# df_final = df_resized_filepaths
 df_new1 = df_final[[' Ablation Segmentation Path Resized',
                     ' Tumour Segmentation Path Resized',
                     'PatientID',
-                    'TrajectoryID',
-                    'Pathology']]
+                    'NeedleNr']]
 # df_new1.rename(columns={' Ablation Segmentation Path Resized': ' Ablation Segmentation Path',
 #                         ' Tumour Segmentation Path Resized': ' Tumour Segmentation Path'}, inplace=True)
 
 rootdir = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\plots"
+# call the metrics script
 Metrics.main_distance_volume_metrics(df_new1, rootdir)
-
 df_patientdata = df_final

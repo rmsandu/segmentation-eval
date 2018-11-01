@@ -1,5 +1,18 @@
 import SimpleITK as sitk
-import numpy as np
+
+def recast_pixel_val(image_source, image_roi):
+    """
+    Recast pixel value to be the same for segmentation and original image, othewise SimpleITK complains.
+    :param image_source:
+    :param image_roi:
+    :return:
+    """
+    pixelID = image_source.GetPixelID()
+    caster = sitk.CastImageFilter()
+    caster.SetOutputPixelType(pixelID)
+    image_roi = caster.Execute(image_roi)
+    return image_roi
+
 
 def paste_roi_image(image_source, image_roi):
     """ Resize ROI binary mask to size, dimension, origin of its source/original img.
@@ -14,10 +27,7 @@ def paste_roi_image(image_source, image_roi):
     newDirection = image_source.GetDirection()
 
     # re-cast the pixel type of the roi mask
-    pixelID = image_source.GetPixelID()
-    caster = sitk.CastImageFilter()
-    caster.SetOutputPixelType(pixelID)
-    image_roi = caster.Execute(image_roi)
+    image_roi = recast_pixel_val(image_source, image_roi)
 
     # black 3D image
     outputImage = sitk.Image(newSize, image_source.GetPixelIDValue())
@@ -30,18 +40,6 @@ def paste_roi_image(image_source, image_roi):
 
     return pasted_img
 
-def recast_pixel_val(image_source, image_roi):
-    """
-    Recast pixel value to be the same for segmentation and original image, othewise SimpleITK complains.
-    :param image_source:
-    :param image_roi:
-    :return:
-    """
-    pixelID = image_source.GetPixelID()
-    caster = sitk.CastImageFilter()
-    caster.SetOutputPixelType(pixelID)
-    image_roi = caster.Execute(image_roi)
-    return image_roi
 
 def resize_segmentation(image_source, image_roi):
     """
