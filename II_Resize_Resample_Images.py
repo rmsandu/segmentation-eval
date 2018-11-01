@@ -89,24 +89,24 @@ class ResizeSegmentations:
                 os.makedirs(child_directory_ablation)
 
             # %% call DicomWriter to write to Series
-            filenames = ['CT_Plan', 'CT_Validation', 'ablationSegm', 'tumorSegm']
-            for i in range(len(images_resized)):
-                obj_writer = DicomWriter.DicomWriter(image=images_resized[i],
-                                                     folder_output=tuple_filepaths[i],
-                                                     file_name=filenames[i],
-                                                     patient_id=str(patient_name),
-                                                     series_reader=images_readers[i])
-                obj_writer.save_source_img_to_file()
-            # TODO: add resized original images to the CSV list
-            if self.flag_tumor is False:
-                child_directory_tumor = None
-            if self.flag_ablation is False:
-                child_directory_ablation = None
-            dict_paths = {
-                " Tumour Segmentation Path Resized": child_directory_tumor,
-                " Ablation Segmentation Path Resized": child_directory_ablation
-            }
-            self.new_filepaths.append(dict_paths)
+        filenames = ['CT_Plan', 'CT_Validation', 'ablationSegm', 'tumorSegm']
+        for i in range(len(images_resized)):
+            obj_writer = DicomWriter.DicomWriter(image=images_resized[i],
+                                                 folder_output=tuple_filepaths[i],
+                                                 file_name=filenames[i],
+                                                 patient_id=str(patient_name),
+                                                 series_reader=images_readers[i])
+            obj_writer.save_source_img_to_file()
+        # TODO: add resized original images to the CSV list
+        if self.flag_tumor is False:
+            child_directory_tumor = None
+        if self.flag_ablation is False:
+            child_directory_ablation = None
+        dict_paths = {
+            " Tumour Segmentation Path Resized": child_directory_tumor,
+            " Ablation Segmentation Path Resized": child_directory_ablation
+        }
+        self.new_filepaths.append(dict_paths)
 
 
     def I_call_resize_resample_all_images(self):
@@ -160,6 +160,7 @@ class ResizeSegmentations:
                     images_resized = ResizeSegmentations.II_resize_resample_images(images, reference_spacing_max, reference_size_max)
                     # save new resized images
                     self.save_DICOMseries_todisk(images_resized, images_readers, patients_names[idx], NeedleNr[idx])
+                    return
 
     @staticmethod
     def II_resize_resample_images(images, reference_spacing, reference_size, print_flag=False):

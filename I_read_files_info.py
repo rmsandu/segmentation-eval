@@ -26,16 +26,17 @@ input_filepaths = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segment
 df_folderpaths = pd.read_excel(input_filepaths)
 
 # %% 2. Call The ResizerClass to Resize Segmentations
-resize_object = ResizerClass.ResizeSegmentations(df_folderpaths)
-# TODO: create new folder for resized segmentations-append_datetime_ and the name of the excel file.
 folder_path_saving = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\resized"
-resize_object.I_call_resize_resample_all_images(folder_path_saving)
+resize_object = ResizerClass.ResizeSegmentations(df_folderpaths=df_folderpaths,
+                                                 root_path_to_save=folder_path_saving,
+                                                 flag_extract_max_size=False)
+resize_object.I_call_resize_resample_all_images()
 df_resized_filepaths = resize_object.get_new_filepaths()
 # %% 3. Apply Registration
 # TODO: apply registration
-# %%
 timestr = time.strftime("%H%M%S-%Y%m%d")
-filename = 'FilepathsResizedGTSegmentations' + '_' + timestr + '.xlsx'
+# filename = 'FilepathsResizedGTSegmentations' + '_' + timestr + '.xlsx'
+filename = 'FilepathsResizedGTSegmentations' + '.xlsx'
 filepathExcel = os.path.join(folder_path_saving, filename)
 # filepathExcel = os.path.join(rootdir, filename)
 writer = pd.ExcelWriter(filepathExcel)
