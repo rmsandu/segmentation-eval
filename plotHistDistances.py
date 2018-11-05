@@ -15,10 +15,10 @@ plt.style.use('ggplot')
 #%%
 
 
-def plotHistDistances(pat_name, pat_idx, pathology, rootdir, distanceMap, num_voxels, title):
+def plotHistDistances(pat_name, trajectory_idx, pathology, rootdir, distanceMap, num_voxels, title):
 
     # PLOT THE HISTOGRAM FOR THE MAUERER EUCLIDIAN DISTANCES
-    figName_hist = 'Pat' + str(pat_name) + '_Trajectory' + str(pat_idx) + '_histogramDistances'
+    figName_hist = 'Pat' + str(pat_name) + '_Trajectory' + str(trajectory_idx) + '_histogramDistances'
     min_val = int(np.floor(min(distanceMap)))
     max_val = int(np.ceil(max(distanceMap)))
     fig, ax = plt.subplots(figsize=(24, 20))
@@ -61,7 +61,8 @@ def plotHistDistances(pat_name, pat_idx, pathology, rootdir, distanceMap, num_vo
     plt.tick_params(labelsize=36, color='black')
     ax.tick_params(colors='black', labelsize=36)
     plt.grid(True)
-    ax.set_xlim([-15, 15])
+    # TODO: set equal axis limits
+    # ax.set_xlim([-15, 15])
 
     # edit the y-ticks: change to percentage of surface
     yticks, locs = plt.yticks()
@@ -78,7 +79,7 @@ def plotHistDistances(pat_name, pat_idx, pathology, rootdir, distanceMap, num_vo
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys(), fontsize=38, loc='best')
     
-    plt.title(title + '. Case ' + str(pat_name) +'. '+ str(pathology), fontsize=36)
+    plt.title(title + '. Patient ' + str(pat_name) +'. Trajectory'+ str(trajectory_idx), fontsize=36)
     figpathHist = os.path.join(rootdir, figName_hist + '.png')
     gh.save(figpathHist, width=24, height=20)
 

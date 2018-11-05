@@ -71,7 +71,13 @@ class VolumeMetrics:
         self.volume_residual, self.coverage_ratio = self.get_volume_residual_coverage()
 
         overlap_measures_filter = sitk.LabelOverlapMeasuresImageFilter()
-        overlap_measures_filter.Execute(self.tumorSegm, self.ablationSegm)
+
+        try:
+            overlap_measures_filter.Execute(self.tumorSegm, self.ablationSegm)
+        except Exception as e:
+            # print error message if the filter cannot be executed.
+            # this is the case when the images are not in the same space
+            print(repr(e))
 
         self.dice = overlap_measures_filter.GetDiceCoefficient()
         self.jaccard = overlap_measures_filter.GetDiceCoefficient()
@@ -87,7 +93,7 @@ class VolumeMetrics:
             'Jaccard': self.jaccard,
             'Volume Overlap Error': self.volumetric_overlap_error,
             'Volume Similarity': self.volume_similarity,
-            ' Tumour coverage ratio': self.coverage_ratio
+            'Tumour coverage ratio': self.coverage_ratio
         }
 
         return pd.DataFrame(data=volume_metrics_dict, index=list(range(1)),

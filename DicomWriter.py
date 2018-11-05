@@ -51,7 +51,7 @@ def make_uid(entropy_srcs=None, prefix='2.25.'):
 
 class DicomWriter:
 
-    def __init__(self,image=None, folder_output=None, file_name=None, patient_id=None, series_reader=None):
+    def __init__(self, image=None, folder_output=None, file_name=None, patient_id=None, series_reader=None):
         """
         :type: image in SimpleITK format
         :type folder_output: folder path to write the DICOM Series Files
@@ -128,9 +128,11 @@ class DicomWriter:
         # modification_date = time.strftime("%Y%m%d")
         direction = self.image.GetDirection()
         spacing = self.image.GetSpacing()
-        tags_to_copy = ["0010|0010",  # Patient Name
+        tags_to_copy = [
+                        "0010|0010",  # Patient Name
                         "0010|0020",  # Patient ID
                         "0010|0030",  # Patient Birth Date
+                        "0010|0040",  # Patient's Sex
                         "0020|000D",  # Study Instance UID, for machine consumption
                         "0020|0010",  # Study ID, for human consumption
                         "0008|0020",  # Study Date
@@ -140,18 +142,27 @@ class DicomWriter:
                         "0020|000e",  # Series Instance UID
                         "0020|000D",  # Study Instance ID
                         "0008|0031",  # Series Time
-                        "0008|0021",  # Series Date
+                        "0008|0021",  # Series Date,
+                        "0008|0016",  # SOP Class UID
+                        "0008|0018",  # SOP Instance UID
+                        "0008|0080",  # Institution Name
+                        "0010|1010",  # Patient's Age
                        ]
-
+            # series number, study id, patient's sex, patient's age
         series_tag_values = [(k, self.series_reader.GetMetaData(0, k)) for k in tags_to_copy if
                              self.series_reader.HasMetaDataKey(0, k)]
 
+        # TODO: check image position patient tag
+        # (0020,1041)	DS	Slice Location - physical location in space
+        # (0018,0088)	DS	Spacing Between Slices
+        # (300A,00C8)	IS	Reference Image Number
         for i in range(self.image.GetDepth()):
             image_slice = self.image[:, :, i]
             # Tags shared by the series
             for tag, value in series_tag_values:
                 image_slice.SetMetaData(tag, value)
             # Slice specific tags.
+            image_slice.SetMetaData("0008|0008", "DERIVED\\SECONDARY")
             image_slice.SetMetaData("0008|0012", time.strftime("%Y%m%d"))  # Instance Creation Date
             image_slice.SetMetaData("0008|0013", time.strftime("%H%M%S"))  # Instance Creation Time
             image_slice.SetMetaData("0020|0032", '\\'.join(
@@ -165,6 +176,7 @@ class DicomWriter:
             # Write to the output directory and add the extension dcm, to force writing in DICOM format.
             writer.SetFileName(os.path.normpath(self.folder_output + '/' + self.file_name + str(i+1) + '.dcm'))
             writer.Execute(image_slice)
+
 
 
 

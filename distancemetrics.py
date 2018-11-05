@@ -22,6 +22,7 @@ import SimpleITK as sitk
 import DicomReader as Reader
 
 
+
 class DistanceMetrics(object):
 
     def __init__(self, ablation_path, tumor_path):
@@ -29,7 +30,8 @@ class DistanceMetrics(object):
 
         tumor_segmentation, series_reader = Reader.read_dcm_series(tumor_path)
         ablation_segmentation, series_reader = Reader.read_dcm_series(ablation_path)
-        
+        # Reader.print_dimensions_img('tumor', tumor_segmentation)
+        # Reader.print_dimensions_img('ablation', ablation_segmentation)
         ''' init the enum fields for surface dist measures computer with simpleitk'''
         class SurfaceDistanceMeasuresITK(Enum):
             hausdorff_distance, max_distance, min_surface_distance, mean_surface_distance,\
@@ -55,7 +57,10 @@ class DistanceMetrics(object):
                                                                useImageSpacing=True)
         
         hausdorff_distance_filter = sitk.HausdorffDistanceImageFilter()
-        hausdorff_distance_filter.Execute(tumor_segmentation, ablation_segmentation)
+        try:
+            hausdorff_distance_filter.Execute(tumor_segmentation, ablation_segmentation)
+        except Exception as e:
+            print(repr(e))
         surface_distance_results[0, SurfaceDistanceMeasuresITK.hausdorff_distance.value] =\
             hausdorff_distance_filter.GetHausdorffDistance()
             

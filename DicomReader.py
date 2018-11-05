@@ -41,7 +41,7 @@ def print_dimensions_img(title, image):
     print('Spacing of ' + title + ' image:', image.GetSpacing())
     print('Origin of '+ title + ' image:', image.GetOrigin())
     print('Direction of ' + title + ' image:',image.GetDirection())
-    print('Pixel ID Value:', image.GetPixelIDValue())
+    print('Pixel ID Value:', image.GetPixelIDTypeAsString())
 
 
 def load_scan(path):
