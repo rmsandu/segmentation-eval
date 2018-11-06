@@ -26,8 +26,8 @@ class VolumeMetrics:
         self.volume_similarity = None
 
     def set_image_object(self, ablation_filepath, tumor_filepath):
-        self.tumorSegm, series_reader = Reader.read_dcm_series(tumor_filepath)
-        self.ablationSegm, series_reader = Reader.read_dcm_series(ablation_filepath)
+        self.tumorSegm = Reader.read_dcm_series(tumor_filepath, False)
+        self.ablationSegm = Reader.read_dcm_series(ablation_filepath, False)
 
     def get_volume_ml(self, image):
         x_spacing, y_spacing, z_spacing = image.GetSpacing()

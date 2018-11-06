@@ -12,7 +12,7 @@ import pydicom as dicom
 #%%
 
 
-def read_dcm_series(folder_path):
+def read_dcm_series(folder_path, reader_flag=True):
 
     try:
         if next(os.walk(folder_path), None) is None:
@@ -30,10 +30,16 @@ def read_dcm_series(folder_path):
     reader.LoadPrivateTagsOn()
     try:
         image = reader.Execute()
-        return image, reader
+        if reader_flag:
+            return image, reader
+        else:
+            return image
     except Exception:
         print('Non-readable DICOM Data: ', folder_path)
-        return None, None
+        if reader_flag:
+            return None, None
+        else:
+            return None
 
 
 def print_dimensions_img(title, image):

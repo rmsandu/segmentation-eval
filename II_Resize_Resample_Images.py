@@ -33,7 +33,6 @@ class ResizeSegmentations:
         print(name + ' size: ', image.GetSize())
         print(name + ' pixel: ', image.GetPixelIDTypeAsString())
 
-
     def __init__(self, df_folderpaths, root_path_to_save, flag_extract_max_size):
         self.df_folderpaths = df_folderpaths
         self.root_path_to_save = root_path_to_save
@@ -43,6 +42,14 @@ class ResizeSegmentations:
         self.new_filepaths = []
 
     def save_DICOMseries_todisk(self, images_resized, images_readers, patient_name, NeedleNr):
+        """ Create directories and call DicomWriter to write the resized/resampled images to disk.
+
+        :param images_resized: tuple of 4 SimpleITK resized images
+        :param images_readers: tuple of SimpleITK Series Readers (needed to copy the metadata to the newly resized imgs)
+        :param patient_name: Patient Name
+        :param NeedleNr: Needle Trajectory as defined in CAS-One IR
+        :return:
+        """
 
         # create filepaths to save the new images first
         filepaths = recordclass('filepaths',
@@ -103,20 +110,18 @@ class ResizeSegmentations:
         if self.flag_ablation is False:
             child_directory_ablation = None
         dict_paths = {
-            " Tumour Segmentation Path Resized": child_directory_tumor,
-            " Ablation Segmentation Path Resized": child_directory_ablation
+            "Tumour Segmentation Path Resized": child_directory_tumor,
+            "Ablation Segmentation Path Resized": child_directory_ablation
         }
         self.new_filepaths.append(dict_paths)
 
-
     def I_call_resize_resample_all_images(self):
         """
-        Main functions that iterates through columns of the DataFrame/Excel and reads images for resizing:
+            Main function that iterates through columns of the DataFrame/Excel and reads images for resizing:
             Calls DicomReader and stores the original image_plan, original image_validation, tumor_mask , ablation_mask
             in images.
         Resampled and resized images are stored in images_resized.
-
-        :return:
+        :return: nothing
         """
         ablation_paths = self.df_folderpaths['AblationPath'].tolist()
         tumor_paths = self.df_folderpaths['TumorPath'].tolist()
@@ -139,10 +144,10 @@ class ResizeSegmentations:
             self.flag_ablation = False
             if not (str(tumor_paths[idx]) == 'nan') and not (str(ablation_paths[idx]) == 'nan'):  # if both paths exists
                 # if patients[idx] == 195107010794: # multiple image series in the same folder
-                tumor_mask, tumor_reader = Reader.read_dcm_series(tumor_paths[idx])
-                source_img_plan, img_plan_reader = Reader.read_dcm_series(folder_path_plan[idx])
-                ablation_mask, ablation_reader = Reader.read_dcm_series(ablation_paths[idx])
-                source_img_validation, img_validation_reader = Reader.read_dcm_series(folder_path_validation[idx])
+                tumor_mask, tumor_reader = Reader.read_dcm_series(tumor_paths[idx], True)
+                source_img_plan, img_plan_reader = Reader.read_dcm_series(folder_path_plan[idx], True)
+                ablation_mask, ablation_reader = Reader.read_dcm_series(ablation_paths[idx], True)
+                source_img_validation, img_validation_reader = Reader.read_dcm_series(folder_path_validation[idx], True)
                 # execute the condition when true and all image sources could be read.
                 if not (not (tumor_mask and ablation_mask and source_img_plan and source_img_validation)):
                     # resize the Segmentation Mask to the dimensions of the source images they were derived from
@@ -157,13 +162,16 @@ class ResizeSegmentations:
                     images_readers = tuple_readers(img_plan_reader, img_validation_reader, ablation_reader,
                                                    tumor_reader)
                     # resize images and segmentations to isotropic and same physical space
-                    images_resized = ResizeSegmentations.II_resize_resample_images(images, reference_spacing_max, reference_size_max)
+                    images_resized = ResizeSegmentations.II_resize_resample_images(images, reference_spacing_max,
+                                                                                   reference_size_max, tumor_paths[idx])
                     # save new resized images
                     self.save_DICOMseries_todisk(images_resized, images_readers, patients_names[idx], NeedleNr[idx])
                     return
+                    # TODO: remove return if parsing of all patients is desired.
+
 
     @staticmethod
-    def II_resize_resample_images(images, reference_spacing, reference_size, print_flag=False):
+    def II_resize_resample_images(images, reference_spacing, reference_size, path, print_flag=False):
         """
             Resize all the images to the same dimensions and space.
             Usage: newImage = resize_image(tuple_images(img_plan, img_validation, ablation_mask, tumor_mask), [1.0, 1.0, 1.0], [512, 512, 500])
@@ -203,11 +211,14 @@ class ResizeSegmentations:
 
         # %% RESIZE the ROI SEGMENTATIONS before RESAMPLING and RESIZING TO REFERENCE IMAGE
         if images.img_plan.GetSpacing() == images.tumor_mask.GetSpacing():
-            ## use PASTE if the original img and segmentation have the same spacing
+            # use PASTE if the original img and segmentation have the same spacing
             images.tumor_mask = (PasteROI.paste_roi_image(images.img_plan, images.tumor_mask))
             images.ablation_mask = (PasteROI.paste_roi_image(images.img_validation, images.ablation_mask))
         else:
-            ## Resample the segmentations to the size of their original image
+            # use RESAMPLE if the original image and its segmentation have different spacing
+            print('different spacing of segmentation and original image: ', path)
+            ResizeSegmentations.print_image_dimensions(images.tumor_mask, 'TUMOR ORIGINAL')
+            ResizeSegmentations.print_image_dimensions(images.img_plan, 'IMAGE PLAN ORIGINAL')
             images.tumor_mask = PasteROI.resize_segmentation(images.img_plan, images.tumor_mask)
             images.ablation_mask = PasteROI.resize_segmentation(images.img_validation, images.ablation_mask)
 
@@ -251,6 +262,7 @@ class ResizeSegmentations:
                                           ablation_mask=data_resized[2],
                                           tumor_mask=data_resized[3])
         return resized_imgs
+
 
     def get_new_filepaths(self):
         """
