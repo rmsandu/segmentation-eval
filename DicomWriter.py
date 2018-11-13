@@ -117,7 +117,7 @@ class DicomWriter:
             image_slice.SetMetaData("0020,0013", str(i))  # Instance Number
 
             # Write to the output directory and add the extension dcm, to force writing in DICOM format.
-            writer.SetFileName(os.path.normpath(self.folder_output + '/' + self.file_name + str(i+1) + '.dcm'))
+            writer.SetFileName(os.path.normpath(self.folder_output + '/' + self.file_name + str(i) + '.dcm'))
             writer.Execute(image_slice)
 
 
@@ -174,9 +174,8 @@ class DicomWriter:
             image_slice.SetMetaData("0028|0030", '\\'.join(map(str, (spacing[0], spacing[1], spacing[2])))) # Pixel Spacing
             image_slice.SetMetaData("0020,0013", str(i))  # Instance Number
             # Write to the output directory and add the extension dcm, to force writing in DICOM format.
-            writer.SetFileName(os.path.normpath(self.folder_output + '/' + self.file_name + str(i+1) + '.dcm'))
+            writer.SetFileName(os.path.normpath(self.folder_output + '/' + self.file_name + str(i) + '.dcm'))
             writer.Execute(image_slice)
-
 
 
 

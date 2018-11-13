@@ -21,7 +21,7 @@ def read_dcm_series(folder_path, reader_flag=True):
             return image, None
     except Exception:
         print('Non-readable DICOM Data: ', folder_path)
-        # return None
+        return None
     # DICOM Series
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(os.path.normpath(folder_path))

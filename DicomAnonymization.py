@@ -18,6 +18,7 @@ import uuid
 import hashlib
 from random import random
 import SimpleITK as sitk
+from splitAllPaths import splitall
 
 
 def make_uid(entropy_srcs=None, prefix='2.25.'):
@@ -74,23 +75,16 @@ class DicomWriter:
         modification_date = time.strftime("%Y%m%d")
         direction = self.image.GetDirection()
         spacing = self.image.GetSpacing()
-        # ("0020|000e", self.series_instance_uid + modification_time),  # Series Instance ID
-        # ("0020|000D", self.study_instance_uid + modification_time),  # Study Instance ID
-        # # Series Instance UID
-        # ("0020|000e", "1.2.826.0.1.3680043.2.1125." + modification_date + ".1" + modification_time)
         tags_to_copy = [
                         "0010|0040",  # Patient's Sex
-                        "0020|0010",  # Study ID, for human consumption
-                        "0008|0050",  # Accession Number
                         "0008|0060",  # Modality
-                        "0020|000e",  # Series Instance UID
-                        "0020|000D",  # Study Instance ID
-                        "0008|0031",  # Series Time
-                        "0008|0021",  # Series Date,
                         "0008|0016",  # SOP Class UID
                         "0008|0018",  # SOP Instance UID
-                        "0008|0080",  # Institution Name
-                        "0010|1010",  # Patient's Age
+                        "0010|1010",  # Patient's Age,
+                        "0008|0031",  # Series Time
+                        "0008|0021",  # Series Date,
+                        "0008|0060",  # Modality,
+                        "0008|1030",  # Study Description
                        ]
             # series number, study id, patient's sex, patient's age
         series_tag_values = [(k, self.series_reader.GetMetaData(0, k)) for k in tags_to_copy if
@@ -107,16 +101,18 @@ class DicomWriter:
                 image_slice.SetMetaData(tag, value)
             # Slice specific tags.
             image_slice.SetMetaData("0008|0008", "DERIVED\\SECONDARY")
-            image_slice.SetMetaData("0020|000e", self.series_instance_uid + modification_time)
+            image_slice.SetMetaData("0020|000e", self.series_instance_uid + modification_time) # series instance ID
             image_slice.SetMetaData("0020|000D", self.study_instance_uid + modification_time),  # Study Instance ID
             image_slice.SetMetaData("0020|000e", "1.2.826.0.1.3680043.2.1125." + modification_date + ".1" + modification_time)
             image_slice.SetMetaData("0008|0012", time.strftime("%Y%m%d"))  # Instance Creation Date
             image_slice.SetMetaData("0008|0013", time.strftime("%H%M%S"))  # Instance Creation Time
+            image_slice.SetMetaData("0008|0080", "Unknown") # institution name
             image_slice.SetMetaData("0020|0032", '\\'.join(
                 map(str, self.image.TransformIndexToPhysicalPoint((0, 0, i)))))  # Image Position (Patient)
             image_slice.SetMetaData("0020|0037", '\\'.join(map(str, (direction[0], direction[3], direction[6],
                                                                direction[1], direction[4], direction[7])))) # Image Orientation (Patient)
-            image_slice.SetMetaData("0008|103e", "Resized and Resampled Image")
+            image_slice.SetMetaData("0010|0020", self.patient_id)
+            image_slice.SetMetaData("0008|103e", "Anonymized")
             image_slice.SetMetaData("0008|0060", "CT")
             image_slice.SetMetaData("0028|0030", '\\'.join(map(str, (spacing[0], spacing[1], spacing[2])))) # Pixel Spacing
             image_slice.SetMetaData("0020,0013", str(i))  # Instance Number
@@ -130,9 +126,11 @@ if __name__=='__main__':
     # call image reader
     # create folder_path
     # call dicom writer
-    rootdir = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\"
+    rootdir = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_maverric\maverric\Pat_"
     new_destination = os.path.join(rootdir, 'Anonymized')
     for subdir, dirs, files in os.walk(rootdir):
+        print('subdir:', subdir)
+        print('dir:', dirs)
         if os.path.isdir(subdir):
             reader = sitk.ImageSeriesReader()
             dicom_names = reader.GetGDCMSeriesFileNames(os.path.normpath(subdir))
@@ -140,16 +138,38 @@ if __name__=='__main__':
                 print('no file series number in this directory')
                 continue
             else:
+                # create folder path
+                if not os.path.exists(new_destination):
+                    os.makedirs(new_destination)
+                all_paths = splitall(subdir)
+                idx_series = [i for i, s in enumerate(all_paths) if "Series" in s]
+                idx_segmentation = [i for i,s in enumerate(all_paths) if "SegmentationNo" in s]
+
+                series_no = all_paths[idx_series[0]]
+                new_destination_series = os.path.join(new_destination, series_no)
+                if idx_segmentation:
+                    # super crappy way of extracting the datetime, series, segmentations_no based on the index and assumptions
+                    datetime = all_paths[idx_segmentation[0] - 3]
+                    series_segmentations = all_paths[idx_segmentation[0]-1]
+                    segmentation_no = all_paths[idx_segmentation[0]]
+                    series_segmentation_path = os.path.join(new_destination, datetime, series_segmentations)
+                    segmentation_path = os.path.join(series_segmentation_path, segmentation_no)
+                    if not os.path.exists(series_segmentation_path):
+                        os.makedirs(series_segmentation_path)
+                    if not os.path.exists(segmentation_path):
+                        os.makedirs(segmentation_path)
+                        new_destination_series = segmentation_path
+
+                if not os.path.exists(new_destination_series):
+                    os.makedirs(new_destination_series)
+
                 reader.SetFileNames(dicom_names)
                 reader.MetaDataDictionaryArrayUpdateOn()
                 reader.LoadPrivateTagsOn()
                 try:
                     image = reader.Execute()
-                    # create folder path
-                    if not os.path.exists(new_destination):
-                        os.makedirs(os.path.join(new_destination, '11'))
-                        writer = DicomWriter(image,os.path.join(new_destination,subdir),'CT', patient_id=99, series_reader=reader)
-                        writer.save_source_img_to_file()
+                    writer = DicomWriter(image, new_destination_series,'CTAnon', patient_id=99, series_reader=reader)
+                    writer.save_source_img_to_file()
                 except Exception:
                     # print(repr(e))
                     print('not a dicom series')

@@ -21,7 +21,8 @@ pd.options.mode.chained_assignment = None
 
 # %% 1. Read Excel File with Patient File Info Path
 rootdir = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_maverric\maverric"
-input_filepaths = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_maverric\maverric\MAVERRIC_Stockholm_October_all_patients.xlsx"
+# input_filepaths = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_maverric\maverric\MAVERRIC_Stockholm_October_all_patients.xlsx"
+input_filepaths =r"C:\PatientDatasets_GroundTruth_Database\Stockholm\resized\FilepathsResizedGTSegmentations.xlsx"
 df_folderpaths = pd.read_excel(input_filepaths)
 # add the maverric id
 input_filepaths_maverric_key = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\maverric_cases.xlsx"
