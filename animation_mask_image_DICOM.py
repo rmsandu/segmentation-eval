@@ -28,6 +28,8 @@ rootdir_plots = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\plots"
 # tumors = df_final['TumorPath']
 ablations = df_final["Ablation Segmentation Path Resized"].tolist()
 tumors = df_final["Tumour Segmentation Path Resized"].tolist()
+# ablations = df_final["TumorPath"].tolist()
+# tumors = df_final["AblationPath"].tolist()
 plan = df_final["PlanTumorPath"].tolist()
 
 # def AnimateDICOM(SourceImg, MaskImg):
