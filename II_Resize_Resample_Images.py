@@ -26,7 +26,6 @@ class ResizeSegmentations:
         :param name: Name of the image as defined by the user
         :return:
         """
-        print(name + ' RESIZED:')
         print(name + ' direction: ', image.GetDirection())
         print(name + ' origin: ', image.GetOrigin())
         print(name + ' spacing: ', image.GetSpacing())
@@ -163,10 +162,10 @@ class ResizeSegmentations:
                                                    tumor_reader)
                     # resize images and segmentations to isotropic and same physical space
                     images_resized = ResizeSegmentations.II_resize_resample_images(images, reference_spacing_max,
-                                                                                   reference_size_max, tumor_paths[idx])
+                                                                                   reference_size_max, tumor_paths[idx], print_flag=True)
                     # save new resized images
                     self.save_DICOMseries_todisk(images_resized, images_readers, patients_names[idx], NeedleNr[idx])
-                    return
+                    # return
                     # TODO: remove return if parsing of all patients is desired.
 
 
@@ -194,7 +193,7 @@ class ResizeSegmentations:
         dimension = images.img_plan.GetDimension()  #
         reference_direction = np.identity(dimension).flatten()
         reference_origin = np.zeros(dimension)
-        reference_image = sitk.Image(reference_size, images.img_plan.GetPixelIDValue())
+        reference_image = sitk.Image(reference_size, images.img_plan.GetPixelID())
         reference_image.SetOrigin(reference_origin)
         reference_image.SetSpacing(reference_spacing)
         reference_image.SetDirection(reference_direction)
@@ -212,15 +211,26 @@ class ResizeSegmentations:
         # %% RESIZE the ROI SEGMENTATIONS before RESAMPLING and RESIZING TO REFERENCE IMAGE
         if images.img_plan.GetSpacing() == images.tumor_mask.GetSpacing():
             # use PASTE if the original img and segmentation have the same spacing
-            images.tumor_mask = (PasteROI.paste_roi_image(images.img_plan, images.tumor_mask))
-            images.ablation_mask = (PasteROI.paste_roi_image(images.img_validation, images.ablation_mask))
+            images.tumor_mask = PasteROI.paste_roi_image(images.img_plan, images.tumor_mask)
+            print('-----Plan and mask match----', path)
         else:
             # use RESAMPLE if the original image and its segmentation have different spacing
-            print('different spacing of segmentation and original image: ', path)
+            print('different spacing of tumor segmentation and original image: ', path)
             ResizeSegmentations.print_image_dimensions(images.tumor_mask, 'TUMOR ORIGINAL')
             ResizeSegmentations.print_image_dimensions(images.img_plan, 'IMAGE PLAN ORIGINAL')
-            images.tumor_mask = PasteROI.resize_segmentation(images.img_plan, images.tumor_mask)
-            images.ablation_mask = PasteROI.resize_segmentation(images.img_validation, images.ablation_mask)
+            images.tumor_mask = PasteROI.paste_roi_image(images.img_plan, images.tumor_mask) #TODO: remove later
+            # images.tumor_mask = PasteROI.resize_segmentation(images.img_plan, images.tumor_mask)
+
+        if images.img_validation.GetSpacing() == images.ablation_mask.GetSpacing():
+            images.ablation_mask = PasteROI.paste_roi_image(images.img_validation, images.ablation_mask)
+            print('-----Validation and mask match----', path)
+        else:
+            # use RESAMPLE if the original image and its segmentation have different spacing
+            print('different spacing of ablation segmentation and original image: ', path)
+            ResizeSegmentations.print_image_dimensions(images.ablation_mask, 'ABLATION ORIGINAL')
+            ResizeSegmentations.print_image_dimensions(images.img_validation, 'IMAGE VALIDATION ORIGINAL')
+            images.ablation_mask = PasteROI.paste_roi_image(images.img_validation, images.ablation_mask) # TODO: remove later
+            # images.ablation_mask = PasteROI.resize_segmentation(images.img_validation, images.ablation_mask)
 
         # PRINT DIMENSIONS AFTER RESIZING GT Segmentation MASKS ROI
         if print_flag:
@@ -250,6 +260,7 @@ class ResizeSegmentations:
             if idx == 0 or idx == 1:
                 resampler.SetInterpolator(sitk.sitkLinear)
             elif idx == 2 or idx == 3:
+                # use NearestNeighbor interpolation for the ablation&tumor segmentations so no new labels are generated
                 resampler.SetInterpolator(sitk.sitkNearestNeighbor)
             resampled_img = resampler.Execute(img)
             data_resized.append(resampled_img)

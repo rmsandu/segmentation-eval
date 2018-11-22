@@ -9,7 +9,7 @@ import numpy as np
 import SimpleITK as sitk
 import DicomReader as reader
 import DicomWriter as WriterClass
-import Resize_Resample as pasteROI
+import Resize_Resample_archive as pasteROI
 import resampling_hu_dcm as hu
 import matplotlib.pyplot as plt
 
@@ -20,10 +20,10 @@ folder_path_plan = "C:/develop/data/Source_CT_Plan"
 folder_path_ablation = "C:/develop/data/Segmentation_ablation"
 folder_path_validation = "C:/develop/data/Source_CT_Validation"
 
-tumor_mask = reader.read_dcm_series(folder_path_tumor)
-ablation_mask = reader.read_dcm_series(folder_path_ablation)
-source_img_plan = reader.read_dcm_series(folder_path_plan)
-source_img_validation = reader.read_dcm_series(folder_path_validation)
+tumor_mask = reader.read_dcm_series(folder_path_tumor, True)
+ablation_mask = reader.read_dcm_series(folder_path_ablation, True)
+source_img_plan = reader.read_dcm_series(folder_path_plan, True)
+source_img_validation = reader.read_dcm_series(folder_path_validation, True)
 # %%
 reader.print_dimensions_img('tumor', tumor_mask)
 print('\n')
@@ -53,7 +53,7 @@ labelTumor = 1
 img_source_nda = sitk.GetArrayFromImage(source_img_plan)
 img_validation_nda = sitk.GetArrayFromImage(source_img_validation)
 mask_tumor_nda = sitk.GetArrayFromImage(resizedTumorMask)
-mask_ablation_nda = sitk.GetArrayFromImage(resizedAblationMask)
+tumor_mask_nda = sitk.GetArrayFromImage(resizedAblationMask)
 
 pydicom_scans = reader.load_scan(folder_path_plan)
 imgHU_pydicom = hu.get_pixels_hu(pydicom_scans)
@@ -70,7 +70,7 @@ seg = sitk.Cast(sitk.RescaleIntensity(resizedTumorMask), sitk.sitkUInt8)
 # oneSlice_source = imgHU_pydicom[122].astype(np.int32)
 oneSlice_source = img_source_nda[122, :, :]
 oneSlice_tumor = mask_tumor_nda[122, :, :].astype(np.float)
-oneSlice_ablation = mask_ablation_nda[122, :, :].astype(np.float)
+oneSlice_ablation = tumor_mask_nda[122, :, :].astype(np.float)
 #
 AblationOverlay = oneSlice_ablation
 TumorOverlay = oneSlice_tumor

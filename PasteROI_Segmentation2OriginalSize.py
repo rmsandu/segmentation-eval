@@ -34,6 +34,7 @@ def paste_roi_image(image_source, image_roi):
     outputImage.SetOrigin(newOrigin)
     outputImage.SetSpacing(newSpacing)
     outputImage.SetDirection(newDirection)
+    # img.TransformContinuousIndexToPhysicalPoint(np.array(img.GetSize()) / 2.0
     destinationIndex = outputImage.TransformPhysicalPointToIndex(image_roi.GetOrigin())
     # paste the roi mask into the re-sized image
     pasted_img = sitk.Paste(outputImage, image_roi, image_roi.GetSize(), destinationIndex=destinationIndex)
@@ -50,7 +51,7 @@ def resize_segmentation(image_source, image_roi):
     :param image_roi:
     :return: new_segmentation of the image_roi
     """
-    image_roi = recast_pixel_val(image_source, image_roi)
+    # image_roi = recast_pixel_val(image_source, image_roi)
 
     new_segmentation = sitk.Resample(image_roi, image_source.GetSize(),
                                      sitk.Transform(),

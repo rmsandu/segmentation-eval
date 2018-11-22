@@ -8,10 +8,10 @@ def extract_maxSizeSpacing(ablation_paths, tumor_paths, folder_path_plan, folder
     data = []
     for idx, ablation_path in enumerate(ablation_paths):
         if not (str(tumor_paths[idx]) == 'nan') and not (str(ablation_paths[idx]) == 'nan'):  # if both paths exists
-            tumor_mask, tumor_reader = Reader.read_dcm_series(tumor_paths[idx])
-            source_img_plan, img_plan_reader = Reader.read_dcm_series(folder_path_plan[idx])
-            ablation_mask, ablation_reader = Reader.read_dcm_series(ablation_paths[idx])
-            source_img_validation, img_validation_reader = Reader.read_dcm_series(folder_path_validation[idx])
+            tumor_mask, tumor_reader = Reader.read_dcm_series(tumor_paths[idx], True)
+            source_img_plan, img_plan_reader = Reader.read_dcm_series(folder_path_plan[idx], True)
+            ablation_mask, ablation_reader = Reader.read_dcm_series(ablation_paths[idx], True)
+            source_img_validation, img_validation_reader = Reader.read_dcm_series(folder_path_validation[idx], True)
             # check if any of the variables are empty, then skip, else resize the metrics
             # execute the condition when true and all image sources could be read
             if not (not (tumor_mask and ablation_mask and source_img_plan and source_img_validation)):

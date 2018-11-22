@@ -123,3 +123,6 @@ db.sqlite3
 *.tif
 *.jpg
 *.png
+
+# Archive
+/archive
