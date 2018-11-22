@@ -7,7 +7,7 @@ Created on Mon May 14 11:01:48 2018
 import os
 import time
 import pandas as pd
-import ResizeSegmentationsMain as ReaderWriterClass
+import II_Resize_Resample_Images as ReaderWriterClass
 #%%
 def splitall(path):
     allparts = []

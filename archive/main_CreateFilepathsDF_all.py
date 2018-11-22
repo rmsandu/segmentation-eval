@@ -6,8 +6,8 @@ Created on Mon May 14 11:01:48 2018
 """
 import os
 import pandas as pd
-import ResizeSegmentationsMain as ReaderWriterClass
-import mainDistanceVolumeMetrics as Metrics
+import II_Resize_Resample_Images as ReaderWriterClass
+import III_mainDistanceVolumeMetrics as Metrics
 #%%
 def splitall(path):
     allparts = []
@@ -118,5 +118,5 @@ Metrics.main_distance_volume_metrics(df_filepaths, rootdir)
 #                 dictionary_filepaths.setdefault('PatientID', []).append(patientID)
 #
 # df_filepaths = pd.DataFrame(dictionary_filepaths )
-# resize_object = ReaderWriterClass.ResizeSegmentations(df_filepaths)
-# resize_object.save_images_to_disk()
+# resize_object = ResizerClass.ResizeSegmentations(df_filepaths)
+# resize_object.I_call_resize_resample_all_images()

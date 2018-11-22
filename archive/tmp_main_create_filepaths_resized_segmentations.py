@@ -2,8 +2,8 @@ import os
 import time
 import csv
 import pandas as pd
-import ResizeSegmentationsMain as ReaderWriterClass
-import mainDistanceVolumeMetrics as Metrics
+import II_Resize_Resample_Images as ReaderWriterClass
+import III_mainDistanceVolumeMetrics as Metrics
 pd.options.mode.chained_assignment = None
 #%%
 #rootdir = r"C:\PatientDatasets_GroundTruth_Database\GroundTruth_2018\GT_23042018"
@@ -37,10 +37,10 @@ filename_excel = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmenta
                  "\MAVERRIC_Stockholm_June_all_patients_no_registration.xlsx"
 df_folderpaths= pd.read_excel(filename_excel)
 # df_filepaths = pd.DataFrame(dictionary_filepaths)
-# Call The ReaderWriterClass to Resize Segmentations
+# Call The ResizerClass to Resize Segmentations
 resize_object = ReaderWriterClass.ResizeSegmentations(df_folderpaths)
 folder_path_saving = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\maverric_processed_no_registration"
-resize_object.save_images_to_disk(folder_path_saving)
+resize_object.I_call_resize_resample_all_images(folder_path_saving)
 df_new_filepaths = resize_object.get_new_filepaths()
 
 #%%

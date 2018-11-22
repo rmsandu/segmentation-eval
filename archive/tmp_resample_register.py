@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import DicomReader as Reader
 import DicomWriter as DicomWriter
-import Resize_Resample as PasteRoi
+import Resize_Resample_archive as PasteRoi
 import SimpleITK as sitk
 #%%
 def resample(image, transform):
@@ -41,8 +41,8 @@ def save_transform_and_image(transform, fixed_image, moving_image, outputfile_pr
 folder_path_plan = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_maverric\maverric\Pat_ALKATIB SALEM_195412161795\Study_840\Series_9"
 folder_path_validation = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_maverric\maverric\Pat_ALKATIB SALEM_195412161795\Study_840\Series_17"
 
-source_img_plan = Reader.read_dcm_series(folder_path_plan)
-source_img_validation = Reader.read_dcm_series(folder_path_validation)
+source_img_plan = Reader.read_dcm_series(folder_path_plan, True)
+source_img_validation = Reader.read_dcm_series(folder_path_validation, True)
 fixed_image = source_img_plan
 moving_image = source_img_validation
 # save_transform_and_image(transform, source_img_plan, source_img_validation, 'new_registered_file')
