@@ -32,10 +32,11 @@ class ResizeSegmentations:
         print(name + ' size: ', image.GetSize())
         print(name + ' pixel: ', image.GetPixelIDTypeAsString())
 
-    def __init__(self, df_folderpaths, root_path_to_save, flag_extract_max_size):
+    def __init__(self, df_folderpaths, root_path_to_save, flag_extract_max_size, flag_resize_only_segmentations):
         self.df_folderpaths = df_folderpaths
         self.root_path_to_save = root_path_to_save
         self.flag_extract_max_size = flag_extract_max_size
+        self.flag_resize_only_segmentations =  flag_resize_only_segmentations
         self.flag_tumor = None
         self.flag_ablation = None
         self.new_filepaths = []
@@ -134,6 +135,11 @@ class ResizeSegmentations:
             # function to get the maximum spacing and size (x, y, z) from all the images
             reference_size_max, reference_spacing_max = extract_maxSizeSpacing(ablation_paths, tumor_paths,
                                                                                folder_path_plan, folder_path_plan)
+        elif self.flag_resize_only_segmentations is True:
+            reference_size_max = [512, 512, 400]
+            # reference_size_max = [None, None, None]
+            reference_spacing_max = [1.0, 1.0, 1.0]
+            # get it from the segmentations assuming that tumor and its respective ablation have the same spacing settings from using the same scanner
         else:
             reference_spacing_max = [1.0, 1.0, 1.0]
             reference_size_max = [512, 512, 401]
@@ -160,17 +166,19 @@ class ResizeSegmentations:
                     images = tuple_imgs(source_img_plan, source_img_validation, ablation_mask, tumor_mask)
                     images_readers = tuple_readers(img_plan_reader, img_validation_reader, ablation_reader,
                                                    tumor_reader)
+
                     # resize images and segmentations to isotropic and same physical space
-                    images_resized = ResizeSegmentations.II_resize_resample_images(images, reference_spacing_max,
-                                                                                   reference_size_max, tumor_paths[idx], print_flag=True)
+                    images_resized = ResizeSegmentations.II_resize_resample_images(self, images, reference_spacing_max,
+                                                                                   reference_size_max, tumor_paths[idx],
+                                                                                   print_flag=True)
                     # save new resized images
                     self.save_DICOMseries_todisk(images_resized, images_readers, patients_names[idx], NeedleNr[idx])
-                    # return
+                    return # return when only patient is wanted for computation
                     # TODO: remove return if parsing of all patients is desired.
 
 
-    @staticmethod
-    def II_resize_resample_images(images, reference_spacing, reference_size, path, print_flag=False):
+
+    def II_resize_resample_images(self, images, reference_spacing, reference_size, path, print_flag=False):
         """
             Resize all the images to the same dimensions and space.
             Usage: newImage = resize_image(tuple_images(img_plan, img_validation, ablation_mask, tumor_mask), [1.0, 1.0, 1.0], [512, 512, 500])
@@ -209,28 +217,32 @@ class ResizeSegmentations:
             ResizeSegmentations.print_image_dimensions(images.img_validation, 'IMAGE VALIDATION ORIGINAL')
 
         # %% RESIZE the ROI SEGMENTATIONS before RESAMPLING and RESIZING TO REFERENCE IMAGE
-        if images.img_plan.GetSpacing() == images.tumor_mask.GetSpacing():
-            # use PASTE if the original img and segmentation have the same spacing
-            images.tumor_mask = PasteROI.paste_roi_image(images.img_plan, images.tumor_mask)
-            print('-----Plan and mask match----', path)
+        if  self.flag_resize_only_segmentations is True:
+            # use the maximum size
+            images.tumor_mask = PasteROI.paste_roi_image(images.img_plan, images.tumor_mask, reference_size)
+            images.ablation_mask = PasteROI.paste_roi_image(images.img_plan, images.ablation_mask, reference_size)
         else:
-            # use RESAMPLE if the original image and its segmentation have different spacing
-            print('different spacing of tumor segmentation and original image: ', path)
-            ResizeSegmentations.print_image_dimensions(images.tumor_mask, 'TUMOR ORIGINAL')
-            ResizeSegmentations.print_image_dimensions(images.img_plan, 'IMAGE PLAN ORIGINAL')
-            images.tumor_mask = PasteROI.paste_roi_image(images.img_plan, images.tumor_mask) #TODO: remove later
-            # images.tumor_mask = PasteROI.resize_segmentation(images.img_plan, images.tumor_mask)
+            if ( images.img_plan.GetSpacing() - images.tumor_mask.GetSpacing() ) < 0.05:
+                # use PASTE if the original img and segmentation have the similar spacing
+                # TODO: maybe use reference size here - standard no of slices for all segmentations
+                images.tumor_mask = PasteROI.paste_roi_image(images.img_plan, images.tumor_mask)
+                print('-----Plan and mask match----', path)
+            else:
+                # use RESAMPLE if the original image and its segmentation have different spacing
+                print('different spacing of tumor segmentation and original image: ', path)
+                ResizeSegmentations.print_image_dimensions(images.tumor_mask, 'TUMOR ORIGINAL')
+                ResizeSegmentations.print_image_dimensions(images.img_plan, 'IMAGE PLAN ORIGINAL')
+                images.tumor_mask = PasteROI.resize_segmentation(images.img_plan, images.tumor_mask)
 
-        if images.img_validation.GetSpacing() == images.ablation_mask.GetSpacing():
-            images.ablation_mask = PasteROI.paste_roi_image(images.img_validation, images.ablation_mask)
-            print('-----Validation and mask match----', path)
-        else:
-            # use RESAMPLE if the original image and its segmentation have different spacing
-            print('different spacing of ablation segmentation and original image: ', path)
-            ResizeSegmentations.print_image_dimensions(images.ablation_mask, 'ABLATION ORIGINAL')
-            ResizeSegmentations.print_image_dimensions(images.img_validation, 'IMAGE VALIDATION ORIGINAL')
-            images.ablation_mask = PasteROI.paste_roi_image(images.img_validation, images.ablation_mask) # TODO: remove later
-            # images.ablation_mask = PasteROI.resize_segmentation(images.img_validation, images.ablation_mask)
+            if images.img_validation.GetSpacing() == images.ablation_mask.GetSpacing():
+                images.ablation_mask = PasteROI.paste_roi_image(images.img_validation, images.ablation_mask)
+                print('-----Validation and mask match----', path)
+            else:
+                # use RESAMPLE if the original image and its segmentation have different spacing
+                print('different spacing of ablation segmentation and original image: ', path)
+                ResizeSegmentations.print_image_dimensions(images.ablation_mask, 'ABLATION ORIGINAL')
+                ResizeSegmentations.print_image_dimensions(images.img_validation, 'IMAGE VALIDATION ORIGINAL')
+                images.ablation_mask = PasteROI.resize_segmentation(images.img_validation, images.ablation_mask)
 
         # PRINT DIMENSIONS AFTER RESIZING GT Segmentation MASKS ROI
         if print_flag:
@@ -238,40 +250,49 @@ class ResizeSegmentations:
             ResizeSegmentations.print_image_dimensions(images.ablation_mask, 'ABLATION ROI RESIZED')
 
         # %%  APPLY TRANSFORMS TO RESIZE AND RESAMPLE ALL THE DATA IN THE SAME SPACE
-        data = [images.img_plan, images.img_validation, images.ablation_mask, images.tumor_mask]
-        data_resized = []
-        for idx, img in enumerate(data):
-            # Set Transformation
-            transformTranslation = sitk.AffineTransform(dimension)  # use affine transform with 3 dimensions
-            transformTranslation.SetMatrix(img.GetDirection())  # set the cosine direction matrix
-            transformTranslation.SetTranslation(np.array(img.GetOrigin() - reference_origin))
-            transformTranslation.SetCenter(reference_center)
-            centering_transform = sitk.TranslationTransform(dimension)
-            img_center = np.array(img.TransformContinuousIndexToPhysicalPoint(np.array(img.GetSize()) / 2.0))
-            centering_transform.SetOffset(
-                np.array(transformTranslation.GetInverse().TransformPoint(img_center) - reference_center))
-            centered_transform = sitk.Transform(transformTranslation)
-            centered_transform.AddTransform(centering_transform)
-            # set all  output image parameters: origin, spacing, direction, starting index, and size with RESAMPLE
-            resampler = sitk.ResampleImageFilter()
-            resampler.SetReferenceImage(reference_image)
-            resampler.SetTransform(centered_transform)
-            resampler.SetDefaultPixelValue(0)
-            if idx == 0 or idx == 1:
-                resampler.SetInterpolator(sitk.sitkLinear)
-            elif idx == 2 or idx == 3:
-                # use NearestNeighbor interpolation for the ablation&tumor segmentations so no new labels are generated
-                resampler.SetInterpolator(sitk.sitkNearestNeighbor)
-            resampled_img = resampler.Execute(img)
-            data_resized.append(resampled_img)
-            if print_flag:
-                ResizeSegmentations.print_image_dimensions(resampled_img, 'RESAMPLED IMAGE ' + str(idx))
+        if self.flag_resize_only_segmentations is True:
+            # only resize the segmentations intra-patient for computation of metrics
+            resized_imgs = tuple_resized_imgs(img_plan=images.img_plan,
+                                              img_validation=images.img_validation,
+                                              ablation_mask=images.ablation_mask ,
+                                              tumor_mask=images.tumor_mask )
+        else:
+            # transform all the images in the same space, size & spacing
+            data = [images.img_plan, images.img_validation, images.ablation_mask, images.tumor_mask]
+            data_resized = []
+            for idx, img in enumerate(data):
+                # Set Transformation
+                transformTranslation = sitk.AffineTransform(dimension)  # use affine transform with 3 dimensions
+                transformTranslation.SetMatrix(img.GetDirection())  # set the cosine direction matrix
+                transformTranslation.SetTranslation(np.array(img.GetOrigin() - reference_origin))
+                transformTranslation.SetCenter(reference_center)
+                centering_transform = sitk.TranslationTransform(dimension)
+                img_center = np.array(img.TransformContinuousIndexToPhysicalPoint(np.array(img.GetSize()) / 2.0))
+                centering_transform.SetOffset(
+                    np.array(transformTranslation.GetInverse().TransformPoint(img_center) - reference_center))
+                centered_transform = sitk.Transform(transformTranslation)
+                centered_transform.AddTransform(centering_transform)
+                # set all  output image parameters: origin, spacing, direction, starting index, and size with RESAMPLE
+                resampler = sitk.ResampleImageFilter()
+                resampler.SetReferenceImage(reference_image)
+                resampler.SetTransform(centered_transform)
+                resampler.SetDefaultPixelValue(0)
+                if idx == 0 or idx == 1:
+                    resampler.SetInterpolator(sitk.sitkLinear)
+                elif idx == 2 or idx == 3:
+                    # use NearestNeighbor interpolation for the ablation&tumor segmentations so no new labels are generated
+                    resampler.SetInterpolator(sitk.sitkNearestNeighbor)
+                resampled_img = resampler.Execute(img)
+                data_resized.append(resampled_img)
+                if print_flag:
+                    ResizeSegmentations.print_image_dimensions(resampled_img, 'RESAMPLED IMAGE ' + str(idx))
 
-        # assuming the order stays the same, reassigng back to tuple
-        resized_imgs = tuple_resized_imgs(img_plan=data_resized[0],
-                                          img_validation=data_resized[1],
-                                          ablation_mask=data_resized[2],
-                                          tumor_mask=data_resized[3])
+            # assuming the order stays the same, reassigng back to tuple
+            resized_imgs = tuple_resized_imgs(img_plan=data_resized[0],
+                                              img_validation=data_resized[1],
+                                              ablation_mask=data_resized[2],
+                                              tumor_mask=data_resized[3])
+
         return resized_imgs
 
 

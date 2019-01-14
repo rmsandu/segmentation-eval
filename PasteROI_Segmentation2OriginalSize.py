@@ -14,13 +14,17 @@ def recast_pixel_val(image_source, image_roi):
     return image_roi
 
 
-def paste_roi_image(image_source, image_roi):
+def paste_roi_image(image_source, image_roi, reference_size=None):
     """ Resize ROI binary mask to size, dimension, origin of its source/original img.
         Usage: newImage = paste_roi_image(source_img_plan, roi_mask)
         Use only if the image segmentation ROI has the same spacing as the image source
     """
     # get the size and the origin from the source image
-    newSize = image_source.GetSize()
+    if reference_size:
+        newSize = reference_size
+    else:
+        newSize = image_source.GetSize()
+
     newOrigin = image_source.GetOrigin()
     # get the spacing and the direction from the mask or the image if they are identical
     newSpacing = image_source.GetSpacing()

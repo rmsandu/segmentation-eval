@@ -20,12 +20,12 @@ import II_Resize_Resample_Images as ResizerClass
 pd.options.mode.chained_assignment = None
 
 # %% 1. Read Excel File with Patient File Info Path
-rootdir = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_maverric\maverric"
-# input_filepaths = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\3d_segmentation_maverric\maverric\MAVERRIC_Stockholm_October_all_patients.xlsx"
-input_filepaths =r"C:\PatientDatasets_GroundTruth_Database\Stockholm\resized\FilepathsResizedGTSegmentations.xlsx"
+rootdir = r""
+input_filepaths = r""
+
 df_folderpaths = pd.read_excel(input_filepaths)
-# add the maverric id
-input_filepaths_maverric_key = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\maverric_cases.xlsx"
+#%% add the maverric id
+input_filepaths_maverric_key = r""
 df_maverric_key = pd.read_excel(input_filepaths_maverric_key)
 col_patient_id = df_maverric_key["ID nr"]
 df_maverric_key["ID_4nr"] = df_maverric_key["ID nr"].apply(lambda x: x.split('-')[1])
@@ -50,7 +50,9 @@ df_folderpaths['MAVERRIC_ID'] = patient_maverric_id_list
 folder_path_saving_resized = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\resized"
 resize_object = ResizerClass.ResizeSegmentations(df_folderpaths=df_folderpaths,
                                                  root_path_to_save=folder_path_saving_resized,
-                                                 flag_extract_max_size=False)
+                                                 flag_extract_max_size=False,
+                                                 flag_resize_only_segmentations=True)
+# add a new flag: flag_resize_only_segmentations
 resize_object.I_call_resize_resample_all_images()
 df_resized_filepaths = resize_object.get_new_filepaths()
 
