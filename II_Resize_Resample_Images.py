@@ -40,6 +40,10 @@ class ResizeSegmentations:
         self.flag_tumor = None
         self.flag_ablation = None
         self.new_filepaths = []
+        self.ablation_paths_resized = []
+        self.tumor_paths_resized = []
+        self.folder_path_plan_resized = []
+        self.folder_path_validation_resized = []
 
     def save_DICOMseries_todisk(self, images_resized, images_readers, patient_name, NeedleNr):
         """ Create directories and call DicomWriter to write the resized/resampled images to disk.
@@ -104,16 +108,20 @@ class ResizeSegmentations:
                                                  patient_id=str(patient_name),
                                                  series_reader=images_readers[i])
             obj_writer.save_source_img_to_file()
-        # TODO: add resized original images to the CSV list
+        # TODO: bug: segmnetations path not correctly aligned
         if self.flag_tumor is False:
             child_directory_tumor = None
         if self.flag_ablation is False:
             child_directory_ablation = None
         dict_paths = {
             "Tumour Segmentation Path Resized": child_directory_tumor,
-            "Ablation Segmentation Path Resized": child_directory_ablation
+            "Ablation Segmentation Path Resized": child_directory_ablation,
+            "Plan Image Path Resized": child_directory_img_plan,
+            "Validation Image Path Resized": child_directory_img_validation
         }
-        self.new_filepaths.append(dict_paths)
+        return dict_paths
+
+
 
     def I_call_resize_resample_all_images(self):
         """
@@ -131,12 +139,20 @@ class ResizeSegmentations:
         NeedleNr = self.df_folderpaths['NeedleNr'].tolist()
         patients_IDs = self.df_folderpaths['PatientID'].tolist()
 
+        # create list with NaNs lenght of ablation paths
+
+        self.ablation_paths_resized = ['NaN' for x in ablation_paths]
+        self.tumor_paths_resized = ['NaN' for x in tumor_paths]
+        self.folder_path_plan_resized = ['NaN' for x in tumor_paths]
+        self.folder_path_validation_resized = ['NaN' for x in tumor_paths]
+
+
         if self.flag_extract_max_size is True:
             # function to get the maximum spacing and size (x, y, z) from all the images
             reference_size_max, reference_spacing_max = extract_maxSizeSpacing(ablation_paths, tumor_paths,
                                                                                folder_path_plan, folder_path_plan)
         elif self.flag_resize_only_segmentations is True:
-            reference_size_max = [512, 512, 400]
+            reference_size_max = [512, 512, 401]
             # reference_size_max = [None, None, None]
             reference_spacing_max = [1.0, 1.0, 1.0]
             # get it from the segmentations assuming that tumor and its respective ablation have the same spacing settings from using the same scanner
@@ -172,8 +188,13 @@ class ResizeSegmentations:
                                                                                    reference_size_max, tumor_paths[idx],
                                                                                    print_flag=True)
                     # save new resized images
-                    self.save_DICOMseries_todisk(images_resized, images_readers, patients_names[idx], NeedleNr[idx])
-                    return # return when only patient is wanted for computation
+                    dict_paths =self.save_DICOMseries_todisk(images_resized, images_readers, patients_names[idx], NeedleNr[idx])
+                    # self.new_filepaths.append(dict_paths)
+                    self.ablation_paths_resized[idx] = dict_paths["Ablation Segmentation Path Resized"]
+                    self.tumor_paths_resized[idx] = dict_paths["Tumour Segmentation Path Resized"]
+                    self.folder_path_plan_resized[idx] = dict_paths["Plan Image Path Resized"]
+                    self.folder_path_validation_resized[idx] = dict_paths["Validation Image Path Resized"]
+                    # return # return when only patient is wanted for computation
                     # TODO: remove return if parsing of all patients is desired.
 
 
@@ -218,7 +239,9 @@ class ResizeSegmentations:
 
         # %% RESIZE the ROI SEGMENTATIONS before RESAMPLING and RESIZING TO REFERENCE IMAGE
         if  self.flag_resize_only_segmentations is True:
-            # use the maximum size
+            # use the maximum size to resize the segmentation, don't resample, don't register.
+            # Assumption: the spacing is the similar (err <0.01)
+            # use either the plan img or validation img as a reference image.(the segmentations should be copied at the same origin)
             images.tumor_mask = PasteROI.paste_roi_image(images.img_plan, images.tumor_mask, reference_size)
             images.ablation_mask = PasteROI.paste_roi_image(images.img_plan, images.ablation_mask, reference_size)
         else:
@@ -301,6 +324,11 @@ class ResizeSegmentations:
         Return Updated DataFrame with new resized filepaths.
         :return: DataFrame object
         """
-        df_new_filepaths = pd.DataFrame(self.new_filepaths)
-        df_final = pd.concat([self.df_folderpaths, df_new_filepaths], axis=1)
-        return df_final
+        tumours_resized_series = pd.Series(self.tumor_paths_resized)
+        ablations_resized_series = pd.Series(self.ablation_paths_resized)
+        self.df_folderpaths["Tumour Segmentation Path Resized"] = tumours_resized_series.values
+        self.df_folderpaths["Ablation Segmentation Path Resized"] = ablations_resized_series.values
+        # self.df_folderpaths["Plan Image Path Resized"] = self.folder_path_plan_resized
+        # self.df_folderpaths["Validation Image Path Resized"] = self.folder_path_plan_resized
+        # df_final = pd.concat([self.df_folderpaths, df_new_filepaths], axis=1)
+        return self.df_folderpaths

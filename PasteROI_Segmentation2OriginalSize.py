@@ -66,3 +66,6 @@ def resize_segmentation(image_source, image_roi):
                                      0,
                                      image_roi.GetPixelID())
     return new_segmentation
+
+if __name__ == '__main__':
+    pass
