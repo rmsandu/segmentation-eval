@@ -46,7 +46,7 @@ def paste_roi_image(image_source, image_roi, reference_size=None):
     return pasted_img
 
 
-def resize_segmentation(image_source, image_roi):
+def resample_segmentations(image_source, image_roi):
     """
     If the spacing of the segmentation is different from its original image, use RESAMPLE
     Resample parameters:  identity transformation, zero as the default pixel value, and nearest neighbor interpolation
@@ -57,15 +57,24 @@ def resize_segmentation(image_source, image_roi):
     """
     # image_roi = recast_pixel_val(image_source, image_roi)
 
-    new_segmentation = sitk.Resample(image_roi, image_source.GetSize(),
-                                     sitk.Transform(),
-                                     sitk.sitkNearestNeighbor,
-                                     image_source.GetOrigin(),
-                                     image_source.GetSpacing(),
-                                     image_source.GetDirection(),
-                                     0,
-                                     image_roi.GetPixelID())
-    return new_segmentation
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetReferenceImage(image_source) # the ablation mask
+    resampler.SetDefaultPixelValue(0)
+    resampler.SetInterpolator(sitk.sitkNearestNeighbor)
+    resampled_img = resampler.Execute(image_roi) # the tumour mask
+    # print(sitk.GetArrayFromImage(resampled_img))
+    #
+    # new_segmentation = sitk.Resample(image_roi, image_source.GetSize(),
+    #                                  sitk.Transform(),
+    #                                  sitk.sitkNearestNeighbor,
+    #                                  image_source.GetOrigin(),
+    #                                  image_source.GetSpacing(),
+    #                                  image_source.GetDirection(),
+    #                                  0,
+    #                                  image_roi.GetPixelID())
+    # return new_segmentation
+
+    return resampled_img
 
 if __name__ == '__main__':
     pass

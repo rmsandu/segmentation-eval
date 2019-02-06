@@ -6,7 +6,7 @@ Mauerer Distance Map for the tumor Object (deemed as "tumor in this particular c
 Algorithm Pipeline :
     1. compute the contour surface of the object (
     face+edge+vertex connectivity : fullyConnected=True
-    face connectivity only : fullyConnected=False
+    face connectivity only : fullyConnected=False (default mode)
     2. convert from SimpleITK format to Numpy Array Img
     3. remove the zeros from the contour of the object, NOT from the distance map
     4. compute the number of 1's pixels in the contour
@@ -39,7 +39,8 @@ class DistanceMetrics(object):
 
         surface_distance_results = np.zeros((1, len(SurfaceDistanceMeasuresITK.__members__.items())))
         #%%
-        tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=True)
+        # tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=True)
+        tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=False)
         
         tumor_surface_array = sitk.GetArrayFromImage(tumor_surface)
         tumor_surface_array_NonZero = tumor_surface_array.nonzero()
@@ -49,7 +50,7 @@ class DistanceMetrics(object):
                                                      tumor_surface_array_NonZero[2])))
         # check if there is actually an object present
         if 0 >= self.num_tumor_surface_pixels:
-            raise Exception('The mask image does not seem to contain an object.')
+            raise Exception('The tumor mask image does not seem to contain an object.')
             
         # init signed mauerer distance as tumor metrics from SimpleITK
         self.tumor_distance_map = sitk.SignedMaurerDistanceMap(tumor_segmentation,
@@ -76,7 +77,7 @@ class DistanceMetrics(object):
                                                         ablation_mask_array_NonZero[2])))
         
         if 0 >= self.num_ablation_surface_pixels:
-            raise Exception('The mask image does not seem to contain an object.')
+            raise Exception('The ablation mask image does not seem to contain an object.')
         # init Mauerer Distance
         self.ablation_distance_map = sitk.SignedMaurerDistanceMap(ablation_segmentation,
                                                                   squaredDistance=False,

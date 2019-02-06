@@ -32,11 +32,15 @@ class ResizeSegmentations:
         print(name + ' size: ', image.GetSize())
         print(name + ' pixel: ', image.GetPixelIDTypeAsString())
 
-    def __init__(self, df_folderpaths, root_path_to_save, flag_extract_max_size, flag_resize_only_segmentations):
+
+    def __init__(self, df_folderpaths, root_path_to_save, flag_extract_max_size, flag_resize_only_segmentations, flag_plot_id):
+
         self.df_folderpaths = df_folderpaths
         self.root_path_to_save = root_path_to_save
         self.flag_extract_max_size = flag_extract_max_size
         self.flag_resize_only_segmentations =  flag_resize_only_segmentations
+        self.flag_plot_id = flag_plot_id
+
         self.flag_tumor = None
         self.flag_ablation = None
         self.new_filepaths = []
@@ -44,6 +48,7 @@ class ResizeSegmentations:
         self.tumor_paths_resized = []
         self.folder_path_plan_resized = []
         self.folder_path_validation_resized = []
+
 
     def save_DICOMseries_todisk(self, images_resized, images_readers, patient_name, NeedleNr):
         """ Create directories and call DicomWriter to write the resized/resampled images to disk.
@@ -108,7 +113,7 @@ class ResizeSegmentations:
                                                  patient_id=str(patient_name),
                                                  series_reader=images_readers[i])
             obj_writer.save_source_img_to_file()
-        # TODO: bug: segmnetations path not correctly aligned
+
         if self.flag_tumor is False:
             child_directory_tumor = None
         if self.flag_ablation is False:
@@ -120,7 +125,6 @@ class ResizeSegmentations:
             "Validation Image Path Resized": child_directory_img_validation
         }
         return dict_paths
-
 
 
     def I_call_resize_resample_all_images(self):
@@ -136,8 +140,13 @@ class ResizeSegmentations:
         folder_path_plan = self.df_folderpaths['PlanTumorPath'].tolist()
         patients_names = self.df_folderpaths['PatientName'].tolist()
         folder_path_validation = self.df_folderpaths['ValidationAblationPath'].tolist()
-        NeedleNr = self.df_folderpaths['NeedleNr'].tolist()
-        patients_IDs = self.df_folderpaths['PatientID'].tolist()
+        #TODO: fix needle nr. in xml-processing repo. temporary solution replace with lesion nr. which is unique
+        if self.flag_plot_id == 'n':
+            NeedleNr = self.df_folderpaths['NeedleNr'].tolist()
+        elif self.flag_plot_id == 'l':
+            NeedleNr = self.df_folderpaths['LesionNr'].tolist()
+
+        # patients_IDs = self.df_folderpaths['PatientID'].tolist()
 
         # create list with NaNs lenght of ablation paths
 
@@ -163,39 +172,47 @@ class ResizeSegmentations:
         for idx in range(0, len(ablation_paths)):
             self.flag_tumor = False
             self.flag_ablation = False
-            if not (str(tumor_paths[idx]) == 'nan') and not (str(ablation_paths[idx]) == 'nan'):  # if both paths exists
-                # if patients[idx] == 195107010794: # multiple image series in the same folder
-                tumor_mask, tumor_reader = Reader.read_dcm_series(tumor_paths[idx], True)
-                source_img_plan, img_plan_reader = Reader.read_dcm_series(folder_path_plan[idx], True)
-                ablation_mask, ablation_reader = Reader.read_dcm_series(ablation_paths[idx], True)
-                source_img_validation, img_validation_reader = Reader.read_dcm_series(folder_path_validation[idx], True)
-                # execute the condition when true and all image sources could be read.
-                if not (not (tumor_mask and ablation_mask and source_img_plan and source_img_validation)):
-                    # resize the Segmentation Mask to the dimensions of the source images they were derived from
-                    self.flag_tumor = True
-                    self.flag_ablation = True
-                    tuple_imgs = recordclass('tuple_imgs',
-                                             ['img_plan', 'img_validation',
-                                              'ablation_mask', 'tumor_mask'])
-                    tuple_readers = recordclass('tuple_readers', ['img_plan_reader', 'img_validation_reader',
-                                                                  'ablation_reader', 'tumor_reader'])
-                    images = tuple_imgs(source_img_plan, source_img_validation, ablation_mask, tumor_mask)
-                    images_readers = tuple_readers(img_plan_reader, img_validation_reader, ablation_reader,
-                                                   tumor_reader)
+            try:
+                if not (str(tumor_paths[idx]) == 'nan') and not (str(ablation_paths[idx]) == 'nan'):  # if both paths exists
+                    # if patients[idx] == 195107010794: # multiple image series in the same folder
+                    tumor_mask, tumor_reader = Reader.read_dcm_series(tumor_paths[idx], True)
+                    source_img_plan, img_plan_reader = Reader.read_dcm_series(folder_path_plan[idx], True)
+                    ablation_mask, ablation_reader = Reader.read_dcm_series(ablation_paths[idx], True)
+                    source_img_validation, img_validation_reader = Reader.read_dcm_series(folder_path_validation[idx], True)
+                    # execute the condition when true and all image sources could be read.
+                    if not (not (tumor_mask and ablation_mask and source_img_plan and source_img_validation)):
+                        # resize the Segmentation Mask to the dimensions of the source images they were derived from
+                        self.flag_tumor = True
+                        self.flag_ablation = True
+                        tuple_imgs = recordclass('tuple_imgs',
+                                                 ['img_plan', 'img_validation',
+                                                  'ablation_mask', 'tumor_mask'])
+                        tuple_readers = recordclass('tuple_readers', ['img_plan_reader', 'img_validation_reader',
+                                                                      'ablation_reader', 'tumor_reader'])
+                        images = tuple_imgs(source_img_plan, source_img_validation, ablation_mask, tumor_mask)
+                        images_readers = tuple_readers(img_plan_reader, img_validation_reader, ablation_reader,
+                                                       tumor_reader)
 
-                    # resize images and segmentations to isotropic and same physical space
-                    images_resized = ResizeSegmentations.II_resize_resample_images(self, images, reference_spacing_max,
-                                                                                   reference_size_max, tumor_paths[idx],
-                                                                                   print_flag=True)
-                    # save new resized images
-                    dict_paths =self.save_DICOMseries_todisk(images_resized, images_readers, patients_names[idx], NeedleNr[idx])
-                    # self.new_filepaths.append(dict_paths)
-                    self.ablation_paths_resized[idx] = dict_paths["Ablation Segmentation Path Resized"]
-                    self.tumor_paths_resized[idx] = dict_paths["Tumour Segmentation Path Resized"]
-                    self.folder_path_plan_resized[idx] = dict_paths["Plan Image Path Resized"]
-                    self.folder_path_validation_resized[idx] = dict_paths["Validation Image Path Resized"]
-                    # return # return when only patient is wanted for computation
-                    # TODO: remove return if parsing of all patients is desired.
+                        # resize images and segmentations to isotropic and same physical space
+                        images_resized = ResizeSegmentations.II_resize_resample_images(self, images, reference_spacing_max,
+                                                                                       reference_size_max, tumor_paths[idx],
+                                                                                       print_flag=True)
+                        # save new resized images
+                        # TODO: update NeedleNr column in the xml-processing repo
+                        dict_paths =self.save_DICOMseries_todisk(images_resized,
+                                                                 images_readers,
+                                                                 patients_names[idx],
+                                                                 NeedleNr[idx])
+                        # self.new_filepaths.append(dict_paths)
+                        self.ablation_paths_resized[idx] = dict_paths["Ablation Segmentation Path Resized"]
+                        self.tumor_paths_resized[idx] = dict_paths["Tumour Segmentation Path Resized"]
+                        self.folder_path_plan_resized[idx] = dict_paths["Plan Image Path Resized"]
+                        self.folder_path_validation_resized[idx] = dict_paths["Validation Image Path Resized"]
+                        # return # return when only patient is wanted for computation
+                        # TODO: remove return if parsing of all patients is desired.
+            except Exception as e:
+                print('tf just happened!!!')
+                print(repr(e))
 
 
 
@@ -242,8 +259,10 @@ class ResizeSegmentations:
             # use the maximum size to resize the segmentation, don't resample, don't register.
             # Assumption: the spacing is the similar (err <0.01)
             # use either the plan img or validation img as a reference image.(the segmentations should be copied at the same origin)
-            images.tumor_mask = PasteROI.paste_roi_image(images.img_plan, images.tumor_mask, reference_size)
-            images.ablation_mask = PasteROI.paste_roi_image(images.img_plan, images.ablation_mask, reference_size)
+            # images.tumor_mask = PasteROI.paste_roi_image(images.img_validation, images.tumor_mask, reference_size)
+            # images.ablation_mask = PasteROI.paste_roi_image(images.img_validation, images.ablation_mask, reference_size)
+            images.tumor_mask = PasteROI.resample_segmentations(images.ablation_mask, images.tumor_mask)
+            images.ablation_mask = images.ablation_mask
         else:
             if ( images.img_plan.GetSpacing() - images.tumor_mask.GetSpacing() ) < 0.05:
                 # use PASTE if the original img and segmentation have the similar spacing
@@ -255,7 +274,7 @@ class ResizeSegmentations:
                 print('different spacing of tumor segmentation and original image: ', path)
                 ResizeSegmentations.print_image_dimensions(images.tumor_mask, 'TUMOR ORIGINAL')
                 ResizeSegmentations.print_image_dimensions(images.img_plan, 'IMAGE PLAN ORIGINAL')
-                images.tumor_mask = PasteROI.resize_segmentation(images.img_plan, images.tumor_mask)
+                images.tumor_mask = PasteROI.resample_segmentations(images.img_plan, images.tumor_mask)
 
             if images.img_validation.GetSpacing() == images.ablation_mask.GetSpacing():
                 images.ablation_mask = PasteROI.paste_roi_image(images.img_validation, images.ablation_mask)
@@ -265,7 +284,7 @@ class ResizeSegmentations:
                 print('different spacing of ablation segmentation and original image: ', path)
                 ResizeSegmentations.print_image_dimensions(images.ablation_mask, 'ABLATION ORIGINAL')
                 ResizeSegmentations.print_image_dimensions(images.img_validation, 'IMAGE VALIDATION ORIGINAL')
-                images.ablation_mask = PasteROI.resize_segmentation(images.img_validation, images.ablation_mask)
+                images.ablation_mask = PasteROI.resample_segmentations(images.img_validation, images.ablation_mask)
 
         # PRINT DIMENSIONS AFTER RESIZING GT Segmentation MASKS ROI
         if print_flag:

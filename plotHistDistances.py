@@ -21,7 +21,7 @@ def plotHistDistances(pat_name, trajectory_idx, pathology, rootdir, distanceMap,
     figName_hist = 'Pat' + str(pat_name) + '_Trajectory' + str(trajectory_idx) + '_histogramDistances'
     min_val = int(np.floor(min(distanceMap)))
     max_val = int(np.ceil(max(distanceMap)))
-    fig, ax = plt.subplots(figsize=(24, 20))
+    fig, ax = plt.subplots(figsize=(18, 16))
     # col_height, bins, patches = ax.hist(distanceMap, ec='darkgrey')
     # TODO: fix column height percentage. now it's above 100% sometimes. because of calculation or display?
     col_height, bins, patches = ax.hist(distanceMap, ec='darkgrey', bins=range(min_val-1, max_val+1))
@@ -39,6 +39,7 @@ def plotHistDistances(pat_name, trajectory_idx, pathology, rootdir, distanceMap,
             voxels_ablated.append(col_val)
 #%%
     '''calculate the total percentage of surface for ablated, non-ablated, insufficiently ablated'''
+
     voxels_nonablated = np.asarray(voxels_nonablated)
     voxels_insuffablated = np.asarray(voxels_insuffablated)
     voxels_ablated = np.asarray(voxels_ablated)
@@ -57,12 +58,12 @@ def plotHistDistances(pat_name, trajectory_idx, pathology, rootdir, distanceMap,
             plt.setp(p, 'facecolor', 'darkgreen', label='Sufficient Ablation Margin: ' + " %.2f" % sum_perc_ablated + '%')
 #%%                   
     '''edit the axes limits and labels'''
-    plt.xlabel('[mm]', fontsize=38, color='black')
-    plt.tick_params(labelsize=36, color='black')
-    ax.tick_params(colors='black', labelsize=36)
+    plt.xlabel('[mm]', fontsize=30, color='black')
+    plt.tick_params(labelsize=28, color='black')
+    ax.tick_params(colors='black', labelsize=28)
     plt.grid(True)
     # TODO: set equal axis limits
-    # ax.set_xlim([-15, 15])
+    ax.set_xlim([-15, 15])
 
     # edit the y-ticks: change to percentage of surface
     yticks, locs = plt.yticks()
@@ -73,13 +74,18 @@ def plotHistDistances(pat_name, trajectory_idx, pathology, rootdir, distanceMap,
     new_yticks[0] = 0
     plt.yticks(new_yticks, yticks_percent)
 #    plt.yticks(yticks,yticks_percent)
-    plt.ylabel('Percetange of surface voxels', fontsize=38, color='black')
+    plt.ylabel('Percetange of surface voxels', fontsize=30, color='black')
     
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(), fontsize=38, loc='best')
+    plt.legend(by_label.values(), by_label.keys(), fontsize=30, loc='best')
     
-    plt.title(title + '. Patient ' + str(pat_name) +'. Trajectory'+ str(trajectory_idx), fontsize=36)
+    plt.title(title + '. Patient ' + str(pat_name) +'. Lesion '+ str(trajectory_idx), fontsize=30)
     figpathHist = os.path.join(rootdir, figName_hist + '.png')
-    gh.save(figpathHist, width=24, height=20)
+    gh.save(figpathHist, width=18, height=16)
+
+    # return the percentages
+    return (sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated)
+
+
 

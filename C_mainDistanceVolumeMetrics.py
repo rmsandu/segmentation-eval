@@ -8,21 +8,27 @@ import os
 import time
 import pandas as pd
 import plotHistDistances as pm
+import readInputKeyboard
 from distancemetrics import DistanceMetrics
 from volumemetrics import VolumeMetrics
 import DistancesVolumes_twinAxes as twinAxes
 import distances_boxplots_all_lesions as bpLesions
 
 
-def main_distance_volume_metrics(df_patientdata, pats, ablations, tumors, trajectories, rootdir,
+def main_distance_volume_metrics(df_patientdata, pat_maverric_id, ablations, tumors, trajectories, rootdir,
                                  pathology='Metastases',
                                  FLAG_SAVE_TO_EXCEL=True,
                                  title='Ablation to Tumor Euclidean Distances'):
 
     df_patientdata['Pathology'] = pathology
-    # pats = df_patientdata['PatientID'].tolist()
+    pat_unique_id = df_patientdata['PatientID'].tolist()
     df_metrics_all = pd.DataFrame()
+
     distanceMaps_allPatients = []
+    perce_5_0_allPatients = []
+    perc_0_5_allPatients = []
+    perce_5_10_allPatients = []
+
     # %% CALL Distance and Volume Metrics and save them to DataFrame, then to CSV
     # iterate through the lesions&ablations segmentations paths
     for idx in range(0, len(tumors)):
@@ -38,19 +44,38 @@ def main_distance_volume_metrics(df_patientdata, pats, ablations, tumors, trajec
                 evaloverlap.set_volume_metrics()
                 df_volumes_1set = evaloverlap.get_volume_metrics_df()
                 df_metrics = pd.concat([df_volumes_1set, df_distances_1set], axis=1)
-                df_metrics_all = df_metrics_all.append(df_metrics)
+                # df_metrics_all = df_metrics_all.append(df_metrics)
                 distanceMap = evalmetrics.get_surface_distances()
-                distanceMaps_allPatients.append(distanceMap)
+                # distanceMaps_allPatients.append(distanceMap)
                 num_surface_pixels = evalmetrics.num_tumor_surface_pixels
+                #%% surfaces distance percentages
+
+
+                # first sanity check that the values are not empty
+                if pat_maverric_id[idx]:
+                    pat_id = pat_maverric_id[idx]
+                else:
+                    pat_id = pat_unique_id
+                if trajectories[idx]:
+                    trajectory_needle_id = trajectories[idx]
+                else:
+                    trajectory_needle_id = str(idx)
                 #  plot the color coded histogram of the distances
-                pm.plotHistDistances(pat_name=pats[idx],
-                                     trajectory_idx=trajectories[idx],
-                                     pathology=pathology[idx],
+                sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated = pm.plotHistDistances(pat_name=pat_id,
+                                     trajectory_idx=trajectory_needle_id,
+                                     pathology=pathology,  # or TODO: pathology[idx]
                                      rootdir=rootdir,
                                      distanceMap=distanceMap,
                                      num_voxels=num_surface_pixels,
                                      title=title)
-            except Exception:
+                # return (sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated)
+
+                df_metrics_all = df_metrics_all.append(df_metrics)
+                distanceMaps_allPatients.append(distanceMap)
+                perc_0_5_allPatients.append(sum_perc_nonablated)
+                sum_perc_insuffablated
+            except Exception as e:
+                print(repr(e))
                 # append empty dataframe
                 numRows, numCols = df_metrics_all.shape
                 numRows = 1
@@ -59,7 +84,10 @@ def main_distance_volume_metrics(df_patientdata, pats, ablations, tumors, trajec
                 # append empty DataFrame
                 distanceMaps_allPatients.append([])
                 # TODO: need to set the columns as well
-                print(str(pats[idx]), 'error computing the distances and volumes')
+                if pat_maverric_id[idx]:
+                    print(str(pat_maverric_id[idx]), 'error computing the distances and volumes')
+                else:
+                    print(str(pat_unique_id[idx]), 'error computing the distances and volumes')
                 continue
         else:
             # if the segmentation path and ablation are empty
@@ -91,3 +119,24 @@ def main_distance_volume_metrics(df_patientdata, pats, ablations, tumors, trajec
         writer = pd.ExcelWriter(filepath_excel)
         df_patients_sorted.to_excel(writer, index=False, float_format='%.2f')
         writer.save()
+
+
+if __name__ == '__main__':
+
+    filepathExcel_resized_segmentations = readInputKeyboard.getNonEmptyString(
+        "Filepath to CSV/Excel with input resized segmentations paths : ")
+
+    rootdir_plots = readInputKeyboard.getNonEmptyString("Filepath to saving histogram plots: ")
+
+    df_final = pd.read_excel(filepathExcel_resized_segmentations)
+    # todo: question if you want to plot all patients
+    # todo: question replot first patient
+    # todo: replot patient with maverric id
+
+    ablations = df_final["Ablation Segmentation Path Resized"].tolist()
+    tumors = df_final["Tumour Segmentation Path Resized"].tolist()
+    #
+    # TODO: update trajectories var :     trajectories = df_final['NeedleNr']. at the moment trajectory is incorrect.
+    trajectories = df_final['LesionNr']
+    pat_maverric_id = df_final['MAVERRIC_ID']
+    main_distance_volume_metrics(df_final, pat_maverric_id, ablations, tumors, trajectories, rootdir_plots)
