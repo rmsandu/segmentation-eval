@@ -7,12 +7,17 @@ Created on Wed Apr 25 13:45:50 2018
 import os
 import numpy as np
 import SimpleITK as sitk
-import pydicom as dicom
-
+import pydicom
 #%%
 
 
 def read_dcm_series(folder_path, reader_flag=True):
+    """
+    Read DICOM Series/Single Image from a folder path into a SimpleITK Image Object.
+    :param folder_path: directory address containing DICOM Images
+    :param reader_flag:
+    :return: SimpleITK Image Object
+    """
 
     try:
         if next(os.walk(folder_path), None) is None:
@@ -41,20 +46,19 @@ def read_dcm_series(folder_path, reader_flag=True):
         else:
             return None
 
+def read_single_dcm(path):
+    try:
+        ds = pydicom.read_file(path)
+    except Exception:
+        return None
+    return ds
 
-def print_dimensions_img(title, image):
-    print('Dimensions of ' + title + ' image:', image.GetSize())
-    print('Spacing of ' + title + ' image:', image.GetSpacing())
-    print('Origin of '+ title + ' image:', image.GetOrigin())
-    print('Direction of ' + title + ' image:',image.GetDirection())
-    print('Pixel ID Value:', image.GetPixelIDTypeAsString())
 
-
-def load_scan(path):
+def read_dcm_series_pydicom(path):
     # Load the scans in given folder path
-    slices = [dicom.read_file(path + '/' + s) for s in os.listdir(path)]
+    slices = [pydicom.read_file(path + '/' + s) for s in os.listdir(path)]
 #    slices.sort(key = lambda x: float(x.ImagePositionPatient[2]), reverse=True)
-    slices.sort(key = lambda x: int(x.InstanceNumber))
+    slices.sort(key=lambda x: int(x.InstanceNumber))
     try:
         slice_thickness = np.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
     except Exception:
