@@ -1,0 +1,10 @@
+openpyxl
+matplotlib
+SimpleITK
+scikit-image
+scipy
+pydicom==1.2.2
+numpy==1.17.0
+scipy==1.3.0
+pandas==0.25.0
+recordclass==0.11.1
