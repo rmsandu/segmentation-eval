@@ -4,11 +4,15 @@
 """
 
 import os
+from os import listdir
+from os.path import isfile, join
 import pydicom
 import pandas as pd
 import DicomReader as Reader
-import DicomWriter as DicomWriter
-import B_01_ResampleSegmentations as ResizerClass
+import SimpleITK as sitk
+from DicomWriter import DicomWriter
+from B_01_ResampleSegmentations import ResizeSegmentation
+from C_mainDistanceVolumeMetrics import main_distance_volume_metrics
 
 
 def create_paths(rootdir):
@@ -67,13 +71,12 @@ def create_paths(rootdir):
 if __name__ == '__main__':
     #  start with single patient folder, then load all the folders in the memory with glob
     rootdir = r"C:\tmp_patients\Pat_MAV_BE_B01_\Study_0"
-    folder_path_new_resized_images = r" "
+    dir_plots = r"C:\Figures"
     flag_resize_only_segmentations = 'Y'
     flag_match_with_patient_studyID = 'N'
     flag_extract_max_size = 'N'
     list_all_ct_series = create_paths(rootdir)
     df_paths_mapping = pd.DataFrame(list_all_ct_series)
-    print('Success')
 
     for idx, el in enumerate(df_paths_mapping.SegmentLabel):
         print(df_paths_mapping.iloc[idx].SegmentLabel)
@@ -85,22 +88,39 @@ if __name__ == '__main__':
             if df_paths_mapping.iloc[idx_tumor_path].PathSeries is not None:
                 tumor_path, file = os.path.split(df_paths_mapping.iloc[idx_tumor_path].PathSeries)
                 tumor_segmentation_sitk, tumor_sitk_reader = Reader.read_dcm_series(tumor_path, True)
-                ablation_segmentation_sitk, ablation_sitk_path = Reader.read_dcm_series(ablation_path, True)
+                ablation_segmentation_sitk, ablation_sitk_reader = Reader.read_dcm_series(ablation_path, True)
                 lesion_number = df_paths_mapping.iloc[idx_tumor_path].LesionNumber
+                ablation_date = df_paths_mapping.iloc[idx_tumor_path].AblationDate
+                patient_id = df_paths_mapping.iloc[idx_tumor_path].PatientID
+
                 #%% RESAMPLE the tumor and the ablation
+                resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk)
+                tumor_segmentation_resampled = resizer.resample_segmentation()  # sitk image object
+                main_distance_volume_metrics(patient_id, ablation_segmentation_sitk, tumor_segmentation_resampled,
+                                             lesion_number,
+                                             ablation_date, dir_plots)
+                # main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmentation, lesion_id,
+                #                              ablation_date, dir_plots,
+                #                              FLAG_SAVE_TO_EXCEL=True, title='Ablation to Tumor Euclidean Distances'):
+                # send the tumor segm and the ablation segm to the distance & volume metrics
+                # patient id, lesion_id ? that's all. maybe later print whether the patient had recurrence or not.
 
+                #%%% bollocks that we will probably never use
+                # write to DISK
+                # writer = DicomWriter(ablation_segmentation_sitk, ablation_path, "", ablation_sitk_reader)
+                # writer.save_image_to_file()
 
-            # TODO: 1) resample the segmentations
-            # TODO: 2) calculate the metrics
-            # TODO: 3) export the surface distances to an excel
-            # TODO: 4) plots of the histogram
-            # look for the matching ReferenceSeriesUIDInstance and get the path
-
-    # result = next((item for item in list_all_ct_series if
-    #                item["SeriesInstanceNumberUID"] == source_series_instance_uid), None)
-    #
-    # needle_idx_df_xml = df_segmentations_paths_xml.index[
-    #     df_segmentations_paths_xml["NeedleIdx"] == needle_idx_val].tolist()
-    # idx_referenced_segm = [el for el in needle_idx_df_xml if el != idx_segm_xml]
-
-    # onlyfiles = [f for f in os.listdir(mypath) if os.isfile(os.join(mypath, f))
+                # tumor_segm_array = sitk.GetArrayFromImage(tumor_segmentation_resampled)
+                # only_files = [f for f in listdir(tumor_path) if isfile(join(tumor_path, f))]
+                # # TODO: create a fucking new folder where to write the files.
+                # # TODO: ensure they are in the correct order something like this slices = sorted(slices, key=lambda s: s.SliceLocation)
+                # # TODO: maybe we need to replace the image from scratch
+                # for z in range(0, len(tumor_segm_array)):
+                #     tumor_slice = tumor_segm_array[z, :, :]
+                #     dcm_file_path = os.path.join(tumor_path, dcm_file)
+                #     ds = pydicom.read_file(dcm_file_path)
+                #     # ds.pixel_array = tumor_slice
+                #     ds.Rows, ds.Columns = tumor_slice.shape
+                #     ds.PixelSpacing[0], ds.PixelSpacing[1], ds.SliceThickness = tumor_segmentation_resampled.GetSpacing()
+                #     ds.PixelData = tumor_slice.tobytes()  # or tostring()
+                #     ds.save_as(dcm_file_path)
