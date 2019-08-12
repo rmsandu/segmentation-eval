@@ -69,8 +69,8 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
     # %%
     # add the Distance Map to the input dataframe. to be written to Excel
     # df_patientdata['DistanceMaps'] = distanceMaps_allPatients
-    df_metrics_all.index = list(range(len(df_metrics_all)))
-    df_metrics_all['DistanceMaps'] = distanceMap
+    # df_metrics_all.index = list(range(len(df_metrics_all)))
+    # df_metrics_all['DistanceMaps'] = distanceMap
     # df_final = pd.concat([distanceMaps_allPatients, df_metrics_all], axis=1)
 
     # data_distances_to_plot = df_patients_sorted['DistanceMaps'].tolist()
@@ -84,7 +84,7 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
     if FLAG_SAVE_TO_EXCEL:
         print('writing to Excel....', dir_plots)
         timestr = time.strftime("%H%M%S-%Y%m%d")
-        filename = patient_id + '_' + lesion_id + '_' + title + '-' + ablation_date + '.xlsx'
+        filename = str(patient_id) + '_' + str(lesion_id) + '_' + title + '-' + str(ablation_date) + '.xlsx'
         filepath_excel = os.path.join(dir_plots, filename)
         writer = pd.ExcelWriter(filepath_excel)
         df_metrics_all.to_excel(writer, index=False, float_format='%.2f')
