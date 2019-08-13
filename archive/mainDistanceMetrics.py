@@ -34,10 +34,10 @@ for subdir, dirs, files in os.walk(rootdir):
     tumorFilePath  = ''
     ablationSegm = ''
     for file in files:
-        if file == "tumorSegm":
+        if file == "tumor_segmentation":
             FilePathName = os.path.join(subdir, file)
             tumorFilePath = os.path.normpath(FilePathName)
-        elif file == "ablationSegm":
+        elif file == "ablation_segmentation":
             FilePathName = os.path.join(subdir, file)
             ablationFilePath = os.path.normpath(FilePathName)
         else:

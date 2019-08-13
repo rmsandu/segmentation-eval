@@ -67,12 +67,12 @@ Metrics.main_distance_volume_metrics(df_filepaths, rootdir)
 #
 # for subdir, dirs, files in os.walk(rootdir):
 #     tumorFilePath  = ''
-#     ablationSegm = ''
+#     ablation_segmentation = ''
 #     for file in files:
-#         if file == "tumorSegm":
+#         if file == "tumor_segmentation":
 #             FilePathName = os.path.join(subdir, file)
 #             tumorFilePath = os.path.normpath(FilePathName)
-#         elif file == "ablationSegm":
+#         elif file == "ablation_segmentation":
 #             FilePathName = os.path.join(subdir, file)
 #             ablationFilePath = os.path.normpath(FilePathName)
 #         else:
