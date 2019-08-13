@@ -70,7 +70,7 @@ def create_paths(rootdir):
 
 if __name__ == '__main__':
     #  start with single patient folder, then load all the folders in the memory with glob
-    rootdir = r"C:\tmp_patients\Pat_MAV_BE_B01_\Study_0"
+    rootdir = r"C:\tmp_patients\Pat_M03_193708128024\Study_840"
     dir_plots = r"C:\Figures"
     flag_resize_only_segmentations = 'Y'
     flag_match_with_patient_studyID = 'N'
@@ -83,8 +83,16 @@ if __name__ == '__main__':
         if df_paths_mapping.iloc[idx].SegmentLabel == 'Ablation':
             ablation_path, file = os.path.split(df_paths_mapping.iloc[idx].PathSeries)
             referenced_series_uid = df_paths_mapping.iloc[idx].ReferenceSegmentationImgSeriesInstanceUID
-            idx_tumor_path = df_paths_mapping.index[
-                df_paths_mapping.SeriesInstanceNumberUID == referenced_series_uid].tolist()[0]
+            if referenced_series_uid is not None:
+                # the ablation segmentation has a tumor segmentation pair
+                try:
+                    idx_tumor_path = df_paths_mapping.index[
+                        df_paths_mapping.SeriesInstanceNumberUID == referenced_series_uid].tolist()[0]
+                except IndexError:
+                    continue
+            else:
+                continue
+
             if df_paths_mapping.iloc[idx_tumor_path].PathSeries is not None:
                 tumor_path, file = os.path.split(df_paths_mapping.iloc[idx_tumor_path].PathSeries)
                 tumor_segmentation_sitk, tumor_sitk_reader = Reader.read_dcm_series(tumor_path, True)
@@ -112,7 +120,6 @@ if __name__ == '__main__':
 
                 # tumor_segm_array = sitk.GetArrayFromImage(tumor_segmentation_resampled)
                 # only_files = [f for f in listdir(tumor_path) if isfile(join(tumor_path, f))]
-                # # TODO: create a fucking new folder where to write the files.
                 # # TODO: ensure they are in the correct order something like this slices = sorted(slices, key=lambda s: s.SliceLocation)
                 # # TODO: maybe we need to replace the image from scratch
                 # for z in range(0, len(tumor_segm_array)):
