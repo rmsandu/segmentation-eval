@@ -32,7 +32,15 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
     evaloverlap.set_image_object(ablation_segmentation, tumor_segmentation)
     evaloverlap.set_volume_metrics()
     df_volumes_1set = evaloverlap.get_volume_metrics_df()
-    df_metrics = pd.concat([df_volumes_1set, df_distances_1set], axis=1)
+    patient_data = {'patient_id': patient_id,
+                    'lesion_id': lesion_id,
+                    'ablation_date': ablation_date}
+    patient_list = []
+    patient_list.append(patient_data)
+    patient_df = pd.DataFrame(patient_list)
+    # patient_info = pd.DataFrame(patient_id, lesion_id, ablation_date, columns=["PatientID", "Lesion_ID", "Ablation_Date"])
+    df_metrics = pd.concat([patient_df, df_volumes_1set, df_distances_1set], axis=1)
+
     # df_metrics_all = df_metrics_all.append(df_metrics)
     distanceMap = evalmetrics.get_surface_distances()
     # distanceMaps_allPatients.append(distanceMap)
@@ -82,6 +90,8 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
     # %%
     ''' save to excel the average of the distance metrics '''
     if FLAG_SAVE_TO_EXCEL:
+        # TODO: add the patient id and the lesion id in the excel, ablation date (first sheet)
+        # TODO: add the number of voxels and the distance map in the second sheet of the excel
         print('writing to Excel....', dir_plots)
         timestr = time.strftime("%H%M%S-%Y%m%d")
         lesion_id_str = str(lesion_id)
@@ -89,7 +99,10 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
         filename = str(patient_id) + '_' + str(lesion_id) + '_' + 'AblationDate_' + str(ablation_date) + '_DistanceVolumeMetrics.xlsx'
         filepath_excel = os.path.join(dir_plots, filename)
         writer = pd.ExcelWriter(filepath_excel)
-        df_metrics_all.to_excel(writer, index=False, float_format='%.4f')
+        df_metrics_all.to_excel(writer, sheet_name='Sheet1', index=False, float_format='%.4f')
+        # distanceMap_df = pd.DataFrame(distanceMap)
+        # num_voxels_df = pd.DataFrame(num_surface_pixels)
+        # concatenate and write to excel
         writer.save()
 
 
