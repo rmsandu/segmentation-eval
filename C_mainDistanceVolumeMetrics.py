@@ -42,12 +42,12 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
     #  plot the color coded histogram of the distances
     try:
         sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated = pm.plotHistDistances(pat_name=patient_id,
-                                                                                             trajectory_idx=lesion_id,
-                                                                                             pathology="CRLM",
+                                                                                             lesion_id=lesion_id,
                                                                                              rootdir=dir_plots,
                                                                                              distanceMap=distanceMap,
                                                                                              num_voxels=num_surface_pixels,
-                                                                                             title=title)
+                                                                                             title=title,
+                                                                                             ablation_date=ablation_date)
 
         df_metrics_all = df_metrics_all.append(df_metrics)
         # distanceMaps_allPatients.append(distanceMap)
@@ -84,10 +84,12 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
     if FLAG_SAVE_TO_EXCEL:
         print('writing to Excel....', dir_plots)
         timestr = time.strftime("%H%M%S-%Y%m%d")
-        filename = str(patient_id) + '_' + str(lesion_id) + '_' + title + '-' + str(ablation_date) + '.xlsx'
+        lesion_id_str = str(lesion_id)
+        lesion_id = lesion_id_str.split('.')[0]
+        filename = str(patient_id) + '_' + str(lesion_id) + '_' + 'AblationDate_' + str(ablation_date) + '_DistanceVolumeMetrics.xlsx'
         filepath_excel = os.path.join(dir_plots, filename)
         writer = pd.ExcelWriter(filepath_excel)
-        df_metrics_all.to_excel(writer, index=False, float_format='%.2f')
+        df_metrics_all.to_excel(writer, index=False, float_format='%.f')
         writer.save()
 
 
