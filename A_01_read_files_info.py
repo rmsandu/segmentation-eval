@@ -4,13 +4,9 @@
 """
 
 import os
-from os import listdir
-from os.path import isfile, join
 import pydicom
 import pandas as pd
 import DicomReader as Reader
-import SimpleITK as sitk
-from DicomWriter import DicomWriter
 from B_01_ResampleSegmentations import ResizeSegmentation
 from C_mainDistanceVolumeMetrics import main_distance_volume_metrics
 
@@ -106,28 +102,7 @@ if __name__ == '__main__':
                 tumor_segmentation_resampled = resizer.resample_segmentation()  # sitk image object
                 main_distance_volume_metrics(patient_id, ablation_segmentation_sitk, tumor_segmentation_resampled,
                                              lesion_number,
-                                             ablation_date, dir_plots)
-                # main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmentation, lesion_id,
-                #                              ablation_date, dir_plots,
-                #                              FLAG_SAVE_TO_EXCEL=True, title='Ablation to Tumor Euclidean Distances'):
-                # send the tumor segm and the ablation segm to the distance & volume metrics
-                # patient id, lesion_id ? that's all. maybe later print whether the patient had recurrence or not.
+                                             ablation_date,
+                                             dir_plots)
 
-                #%%% bollocks that we will probably never use
-                # write to DISK
-                # writer = DicomWriter(ablation_segmentation_sitk, ablation_path, "", ablation_sitk_reader)
-                # writer.save_image_to_file()
-
-                # tumor_segm_array = sitk.GetArrayFromImage(tumor_segmentation_resampled)
-                # only_files = [f for f in listdir(tumor_path) if isfile(join(tumor_path, f))]
-                # # TODO: ensure they are in the correct order something like this slices = sorted(slices, key=lambda s: s.SliceLocation)
-                # # TODO: maybe we need to replace the image from scratch
-                # for z in range(0, len(tumor_segm_array)):
-                #     tumor_slice = tumor_segm_array[z, :, :]
-                #     dcm_file_path = os.path.join(tumor_path, dcm_file)
-                #     ds = pydicom.read_file(dcm_file_path)
-                #     # ds.pixel_array = tumor_slice
-                #     ds.Rows, ds.Columns = tumor_slice.shape
-                #     ds.PixelSpacing[0], ds.PixelSpacing[1], ds.SliceThickness = tumor_segmentation_resampled.GetSpacing()
-                #     ds.PixelData = tumor_slice.tobytes()  # or tostring()
-                #     ds.save_as(dcm_file_path)
+                #%% #TODO write the resampled mask to disk

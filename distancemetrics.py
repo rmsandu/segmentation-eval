@@ -19,7 +19,6 @@ import numpy as np
 import pandas as pd
 from enum import Enum
 import SimpleITK as sitk
-import DicomReader as Reader
 
 
 class DistanceMetrics(object):
@@ -28,10 +27,6 @@ class DistanceMetrics(object):
 
         self.tumor_segmentation = tumor_segmentation
         self.ablation_segmentation = ablation_segmentation
-        # tumor_segmentation = Reader.read_dcm_series(tumor_path, False)
-        # ablation_segmentation = Reader.read_dcm_series(ablation_path, False)
-        # Reader.print_dimensions_img('tumor', tumor_segmentation)
-        # Reader.print_dimensions_img('ablation', ablation_segmentation)
         ''' init the enum fields for surface dist measures computer with simpleitk'''
         class SurfaceDistanceMeasuresITK(Enum):
             hausdorff_distance, max_distance, min_surface_distance, mean_surface_distance,\

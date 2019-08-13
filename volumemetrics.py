@@ -8,14 +8,13 @@ Created on Wed Nov 15 14:17:41 2017
 import numpy as np
 import pandas as pd
 import SimpleITK as sitk
-import DicomReader as Reader
 
 
 class VolumeMetrics:
 
     def __init__(self):
-        self.tumorSegm = None
-        self.ablationSegm = None
+        self.tumor_segmentation = None
+        self.ablation_segmentation = None
         self.volume_tumor = None
         self.volume_ablation = None
         self.volume_residual = None
@@ -26,8 +25,8 @@ class VolumeMetrics:
         self.volume_similarity = None
 
     def set_image_object(self, ablation_segmentation, tumor_segmentation):
-        self.tumorSegm = tumor_segmentation
-        self.ablationSegm = ablation_segmentation
+        self.tumor_segmentation = tumor_segmentation
+        self.ablation_segmentation = ablation_segmentation
 
     def get_volume_ml(self, image):
         x_spacing, y_spacing, z_spacing = image.GetSpacing()
@@ -42,8 +41,8 @@ class VolumeMetrics:
         return volume_object_ml
 
     def get_volume_residual_coverage(self):
-        tumor_nda = sitk.GetArrayFromImage(self.tumorSegm)
-        ablation_nda = sitk.GetArrayFromImage(self.ablationSegm)
+        tumor_nda = sitk.GetArrayFromImage(self.tumor_segmentation)
+        ablation_nda = sitk.GetArrayFromImage(self.ablation_segmentation)
         # get the coordinates of the non-zero values from the binary masks
         # shape is array[slice,col,row]
         tumor_voxels_non_zero = np.transpose(np.nonzero(tumor_nda))
@@ -56,24 +55,24 @@ class VolumeMetrics:
         num_voxels_intersection_non_zero = len(intersection_tumor_ablation)
 
         # Get the spacing
-        x_spacing, y_spacing, z_spacing = self.tumorSegm.GetSpacing()
+        x_spacing, y_spacing, z_spacing = self.tumor_segmentation.GetSpacing()
         # volume_residual = volume_tumor - volume_intersection ablation and tumor
         volume_intersection = (num_voxels_intersection_non_zero * x_spacing * y_spacing * z_spacing) / 1000
-        volume_tumor = self.get_volume_ml(self.tumorSegm)
+        volume_tumor = self.get_volume_ml(self.tumor_segmentation)
         volume_residual = volume_tumor - volume_intersection
         coverage_ratio = 1 - volume_residual/volume_tumor
         # coverage_ratio = 1- volume_intersection / volume_tumor
         return volume_residual, coverage_ratio
 
     def set_volume_metrics(self):
-        self.volume_tumor = self.get_volume_ml(self.tumorSegm)
-        self.volume_ablation = self.get_volume_ml(self.ablationSegm)
+        self.volume_tumor = self.get_volume_ml(self.tumor_segmentation)
+        self.volume_ablation = self.get_volume_ml(self.ablation_segmentation)
         self.volume_residual, self.coverage_ratio = self.get_volume_residual_coverage()
 
         overlap_measures_filter = sitk.LabelOverlapMeasuresImageFilter()
 
         try:
-            overlap_measures_filter.Execute(self.tumorSegm, self.ablationSegm)
+            overlap_measures_filter.Execute(self.tumor_segmentation, self.ablation_segmentation)
         except Exception as e:
             # print error message if the filter cannot be executed.
             # this is the case when the images are not in the same space

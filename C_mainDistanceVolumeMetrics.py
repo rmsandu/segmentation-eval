@@ -24,7 +24,7 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
     perc_5_0_allPatients = []
     perc_0_5_allPatients = []
     perce_5_10_allPatients = []
-
+    #
     evalmetrics = DistanceMetrics(ablation_segmentation, tumor_segmentation)
     df_distances_1set = evalmetrics.get_SitkDistances()
     # call function to compute volume metrics
@@ -89,7 +89,7 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
         filename = str(patient_id) + '_' + str(lesion_id) + '_' + 'AblationDate_' + str(ablation_date) + '_DistanceVolumeMetrics.xlsx'
         filepath_excel = os.path.join(dir_plots, filename)
         writer = pd.ExcelWriter(filepath_excel)
-        df_metrics_all.to_excel(writer, index=False, float_format='%.f')
+        df_metrics_all.to_excel(writer, index=False, float_format='%.4f')
         writer.save()
 
 

@@ -31,6 +31,11 @@ def read_dcm_series(folder_path, reader_flag=True):
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(os.path.normpath(folder_path))
     reader.SetFileNames(dicom_names)
+    # Configure the reader to load all of the DICOM tags (public+private):
+    # By default tags are not loaded (saves time).
+    # By default if tags are loaded, the private tags are not loaded.
+    # We explicitly configure the reader to load tags, including the
+    # private ones.
     reader.MetaDataDictionaryArrayUpdateOn()
     reader.LoadPrivateTagsOn()
     try:
