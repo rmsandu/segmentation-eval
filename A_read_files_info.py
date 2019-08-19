@@ -5,9 +5,10 @@
 
 import os
 import pydicom
+import argparse
 import pandas as pd
 import DicomReader as Reader
-from B_01_ResampleSegmentations import ResizeSegmentation
+from B_ResampleSegmentations import ResizeSegmentation
 from C_mainDistanceVolumeMetrics import main_distance_volume_metrics
 
 
@@ -65,17 +66,21 @@ def create_paths(rootdir):
 
 
 if __name__ == '__main__':
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--rootdir", required=True, help="path to the patient folder to be processed")
+    ap.add_argument("-o", "--plotsdir", required=True, help="path to the output images")
+    args = vars(ap.parse_args())
     #  start with single patient folder, then load all the folders in the memory with glob
-    rootdir = r"C:\tmp_patients\Pat_M03_193708128024\Study_840"
-    dir_plots = r"C:\Figures"
     flag_resize_only_segmentations = 'Y'
     flag_match_with_patient_studyID = 'N'
     flag_extract_max_size = 'N'
-    list_all_ct_series = create_paths(rootdir)
+    print(args["rootdir"])
+    print(args["plotsdir"])
+    list_all_ct_series = create_paths(args["rootdir"])
     df_paths_mapping = pd.DataFrame(list_all_ct_series)
 
     for idx, el in enumerate(df_paths_mapping.SegmentLabel):
-        print(df_paths_mapping.iloc[idx].SegmentLabel)
+
         if df_paths_mapping.iloc[idx].SegmentLabel == 'Ablation':
             ablation_path, file = os.path.split(df_paths_mapping.iloc[idx].PathSeries)
             referenced_series_uid = df_paths_mapping.iloc[idx].ReferenceSegmentationImgSeriesInstanceUID
@@ -103,6 +108,4 @@ if __name__ == '__main__':
                 main_distance_volume_metrics(patient_id, ablation_segmentation_sitk, tumor_segmentation_resampled,
                                              lesion_number,
                                              ablation_date,
-                                             dir_plots)
-
-                #%% #TODO write the resampled mask to disk
+                                             args["plotsdir"])
