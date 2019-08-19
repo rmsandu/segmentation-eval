@@ -10,13 +10,11 @@ import pandas as pd
 import plotHistDistances as pm
 from distancemetrics import DistanceMetrics
 from volumemetrics import VolumeMetrics
-import DistancesVolumes_twinAxes as twinAxes
-import distances_boxplots_all_lesions as bpLesions
 
 
-def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmentation, lesion_id, ablation_date, dir_plots,
+def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmentation, lesion_id, ablation_date,
+                                 dir_plots,
                                  FLAG_SAVE_TO_EXCEL=True, title='Ablation to Tumor Euclidean Distances'):
-
     patient_id = patient_id
     df_metrics_all = pd.DataFrame()
 
@@ -90,13 +88,13 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
     # %%
     ''' save to excel the average of the distance metrics '''
     if FLAG_SAVE_TO_EXCEL:
-        # TODO: add the patient id and the lesion id in the excel, ablation date (first sheet)
         # TODO: add the number of voxels and the distance map in the second sheet of the excel
         print('writing to Excel....', dir_plots)
         timestr = time.strftime("%H%M%S-%Y%m%d")
         lesion_id_str = str(lesion_id)
         lesion_id = lesion_id_str.split('.')[0]
-        filename = str(patient_id) + '_' + str(lesion_id) + '_' + 'AblationDate_' + str(ablation_date) + '_DistanceVolumeMetrics.xlsx'
+        filename = str(patient_id) + '_' + str(lesion_id) + '_' + 'AblationDate_' + str(
+            ablation_date) + '_DistanceVolumeMetrics' + timestr + '.xlsx'
         filepath_excel = os.path.join(dir_plots, filename)
         writer = pd.ExcelWriter(filepath_excel)
         df_metrics_all.to_excel(writer, sheet_name='Sheet1', index=False, float_format='%.4f')
@@ -104,5 +102,3 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
         # num_voxels_df = pd.DataFrame(num_surface_pixels)
         # concatenate and write to excel
         writer.save()
-
-

@@ -76,8 +76,8 @@ def plotHistDistances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, tit
     new_yticks[0] = 0
     plt.yticks(new_yticks, yticks_percent)
 #    plt.yticks(yticks,yticks_percent)
-    plt.ylabel('Percetange of surface voxels', fontsize=30, color='black')
-    
+    plt.ylabel('Percentage of tumor surface voxels', fontsize=30, color='black')
+
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys(), fontsize=30, loc='best')
