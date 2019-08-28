@@ -8,12 +8,14 @@ import os
 import time
 import pandas as pd
 import plotHistDistances as pm
-from distancemetrics import DistanceMetrics
+from B_ResampleSegmentations import ResizeSegmentation
+from distancemetrics import DistanceMetrics, AxisMetrics
 from volumemetrics import VolumeMetrics
 
 
-def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmentation, lesion_id, ablation_date,
-                                 dir_plots,
+def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor,
+                                 ablation_segmentation, tumor_segmentation,
+                                 lesion_id, ablation_date, dir_plots,
                                  FLAG_SAVE_TO_EXCEL=True, title='Ablation to Tumor Euclidean Distances'):
     patient_id = patient_id
     df_metrics_all = pd.DataFrame()
@@ -22,30 +24,30 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
     perc_5_0_allPatients = []
     perc_0_5_allPatients = []
     perce_5_10_allPatients = []
-    #
-    evalmetrics = DistanceMetrics(ablation_segmentation, tumor_segmentation)
-    df_distances_1set = evalmetrics.get_SitkDistances()
-    # call function to compute volume metrics
+    #%% Get Surface Distances
+    surface_distance_metrics = DistanceMetrics(ablation_segmentation, tumor_segmentation)
+    df_distances_1set = surface_distance_metrics.get_SitkDistances()
+    #%% Get Ablation Evaluation Metrics (distance and gray intensity)
+    resizer = ResizeSegmentation(source_ct_ablation, ablation_segmentation)
+    ablation_segmentation_resized = resizer.resample_segmentation()
+    ablation_axis_metrics = AxisMetrics(source_ct_ablation, ablation_segmentation_resized)
+    df_ablation_metrics_1set = ablation_axis_metrics.get_axis_metrics_df()
+    #%% call function to compute volume metrics
     evaloverlap = VolumeMetrics()
     evaloverlap.set_image_object(ablation_segmentation, tumor_segmentation)
     evaloverlap.set_volume_metrics()
     df_volumes_1set = evaloverlap.get_volume_metrics_df()
+    #%% Set UP the Final DataFrame by concatenating all the features extracted
     patient_data = {'patient_id': patient_id,
                     'lesion_id': lesion_id,
                     'ablation_date': ablation_date}
     patient_list = []
     patient_list.append(patient_data)
     patient_df = pd.DataFrame(patient_list)
-    # patient_info = pd.DataFrame(patient_id, lesion_id, ablation_date, columns=["PatientID", "Lesion_ID", "Ablation_Date"])
-    df_metrics = pd.concat([patient_df, df_volumes_1set, df_distances_1set], axis=1)
-
-    # df_metrics_all = df_metrics_all.append(df_metrics)
-    distanceMap = evalmetrics.get_surface_distances()
-    # distanceMaps_allPatients.append(distanceMap)
-    num_surface_pixels = evalmetrics.num_tumor_surface_pixels
-    # %% surfaces distance percentages
-
-    #  plot the color coded histogram of the distances
+    df_metrics = pd.concat([patient_df, df_volumes_1set, df_distances_1set, df_ablation_metrics_1set], axis=1)
+    distanceMap = surface_distance_metrics.get_surface_distances()
+    num_surface_pixels = surface_distance_metrics.num_tumor_surface_pixels
+    # %% PLOT the color coded histogram of the distances
     try:
         sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated = pm.plotHistDistances(pat_name=patient_id,
                                                                                              lesion_id=lesion_id,
@@ -55,41 +57,21 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
                                                                                              title=title,
                                                                                              ablation_date=ablation_date)
 
-        df_metrics_all = df_metrics_all.append(df_metrics)
-        # distanceMaps_allPatients.append(distanceMap)
-        perc_0_5_allPatients.append(sum_perc_nonablated)
-        perc_0_5_allPatients.append(sum_perc_insuffablated)
-        perce_5_10_allPatients.append(sum_perc_ablated)
-
     except Exception:
-        # append empty dataframe
-        numRows, numCols = df_metrics_all.shape
-        numRows = 1
-        df_empty = pd.DataFrame(index=range(numRows), columns=range(numCols))
-        df_metrics_all = df_metrics_all.append(df_empty)
-        # append empty DataFrame
-        # distanceMaps_allPatients.append([])
-        # TODO: set the columns as well
-        print(patient_id, 'error computing the distances and volumes')
+        print(patient_id, 'error plotting the distances and volumes')
 
-    # %%
-    # add the Distance Map to the input dataframe. to be written to Excel
-    # df_patientdata['DistanceMaps'] = distanceMaps_allPatients
-    # df_metrics_all.index = list(range(len(df_metrics_all)))
-    # df_metrics_all['DistanceMaps'] = distanceMap
-    # df_final = pd.concat([distanceMaps_allPatients, df_metrics_all], axis=1)
-
-    # data_distances_to_plot = df_patients_sorted['DistanceMaps'].tolist()
-    # data_volumes_to_plot = df_patients_sorted['Tumour coverage ratio']
-    # plot Boxplot per patient
-    # bpLesions.plotBoxplots(data_distances_to_plot, rootdir)
-    # plot distances in Boxplot vs Tumor Coverage Ratio
-    # twinAxes.plotBoxplots(data_distances_to_plot, data_volumes_to_plot, rootdir)
-    # %%
-    ''' save to excel the average of the distance metrics '''
+    SurfaceDistances_dict = {
+        'patient_id': patient_id,
+        'lesion_id': lesion_id,
+        'ablation_date': ablation_date,
+        'number_nonzero_surface_pixels': num_surface_pixels,
+        'SurfaceDistances_Tumor2Ablation': distanceMap
+    }
+    SurfaceDistances_dict_list = []
+    SurfaceDistances_dict_list.append(SurfaceDistances_dict)
+    df_SurfaceDistances = pd.DataFrame(SurfaceDistances_dict_list)
+    # %%  save to excel the average of the distance metrics '''
     if FLAG_SAVE_TO_EXCEL:
-        # TODO: add the number of voxels and the distance map in the second sheet of the excel
-        print('writing to Excel....', dir_plots)
         timestr = time.strftime("%H%M%S-%Y%m%d")
         lesion_id_str = str(lesion_id)
         lesion_id = lesion_id_str.split('.')[0]
@@ -97,8 +79,7 @@ def main_distance_volume_metrics(patient_id, ablation_segmentation, tumor_segmen
             ablation_date) + '_DistanceVolumeMetrics' + timestr + '.xlsx'
         filepath_excel = os.path.join(dir_plots, filename)
         writer = pd.ExcelWriter(filepath_excel)
-        df_metrics_all.to_excel(writer, sheet_name='Sheet1', index=False, float_format='%.4f')
-        # distanceMap_df = pd.DataFrame(distanceMap)
-        # num_voxels_df = pd.DataFrame(num_surface_pixels)
-        # concatenate and write to excel
+        df_metrics.to_excel(writer, sheet_name='AT_metrics', index=False, float_format='%.4f')
+        df_SurfaceDistances.to_excel(writer, sheet_name="SurfaceDistances", index=False, float_format="%.4f")
         writer.save()
+        print('writing to Excel....', dir_plots)

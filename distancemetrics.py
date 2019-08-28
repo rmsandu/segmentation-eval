@@ -30,7 +30,7 @@ class AxisMetrics(object):
 
         class AxisMetricsRadiomics(Enum):
             diameter3D, diameter2D_slice, diameter2D_col, diameter2D_row, major_axis_length, \
-                least_axis_length, gray_lvl_nonuniformity, gray_lvl_variance, volume_voxel = range(9)
+                least_axis_length, gray_lvl_nonuniformity, gray_lvl_variance = range(8)
         axis_metrics_results = np.zeros((1, len(AxisMetricsRadiomics.__members__.items())))
         # %% Extract the diameter axis
         settings = {'label': 255}
@@ -38,47 +38,47 @@ class AxisMetrics(object):
         result = extractor.execute(self.input_image, self.mask_image)
 
         try:
-            axis_metrics_results[0, AxisMetrics.diameter3D.value] = result['original_shape_Maximum3DDiameter']
+            axis_metrics_results[0, AxisMetricsRadiomics.diameter3D.value] = result['original_shape_Maximum3DDiameter']
         except Exception:
-            axis_metrics_results[0, AxisMetrics.diameter3D.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.diameter3D.value] = None
         try:
-            axis_metrics_results[0, AxisMetrics.diameter2D_slice.value] = result[
+            axis_metrics_results[0, AxisMetricsRadiomics.diameter2D_slice.value] = result[
                 'original_shape_Maximum2DDiameterSlice']  # euclidean
         except Exception:
-            axis_metrics_results[0, AxisMetrics.diameter2D_slice.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.diameter2D_slice.value] = None
         try:
-            axis_metrics_results[0, AxisMetrics.diameter2D_col.value] = result[
+            axis_metrics_results[0, AxisMetricsRadiomics.diameter2D_col.value] = result[
                 'original_shape_Maximum2DDiameterColumn']  # euclidean
         except Exception:
-            axis_metrics_results[0, AxisMetrics.diameter2D_col.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.diameter2D_col.value] = None
         try:
-            axis_metrics_results[0, AxisMetrics.diameter2D_row.value] = result[
+            axis_metrics_results[0, AxisMetricsRadiomics.diameter2D_row.value] = result[
                 'original_shape_Maximum2DDiameterRow']  # euclidean
         except Exception:
-            axis_metrics_results[0, AxisMetrics.diameter2D_row.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.diameter2D_row.value] = None
         try:
             # PCA largest principal component
-            axis_metrics_results[0, AxisMetrics.major_axis_length.value] = result['original_shape_MajorAxisLength']
+            axis_metrics_results[0, AxisMetricsRadiomics.major_axis_length.value] = result['original_shape_MajorAxisLength']
         except Exception:
-            axis_metrics_results[0, AxisMetrics.major_axis_length.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.major_axis_length.value] = None
         try:
-            axis_metrics_results[0, AxisMetrics.least_axis_length.value] = result['original_shape_LeastAxisLength']
+            axis_metrics_results[0, AxisMetricsRadiomics.least_axis_length.value] = result['original_shape_LeastAxisLength']
         except Exception:
-            axis_metrics_results[0, AxisMetrics.least_axis_length.value] = None
-        try:
-            axis_metrics_results[0, AxisMetrics.volume_voxel_based.value] = result['original_shape_VoxelVolume']
-        except Exception:
-            axis_metrics_results[0, AxisMetrics.volume_voxel_based.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.least_axis_length.value] = None
+        # try:
+        #     axis_metrics_results[0, AxisMetricsRadiomics.volume_voxel_based.value] = result['original_shape_VoxelVolume']
+        # except Exception:
+        #     axis_metrics_results[0, AxisMetricsRadiomics.volume_voxel_based.value] = None
         # or use: original_shape_MeshVolume
         try:
-            axis_metrics_results[0, AxisMetrics.gray_lvl_nonuniformity.value] = result[
+            axis_metrics_results[0, AxisMetricsRadiomics.gray_lvl_nonuniformity.value] = result[
                 'original_gldm_GrayLevelNonUniformity']
         except Exception:
-            axis_metrics_results[0, AxisMetrics.gray_lvl_nonuniformity.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.gray_lvl_nonuniformity.value] = None
         try:
-            axis_metrics_results[0, AxisMetrics.gray_lvl_variance.value] = result['original_gldm_GrayLevelVariance']
+            axis_metrics_results[0, AxisMetricsRadiomics.gray_lvl_variance.value] = result['original_gldm_GrayLevelVariance']
         except Exception:
-            axis_metrics_results[0, AxisMetrics.gray_lvl_variance.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.gray_lvl_variance.value] = None
 
         #%% Save to DataFrame
         self.axis_metrics_results_df = pd.DataFrame(data=axis_metrics_results, index=list(range(1)),
