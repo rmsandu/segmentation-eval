@@ -1,4 +1,4 @@
-# Radiomics Extraction and Evaluation based on Binary 3D SegmentationImages
+# Radiomics Extraction and Evaluation based on Binary 3D Segmentation Images
 
 - segmentations include masks of liver structures such tumors, ablations, vessels and other structures
 - metrics include the Euclidean Distance between two objects (eg. Ground Truth segmentation of Tumor vs. Predicted Segmentation of Tumor, Segmentation of Ablation vs. Segmentation of Tumor)
