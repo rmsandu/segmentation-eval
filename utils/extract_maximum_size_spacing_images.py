@@ -3,7 +3,9 @@ import numpy as np
 import DicomReader as Reader
 import SimpleITK as sitk
 
+
 def extract_maxSizeSpacing(ablation_paths, tumor_paths, folder_path_plan, folder_path_validation):
+
     # %% extract maximum size and spacing from all the images
     data = []
     for idx, ablation_path in enumerate(ablation_paths):
@@ -20,8 +22,8 @@ def extract_maxSizeSpacing(ablation_paths, tumor_paths, folder_path_plan, folder
                 data.append(ablation_mask)
                 data.append(tumor_mask)
 
+    dimension = source_img_plan.GetDimension()
 
-    dimension = source_img_plan.GetDimension()  #
     reference_size_x = 512
     reference_physical_size = np.zeros(dimension)
     for img in data:

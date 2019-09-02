@@ -58,23 +58,12 @@ def resample_segmentations(image_source, image_roi):
     # image_roi = recast_pixel_val(image_source, image_roi)
 
     resampler = sitk.ResampleImageFilter()
-    resampler.SetReferenceImage(image_source) # the ablation mask
+    resampler.SetReferenceImage(image_source)  # the ablation mask
     resampler.SetDefaultPixelValue(0)
     resampler.SetInterpolator(sitk.sitkNearestNeighbor)
-    resampled_img = resampler.Execute(image_roi) # the tumour mask
-    # print(sitk.GetArrayFromImage(resampled_img))
-    #
-    # new_segmentation = sitk.Resample(image_roi, image_source.GetSize(),
-    #                                  sitk.Transform(),
-    #                                  sitk.sitkNearestNeighbor,
-    #                                  image_source.GetOrigin(),
-    #                                  image_source.GetSpacing(),
-    #                                  image_source.GetDirection(),
-    #                                  0,
-    #                                  image_roi.GetPixelID())
-    # return new_segmentation
-
+    resampled_img = resampler.Execute(image_roi)  # the tumour mask
     return resampled_img
+
 
 if __name__ == '__main__':
     pass
