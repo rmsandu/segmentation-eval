@@ -130,7 +130,6 @@ if __name__ == '__main__':
     ap.add_argument("-i", "--rootdir", required=False, help="path to the patient folder to be processed")
     ap.add_argument("-o", "--plots_dir", required=False, help="path to the output images")
     ap.add_argument("-b", "--input_batch_proc", required=False, help="input csv file for batch processing")
-    ap.add_argument("-s", "--subcapsular_flag", required=False, help="flag to compute metrics for subcapsular lesions")
 
     args = vars(ap.parse_args())
 
@@ -151,26 +150,23 @@ if __name__ == '__main__':
     else:
         # batch processing option
         df = pd.read_excel(args["input_batch_proc"])
-        if args["subcapsular_flag"] is True:
-            # calculate metrics for subcapsular lesion as well
-            df = df.loc[df['CT plan'] & df['CT validation'] & df['Segmentation tumor available'] &
+        # calculate metrics for subcapsular lesion as well
+        df = df.loc[df['CT plan'] & df['CT validation'] & df['Segmentation tumor available'] &
                 df['Segmentation ablation available']]
-        else:
-            df = df.loc[df['CT plan'] & df['CT validation'] & df['Segmentation tumor available'] &
-                        df['Segmentation ablation available']]
-            df = df[df['Proximity_to_surface'] == False]
-
         df['Patient_Dir_Paths'].fillna("[]", inplace=True)
         df['Patient_Dir_Paths'] = df['Patient_Dir_Paths'].apply(literal_eval)
-
+        df = df.reset_index(drop=True)
         for idx in range(len(df)):
             patient_dir_paths = df.Patient_Dir_Paths[idx]
+            # reset index
             if patient_dir_paths is None:
                 continue
             else:
                 for rootdir in patient_dir_paths:
                     rootdir = os.path.normpath(rootdir)
                 list_all_ct_series = create_paths(rootdir)
+                # TODO: check patient m14
+                # TODO: check patient B18 -- too many excel files
                 df_paths_mapping = pd.DataFrame(list_all_ct_series)
                 # call function to resample images and output csv for main metrics.
                 preprocess_call_main_metrics(df_paths_mapping, args["plots_dir"])
