@@ -23,6 +23,7 @@ class VolumeMetrics:
         self.jaccard = None
         self.volumetric_overlap_error = None
         self.volume_similarity = None
+        self.error_flag = False
 
     def set_image_object(self, ablation_segmentation, tumor_segmentation):
         self.tumor_segmentation = tumor_segmentation
@@ -36,7 +37,9 @@ class VolumeMetrics:
                                   imageSegm_nda_NonZero[1],
                                   imageSegm_nda_NonZero[2])))
         if 0 >= num_voxels:
-            raise Exception('The mask image does not seem to contain an object.')
+            print('The mask image does not seem to contain an object.')
+            self.error_flag = True
+            return None
         volume_object_ml = (num_voxels * x_spacing * y_spacing * z_spacing) / 1000
         return volume_object_ml
 
@@ -47,6 +50,12 @@ class VolumeMetrics:
         # shape is array[slice,col,row]
         tumor_voxels_non_zero = np.transpose(np.nonzero(tumor_nda))
         ablation_voxels_non_zero = np.transpose(np.nonzero(ablation_nda))
+        if len(tumor_voxels_non_zero) == 0:
+            self.error_flag = True
+            return
+        if len(ablation_voxels_non_zero) ==0:
+            self.error_flag = True
+            return
         # transform into tuple-set
         tumor_set = set([tuple(x) for x in tumor_voxels_non_zero])
         ablation_set = set([tuple(x) for x in ablation_voxels_non_zero])
@@ -67,8 +76,9 @@ class VolumeMetrics:
     def set_volume_metrics(self):
         self.volume_tumor = self.get_volume_ml(self.tumor_segmentation)
         self.volume_ablation = self.get_volume_ml(self.ablation_segmentation)
+        if self.error_flag is True:
+            return
         self.volume_residual, self.coverage_ratio = self.get_volume_residual_coverage()
-
         overlap_measures_filter = sitk.LabelOverlapMeasuresImageFilter()
 
         try:

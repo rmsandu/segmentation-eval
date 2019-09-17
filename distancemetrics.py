@@ -27,6 +27,7 @@ class AxisMetrics(object):
     def __init__(self, input_image, mask_image):
         self.input_image = input_image
         self.mask_image = mask_image
+        self.error_flag = False
 
         class AxisMetricsRadiomics(Enum):
             diameter3D, diameter2D_slice, diameter2D_col, diameter2D_row, major_axis_length, \
@@ -35,8 +36,12 @@ class AxisMetrics(object):
         # %% Extract the diameter axis
         settings = {'label': 255}
         extractor = radiomics.featureextractor.RadiomicsFeatureExtractor(additionalInfo=True, **settings)
-        result = extractor.execute(self.input_image, self.mask_image)
-
+        try:
+            result = extractor.execute(self.input_image, self.mask_image)
+        except Exception as e:
+            print(repr(e))
+            self.error_flag = True
+            return
         try:
             axis_metrics_results[0, AxisMetricsRadiomics.diameter3D.value] = result['original_shape_Maximum3DDiameter']
         except Exception:
@@ -95,6 +100,7 @@ class DistanceMetrics(object):
 
         self.tumor_segmentation = tumor_segmentation
         self.ablation_segmentation = ablation_segmentation
+        self.error_flag = False
         ''' init the enum fields for surface dist measures computer with simpleitk'''
 
         class SurfaceDistanceMeasuresITK(Enum):
@@ -113,9 +119,11 @@ class DistanceMetrics(object):
                                                      tumor_surface_array_NonZero[1],
                                                      tumor_surface_array_NonZero[2])))
         # check if there is actually an object present
-        if 0 >= self.num_tumor_surface_pixels:
-            raise Exception('The tumor mask image does not seem to contain an object.')
 
+        if 0 >= self.num_tumor_surface_pixels:
+            print('The tumor mask image does not seem to contain an object.')
+            self.error_flag = True
+            return
         # init signed mauerer distance as tumor metrics from SimpleITK
         self.tumor_distance_map = sitk.SignedMaurerDistanceMap(tumor_segmentation,
                                                                squaredDistance=False,
@@ -141,7 +149,9 @@ class DistanceMetrics(object):
                                                         ablation_mask_array_NonZero[2])))
 
         if 0 >= self.num_ablation_surface_pixels:
-            raise Exception('The ablation mask image does not seem to contain an object.')
+            print('The ablation mask image does not seem to contain an object.')
+            self.error_flag = True
+            return
         # init Mauerer Distance
         self.ablation_distance_map = sitk.SignedMaurerDistanceMap(ablation_segmentation,
                                                                   squaredDistance=False,
