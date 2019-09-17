@@ -32,7 +32,7 @@ def create_paths(rootdir):
                 source_study_instance_uid = ds.StudyInstanceUID
                 source_series_number = ds.SeriesNumber
                 patient_id = ds.PatientID
-                ablation_date = ds.StudyDate
+                ablation_date = ds.AcquisitionDate
 
                 try:
                     path_reference_segm = ds.ReferencedImageSequence[0].ReferencedSOPInstanceUID
@@ -67,7 +67,7 @@ def create_paths(rootdir):
     return list_all_ct_series
 
 
-def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
+def preprocess_call_main_metrics(df_paths_mapping, ablation_date_redcap, plots_dir):
     """
 
     :param df_paths_mapping:
@@ -116,14 +116,13 @@ def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
                         resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk)
                         tumor_segmentation_resampled = resizer.resample_segmentation()  # sitk image object
                         #%% Compute distances and volume metrics
-                        main_distance_volume_metrics(patient_id,
-                                                     source_ct_ablation_sitk, source_ct_tumor_sitk,
-                                                     ablation_segmentation_sitk, tumor_segmentation_resampled,
-                                                     lesion_number,
-                                                     ablation_date,
-                                                     plots_dir)
-
-
+                        if ablation_date_redcap == ablation_date:  # compute only for the first ablation date included in the treatment
+                            main_distance_volume_metrics(patient_id,
+                                                         source_ct_ablation_sitk, source_ct_tumor_sitk,
+                                                         ablation_segmentation_sitk, tumor_segmentation_resampled,
+                                                         lesion_number,
+                                                         ablation_date,
+                                                         plots_dir)
 #%%
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
@@ -150,8 +149,8 @@ if __name__ == '__main__':
     else:
         # batch processing option
         df = pd.read_excel(args["input_batch_proc"])
-        df = df.loc[df['CT plan'] & df['CT validation'] & df['Segmentation tumor available'] &
-                df['Segmentation ablation available']]
+        df = df.loc[df['CT plan'] & df['CT validation'] & df['Segmentation_tumor_available'] &
+                df['Segmentation_ablation_available']]
         df.drop_duplicates(subset=['Patient_Dir_Paths'], inplace=True)
         df['Patient_Dir_Paths'].fillna("None", inplace=True)
         df['Patient_Dir_Paths'] = df['Patient_Dir_Paths'].apply(literal_eval)
@@ -159,6 +158,7 @@ if __name__ == '__main__':
         df = df.reset_index(drop=True)
         for idx in range(len(df)):
             patient_dir_paths = df.Patient_Dir_Paths[idx]
+            ablation_date_redcap = df.Ablation_IR_Date[idx]
             # reset index
             if patient_dir_paths is None:
                 continue
@@ -168,6 +168,6 @@ if __name__ == '__main__':
                     list_all_ct_series = create_paths(rootdir)
                     df_paths_mapping = pd.DataFrame(list_all_ct_series)
                     # call function to resample images and output csv for main metrics.
-                    preprocess_call_main_metrics(df_paths_mapping, args["plots_dir"])
+                    preprocess_call_main_metrics(df_paths_mapping, ablation_date_redcap, args["plots_dir"])
 
 
