@@ -22,7 +22,7 @@ if __name__ == '__main__':
         print("Path to folder with Radiomics CSVs for each patient: ", args["rootdir"])
         print(args["output_dir"])
     if (args["input_batch_proc_paths"]) is not None:
-        print("Path to CSV that has directory paaths and subcapsular lesion info: ", args["input_batch_proc_paths"])
+        print("Path to CSV that has directory paths and subcapsular lesion info: ", args["input_batch_proc_paths"])
     print("path to output directory", args["output_dir"])
 
     df_download_db_all_info = pd.read_excel(args["input_batch_proc_paths"])

@@ -85,7 +85,6 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     SurfaceDistances_percentages_list = []
     SurfaceDistances_percentages_list.append(SurfaceDistances_percentages)
     df_SurfaceDistances_percentages = pd.DataFrame(SurfaceDistances_percentages_list)
-
     df_metrics = pd.concat(
         [patient_df, df_volumes_1set, df_distances_1set, df_ablation_metrics_1set, df_SurfaceDistances_percentages],
         axis=1)
