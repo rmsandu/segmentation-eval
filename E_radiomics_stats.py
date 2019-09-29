@@ -27,14 +27,14 @@ try:
     df['MISSING'].replace('', np.nan, inplace=True)
 except Exception:
     print("column MISSING is not present in the input file")
-print("removing RadioFrequency Devices from the input file")
+print("1. Removing RadioFrequency Devices from the input file")
 df = df[df['Device_name'] != 'Boston Scientific (Boston Scientific - RF 3000)']
-print("Droping NaNs")
+print("2. Droping NaNs")
 df.dropna(subset=["Ablation Volume [ml]"], inplace=True)
 
 idx_comments = df.columns.get_loc('Device_name')
 df1 = df.iloc[:, idx_comments:len(df.columns)].copy()
-print('Dropping Outliers from the Energy Column using val < quantile 0.99')
+print('3. Dropping Outliers from the Energy Column using val < quantile 0.99')
 q = df1['Energy [kj]'].quantile(0.99)
 df1_no_outliers = df1[df1['Energy [kj]'] < q]
 df1_no_outliers.reset_index(inplace=True, drop=True)
@@ -56,11 +56,10 @@ scatter_plot(df1_no_outliers, **kwargs)
 # %%
 groups = df1.groupby('Device_name')
 fig, ax = plt.subplots()
-# ax.margins(0.05) # Optional, just adds 5% padding to the autoscaling
 lesion_per_device = []
 device_name_grp = []
 for name, group in groups:
-    ax.plot(group["Energy [kj]"], group["Ablation Volume [ml]"], marker='x', linestyle='', ms=12, label=name)
+    ax.plot(group["Energy [kj]"], group["Ablation Volume [ml]"], marker='o', linestyle='', ms=14, label=name)
     lesion_per_device.append(len(group))
     device_name_grp.append(name)
 L = ax.legend()
@@ -69,9 +68,11 @@ L_labels = L.get_texts()
 for idx, L in enumerate(L_labels):
     L.set_text(device_name_grp[idx] + ' N=' + str(lesion_per_device[idx]))
 
+
 plt.xlabel('Energy [kJ]', fontsize=20, color='black')
 plt.ylabel('Ablation Volume [ml]', fontsize=20, color='black')
 plt.tick_params(labelsize=20, color='black')
+plt.legend(title_fontsize=20)
 ax.tick_params(colors='black', labelsize=20)
 figpathHist = os.path.join("figures", "Ablation Volume vs  Energy per MWA Device Category")
 gh.save(figpathHist, width=18, height=16, ext=['png'], close=True)
@@ -81,7 +82,7 @@ lesion_per_device = []
 device_name_grp = []
 
 for name, group in groups:
-    ax.plot(group["Energy [kj]"], group["Tumour Volume [ml]"], marker='x', linestyle='', ms=12, label=name)
+    ax.plot(group["Energy [kj]"], group["Tumour Volume [ml]"], marker='o', linestyle='', ms=14, label=name)
     lesion_per_device.append(len(group))
     device_name_grp.append(name)
 L = ax.legend()
@@ -90,9 +91,9 @@ for idx, L in enumerate(L_labels):
     L.set_text(device_name_grp[idx] + ' N=' + str(lesion_per_device[idx]))
 plt.ylabel('Tumor Volume [ml]', fontsize=20, color='black')
 plt.xlabel('Energy [kJ]', fontsize=20, color='black')
-plt.legend(fontsize=20)
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
+# plt.legend(fontsize=12)
 figpathHist = os.path.join("figures", "Tumor Volume vs  Energy per MWA Device Category")
 gh.save(figpathHist, width=18, height=16, ext=['png'], close=True)
 
