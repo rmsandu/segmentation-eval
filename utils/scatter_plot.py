@@ -2,13 +2,13 @@
 """
 @author: Raluca Sandu
 """
+import utils.graphing as gh
 import matplotlib.pyplot as plt
-import seaborn as sns
+import os
 import numpy as np
+import seaborn as sns
 from sklearn import linear_model
 from sklearn.metrics import r2_score
-
-import graphing as gh
 
 sns.set(style="ticks")
 plt.style.use('ggplot')
@@ -37,33 +37,40 @@ def scatter_plot(df1, **kwargs):
     df.dropna(subset=[kwargs["x_data"]], inplace=True)
     df.dropna(subset=[kwargs["y_data"]], inplace=True)
     df.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=80)
-    if kwargs.get('x_label') is not None:
+    if kwargs.get('x_label') is not None and kwargs.get('y_label') is None:
         plt.xlabel(kwargs['x_label'], fontsize=20)
-    elif kwargs.get('y_label') is not None:
+        plt.ylabel(kwargs['y_data'], fontsize=20)
+    elif kwargs.get('y_label') is not None and kwargs.get('x_label') is None:
         plt.ylabel(kwargs['y_label'], fontsize=20)
-    else:
+        plt.xlabel(kwargs['x_data'], fontsize=20)
+    elif kwargs.get('x_label') is None and kwargs.get('y_label') is None:
         plt.xlabel(kwargs['x_data'], fontsize=20)
         plt.ylabel(kwargs['y_data'], fontsize=20)
+
     if kwargs.get('lin_reg') is not None:
         X = np.array(df[kwargs['x_data']])
         Y = np.array(df[kwargs['y_data']])
         regr = linear_model.LinearRegression()
         X = X.reshape(len(X), 1)
         Y = Y.reshape(len(Y), 1)
-        #TODO: plot R-square
-
         regr.fit(X, Y)
-        rscore = r2_score(Y, regr.predict(X))
-        print('R-square:', rscore)
-        plt.plot(X, regr.predict(X), color='orange', linewidth=3)
+        SS_tot = np.sum((Y-np.mean(Y))**2)
+        residuals = Y - regr.predict(X)
+        SS_res = np.sum(residuals**2)
+        r_squared = 1-(SS_res/SS_tot)
+        r_square_sklearn = r2_score(Y, regr.predict(X))
+        print('R-square manual:', r_squared)
+        print('R-square  sklearn:', r_square_sklearn)
+        label = r'$R^2: $' + '{:.2f}'.format(r_squared)
+        plt.plot(X, regr.predict(X), color='orange', linewidth=3, label=label)
 
     nr_samples = ' Nr. samples: ' + str(len(df))
     plt.title(kwargs['title'] + nr_samples, fontsize=20)
-    plt.legend(rscore)
+    plt.legend(fontsize=20)
     plt.tick_params(labelsize=20, color='black')
     ax.tick_params(colors='black', labelsize=20)
-    figpathHist = kwargs['title'] + '.png'
-    gh.save(figpathHist, width=18, height=16)
+    figpathHist = os.path.join("figures", kwargs['title'])
+    gh.save(figpathHist, width=18, height=16, ext=["png"], close=True)
     plt.close('all')
 
 
