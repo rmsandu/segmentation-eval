@@ -22,7 +22,7 @@ import SimpleITK as sitk
 import radiomics
 
 
-class AxisMetrics(object):
+class RadiomicsMetrics(object):
 
     def __init__(self, input_image, mask_image):
         self.input_image = input_image
@@ -30,10 +30,12 @@ class AxisMetrics(object):
         self.error_flag = False
 
         class AxisMetricsRadiomics(Enum):
+            center_of_mass, elongation, sphericity, intensity_mean, intensity_variance, intensity_uniformity,\
             diameter3D, diameter2D_slice, diameter2D_col, diameter2D_row, major_axis_length, \
-                least_axis_length, gray_lvl_nonuniformity, gray_lvl_variance = range(8)
+                least_axis_length, minor_axis_length, gray_lvl_nonuniformity, gray_lvl_variance = range(15)
         axis_metrics_results = np.zeros((1, len(AxisMetricsRadiomics.__members__.items())))
         # %% Extract the diameter axis
+        # settings = {'label': 255, 'correctMask': False}
         settings = {'label': 255}
         extractor = radiomics.featureextractor.RadiomicsFeatureExtractor(additionalInfo=True, **settings)
         try:
@@ -42,6 +44,31 @@ class AxisMetrics(object):
             print(repr(e))
             self.error_flag = True
             return
+        try:
+            # CenterOfMass returns a tuple
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass.value] = result['diagnostics_Mask-original_CenterOfMass']
+        except Exception:
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass.value] = None
+        try:
+            axis_metrics_results[0, AxisMetricsRadiomics.elongation.value] = result['original_shape_Elongation']
+        except Exception:
+            axis_metrics_results[0, AxisMetricsRadiomics.elongation.value] = None
+        try:
+            axis_metrics_results[0, AxisMetricsRadiomics.sphericity.value] = result['original_shape_Sphericity']
+        except Exception:
+            axis_metrics_results[0, AxisMetricsRadiomics.sphericity.value] = None
+        try:
+            axis_metrics_results[0, AxisMetricsRadiomics.intensity_mean.value] = result['original_firstorder_Mean']
+        except Exception:
+            axis_metrics_results[0, AxisMetricsRadiomics.intensity_mean.value] = None
+        try:
+            axis_metrics_results[0, AxisMetricsRadiomics.intensity_variance.value] = result['original_firstorder_Variance']
+        except Exception:
+            axis_metrics_results[0, AxisMetricsRadiomics.intensity_variance.value] = None
+        try:
+            axis_metrics_results[0, AxisMetricsRadiomics.intensity_uniformity.value] = result['original_firstorder_Uniformity']
+        except Exception:
+            axis_metrics_results[0, AxisMetricsRadiomics.intensity_uniformity.value] = None
         try:
             axis_metrics_results[0, AxisMetricsRadiomics.diameter3D.value] = result['original_shape_Maximum3DDiameter']
         except Exception:
@@ -70,11 +97,10 @@ class AxisMetrics(object):
             axis_metrics_results[0, AxisMetricsRadiomics.least_axis_length.value] = result['original_shape_LeastAxisLength']
         except Exception:
             axis_metrics_results[0, AxisMetricsRadiomics.least_axis_length.value] = None
-        # try:
-        #     axis_metrics_results[0, AxisMetricsRadiomics.volume_voxel_based.value] = result['original_shape_VoxelVolume']
-        # except Exception:
-        #     axis_metrics_results[0, AxisMetricsRadiomics.volume_voxel_based.value] = None
-        # or use: original_shape_MeshVolume
+        try:
+            axis_metrics_results[0, AxisMetricsRadiomics.minor_axis_length.value] = result['original_shape_MinorAxisLength']
+        except Exception:
+            axis_metrics_results[0, AxisMetricsRadiomics.minor_axis_length.value] = None
         try:
             axis_metrics_results[0, AxisMetricsRadiomics.gray_lvl_nonuniformity.value] = result[
                 'original_gldm_GrayLevelNonUniformity']

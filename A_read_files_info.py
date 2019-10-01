@@ -3,13 +3,15 @@
 @author: Raluca Sandu
 """
 
+import argparse
 import os
 import sys
-import pydicom
-import argparse
-import pandas as pd
-import DicomReader as Reader
 from ast import literal_eval
+
+import pandas as pd
+import pydicom
+
+import DicomReader as Reader
 from B_ResampleSegmentations import ResizeSegmentation
 from C_mainDistanceVolumeMetrics import main_distance_volume_metrics
 
@@ -32,7 +34,13 @@ def create_paths(rootdir):
                 source_study_instance_uid = ds.StudyInstanceUID
                 source_series_number = ds.SeriesNumber
                 patient_id = ds.PatientID
-                ablation_date = ds.AcquisitionDate
+                try:
+                    ablation_date = ds.AcquisitionDate
+                except Exception:
+                    try:
+                        ablation_date = ds.StudyDate
+                    except Exception:
+                        ablation_date = None
 
                 try:
                     path_reference_segm = ds.ReferencedImageSequence[0].ReferencedSOPInstanceUID
@@ -67,7 +75,7 @@ def create_paths(rootdir):
     return list_all_ct_series
 
 
-def preprocess_call_main_metrics(df_paths_mapping, ablation_date_redcap, plots_dir):
+def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
     """
 
     :param df_paths_mapping:
@@ -75,55 +83,58 @@ def preprocess_call_main_metrics(df_paths_mapping, ablation_date_redcap, plots_d
     :return:
     """
     for idx_segm, el in enumerate(df_paths_mapping.SegmentLabel):
-                if df_paths_mapping.iloc[idx_segm].SegmentLabel == 'Ablation':
-                    ablation_path, file = os.path.split(df_paths_mapping.iloc[idx_segm].PathSeries)
-                    source_ct_ablation_series = df_paths_mapping.iloc[idx_segm].ReferenceSourceImgSeriesInstanceUID
-                    referenced_series_uid = df_paths_mapping.iloc[idx_segm].ReferenceSegmentationImgSeriesInstanceUID
-                    idx_source_ablation = \
-                        df_paths_mapping.index[
-                            df_paths_mapping.SeriesInstanceNumberUID == source_ct_ablation_series].tolist()[0]
-                    if referenced_series_uid is not None:
-                        # the ablation segmentation has a tumor segmentation pair
-                        try:
-                            idx_tumor_path = df_paths_mapping.index[
-                                df_paths_mapping.SeriesInstanceNumberUID == referenced_series_uid].tolist()[0]
-                            source_ct_tumor_series = df_paths_mapping.iloc[
-                                idx_tumor_path].ReferenceSourceImgSeriesInstanceUID
-                            idx_source_tumor = df_paths_mapping.index[
-                                df_paths_mapping.SeriesInstanceNumberUID == source_ct_tumor_series].tolist()[0]
-                            # print('source ct tumor series:', source_ct_tumor_series)
-                            # print('idx ct plan:', idx_source_tumor)
-                        except IndexError:
-                            print("some nasty error because referenced series uid was not found")
-                            continue
-                    else:
-                        continue
-                    # if both the tumor and ablation segmentation are available
-                    if df_paths_mapping.iloc[idx_tumor_path].PathSeries is not None:
-                        tumor_path, file = os.path.split(df_paths_mapping.iloc[idx_tumor_path].PathSeries)
-                        source_ct_ablation_path, file = os.path.split(df_paths_mapping.iloc[idx_source_ablation].PathSeries)
-                        # print('ct validation: ', source_ct_ablation_path)
-                        source_ct_tumor_path, file = os.path.split(df_paths_mapping.iloc[idx_source_tumor].PathSeries)
-                        # print('ct plan', source_ct_tumor_path)
-                        tumor_segmentation_sitk, tumor_sitk_reader = Reader.read_dcm_series(tumor_path, True)
-                        ablation_segmentation_sitk, ablation_sitk_reader = Reader.read_dcm_series(ablation_path, True)
-                        source_ct_tumor_sitk, reader = Reader.read_dcm_series(source_ct_tumor_path, True)
-                        source_ct_ablation_sitk, reader = Reader.read_dcm_series(source_ct_ablation_path, True)
-                        lesion_number = df_paths_mapping.iloc[idx_tumor_path].LesionNumber
-                        ablation_date = df_paths_mapping.iloc[idx_tumor_path].AblationDate
-                        patient_id = df_paths_mapping.iloc[idx_tumor_path].PatientID
-                        # %% RESAMPLE the tumor and the ablation
-                        resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk)
-                        tumor_segmentation_resampled = resizer.resample_segmentation()  # sitk image object
-                        #%% Compute distances and volume metrics
-                        if ablation_date_redcap == ablation_date:  # compute only for the first ablation date included in the treatment
-                            main_distance_volume_metrics(patient_id,
-                                                         source_ct_ablation_sitk, source_ct_tumor_sitk,
-                                                         ablation_segmentation_sitk, tumor_segmentation_resampled,
-                                                         lesion_number,
-                                                         ablation_date,
-                                                         plots_dir)
-#%%
+        if df_paths_mapping.iloc[idx_segm].SegmentLabel == 'Ablation':
+            ablation_path, file = os.path.split(df_paths_mapping.iloc[idx_segm].PathSeries)
+            source_ct_ablation_series = df_paths_mapping.iloc[idx_segm].ReferenceSourceImgSeriesInstanceUID
+            referenced_series_uid = df_paths_mapping.iloc[idx_segm].ReferenceSegmentationImgSeriesInstanceUID
+            idx_source_ablation = \
+                df_paths_mapping.index[
+                    df_paths_mapping.SeriesInstanceNumberUID == source_ct_ablation_series].tolist()[0]
+            if referenced_series_uid is not None:
+                # the ablation segmentation has a tumor segmentation pair
+                try:
+                    idx_tumor_path = df_paths_mapping.index[
+                        df_paths_mapping.SeriesInstanceNumberUID == referenced_series_uid].tolist()[0]
+                    source_ct_tumor_series = df_paths_mapping.iloc[
+                        idx_tumor_path].ReferenceSourceImgSeriesInstanceUID
+                    idx_source_tumor = df_paths_mapping.index[
+                        df_paths_mapping.SeriesInstanceNumberUID == source_ct_tumor_series].tolist()[0]
+                    # print('source ct tumor series:', source_ct_tumor_series)
+                    # print('idx ct plan:', idx_source_tumor)
+                except IndexError:
+                    print("some nasty error because referenced series uid was not found")
+                    continue
+            else:
+                continue
+            # if both the tumor and ablation segmentation are available
+            if df_paths_mapping.iloc[idx_tumor_path].PathSeries is not None:
+                tumor_path, file = os.path.split(df_paths_mapping.iloc[idx_tumor_path].PathSeries)
+                source_ct_ablation_path, file = os.path.split(df_paths_mapping.iloc[idx_source_ablation].PathSeries)
+                source_ct_tumor_path, file = os.path.split(df_paths_mapping.iloc[idx_source_tumor].PathSeries)
+                # READ THE SEGMENTATION MASKS AS SIMPLEITK OBJ
+                tumor_segmentation_sitk, tumor_sitk_reader = Reader.read_dcm_series(tumor_path, True)
+                ablation_segmentation_sitk, ablation_sitk_reader = Reader.read_dcm_series(ablation_path, True)
+                # READ THE CT SOURCE IMAGES AS SIMPLEITK DICOM IMGS
+                source_ct_tumor_sitk, reader = Reader.read_dcm_series(source_ct_tumor_path, True)
+                source_ct_ablation_sitk, reader = Reader.read_dcm_series(source_ct_ablation_path, True)
+                # GET THE GENERAL INFO FROM THE METATAGS
+                lesion_number = df_paths_mapping.iloc[idx_tumor_path].LesionNumber
+                ablation_date = df_paths_mapping.iloc[idx_tumor_path].AblationDate
+                patient_id = df_paths_mapping.iloc[idx_tumor_path].PatientID
+                # %% RESAMPLE THE TUMOR MASK TO THE SIZE OF THE ABLATION MASK
+                # so that we can extract metrics from the two combined
+                resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk)
+                tumor_segmentation_resampled = resizer.resample_segmentation()  # sitk image object
+                #%% EXTRACT DISTANCE AND VOLUME METRICS
+                main_distance_volume_metrics(patient_id,
+                                             source_ct_ablation_sitk, source_ct_tumor_sitk,
+                                             ablation_segmentation_sitk, tumor_segmentation_resampled,
+                                             lesion_number,
+                                             ablation_date,
+                                             plots_dir)
+
+
+# %%
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--rootdir", required=False, help="path to the patient folder to be processed")
@@ -150,7 +161,7 @@ if __name__ == '__main__':
         # batch processing option
         df = pd.read_excel(args["input_batch_proc"])
         df = df.loc[df['CT plan'] & df['CT validation'] & df['Segmentation_tumor_available'] &
-                df['Segmentation_ablation_available']]
+                    df['Segmentation_ablation_available']]
         df.drop_duplicates(subset=['Patient_Dir_Paths'], inplace=True)
         df['Patient_Dir_Paths'].fillna("None", inplace=True)
         df['Patient_Dir_Paths'] = df['Patient_Dir_Paths'].apply(literal_eval)
@@ -169,5 +180,3 @@ if __name__ == '__main__':
                     df_paths_mapping = pd.DataFrame(list_all_ct_series)
                     # call function to resample images and output csv for main metrics.
                     preprocess_call_main_metrics(df_paths_mapping, ablation_date_redcap, args["plots_dir"])
-
-

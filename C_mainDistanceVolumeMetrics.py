@@ -9,7 +9,7 @@ import time
 import pandas as pd
 import plotHistDistances as pm
 from B_ResampleSegmentations import ResizeSegmentation
-from distancemetrics import DistanceMetrics, AxisMetrics
+from distancemetrics import DistanceMetrics, RadiomicsMetrics
 from volumemetrics import VolumeMetrics
 
 
@@ -17,7 +17,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
                                  ablation_segmentation, tumor_segmentation,
                                  lesion_id, ablation_date, dir_plots,
                                  FLAG_SAVE_TO_EXCEL=True, title='Ablation to Tumor Euclidean Distances'):
-    # %% Get Surface Distances
+    # %% Get Surface Distances between tumor and ablation segmentations
     surface_distance_metrics = DistanceMetrics(ablation_segmentation, tumor_segmentation)
     if surface_distance_metrics.num_tumor_surface_pixels > 0:
         df_distances_1set = surface_distance_metrics.get_SitkDistances()
@@ -25,14 +25,30 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
         num_surface_pixels = surface_distance_metrics.num_tumor_surface_pixels
     else:
         df_distances_1set = None
-    # %% Get Ablation Evaluation Metrics (distance and gray intensity)
+    # %% Get Radiomics Metrics (shape and intensity)
+    # ABLATION
     resizer = ResizeSegmentation(source_ct_ablation, ablation_segmentation)
     ablation_segmentation_resized = resizer.resample_segmentation()
-    ablation_axis_metrics = AxisMetrics(source_ct_ablation, ablation_segmentation_resized)
-    if ablation_axis_metrics.error_flag is False:
-        df_ablation_metrics_1set = ablation_axis_metrics.get_axis_metrics_df()
+    ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation_resized)
+    #
+    if ablation_radiomics_metrics.error_flag is False:
+        df_ablation_metrics_1set = ablation_radiomics_metrics.get_axis_metrics_df()
+        new_columns_name = df_ablation_metrics_1set.columns + '_ablation'
+        df_ablation_metrics_1set.columns = new_columns_name
+        # df2 = df.set_axis(['V', 'W', 'X', 'Y', 'Z'], axis=1, inplace=False)
     else:
         df_ablation_metrics_1set = None
+    # TUMOR
+    resizer = ResizeSegmentation(source_ct_tumor, tumor_segmentation)
+    tumor_segmentation_resized = resizer.resample_segmentation()
+    tumor_radiomics_metrics = RadiomicsMetrics(source_ct_tumor, tumor_segmentation_resized)
+    if tumor_radiomics_metrics.error_flag is False:
+        df_tumor_metrics_1set = tumor_radiomics_metrics.get_axis_metrics_df()
+        new_columns_name = df_tumor_metrics_1set.columns + '_tumor'
+        df_tumor_metrics_1set.columns = new_columns_name
+    else:
+        df_tumor_metrics_1set = None
+
     # %% call function to compute volume metrics
     evaloverlap = VolumeMetrics()
     evaloverlap.set_image_object(ablation_segmentation, tumor_segmentation)
@@ -66,9 +82,9 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     }
 
     SurfaceDistances_percentages = {
-        'safety_margin_distribution: x<=0mm [%]': perc_smaller_equal_than_0,
-        'safety_margin_distribution: 0<x<=5mm [%]': perc_0_5,
-        'safety_margin_distribution: 5mm<x [%]': perc_greater_than_5
+        'safety_margin_distribution_0': perc_smaller_equal_than_0,
+        'safety_margin_distribution_5': perc_0_5,
+        'safety_margin_distribution_10': perc_greater_than_5
     }
 
     # %% Set UP the Final DataFrame by concatenating all the features extracted
@@ -86,8 +102,8 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     SurfaceDistances_percentages_list.append(SurfaceDistances_percentages)
     df_SurfaceDistances_percentages = pd.DataFrame(SurfaceDistances_percentages_list)
     df_metrics = pd.concat(
-        [patient_df, df_volumes_1set, df_distances_1set, df_ablation_metrics_1set, df_SurfaceDistances_percentages],
-        axis=1)
+        [patient_df, df_volumes_1set, df_distances_1set, df_ablation_metrics_1set, df_tumor_metrics_1set,
+         df_SurfaceDistances_percentages], axis=1)
     # %%  save to excel the average of the distance metrics '''
     if FLAG_SAVE_TO_EXCEL:
         timestr = time.strftime("%H%M%S-%Y%m%d")

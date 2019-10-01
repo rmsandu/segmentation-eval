@@ -62,8 +62,8 @@ def plotHistDistances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, tit
                      label='Ablation Surface Margin ' + r'$x > 5$' + 'mm: ' + " %.2f" % sum_perc_ablated + '%')
     # %%
     '''edit the axes limits and labels'''
-    csfont = {'fontname': 'Times New Roman'}
-    plt.xlabel('Euclidean Distances (mm)', fontsize=30, color='black', **csfont)
+    # csfont = {'fontname': 'Times New Roman'}
+    plt.xlabel('Euclidean Distances (mm)', fontsize=30, color='black')
     plt.tick_params(labelsize=30, color='black')
     ax.tick_params(colors='black', labelsize=30)
     plt.grid(True)
@@ -77,21 +77,21 @@ def plotHistDistances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, tit
     yticks_percent = [str(x) + '%' for x in percentage_surface_rounded]
     new_yticks = (percentage_surface_rounded * yticks) / percent
     new_yticks[0] = 0
-    plt.yticks(new_yticks, yticks_percent, **csfont)
-    plt.xticks(**csfont)
-    #    plt.yticks(yticks,yticks_percent)
-    plt.ylabel('Frequency of percentage of tumor surface voxels', fontsize=30, color='black', **csfont)
+    plt.yticks(new_yticks, yticks_percent)
+
+    plt.ylabel('Frequency of percentage of tumor surface voxels', fontsize=30, color='black')
 
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
-    font = font_manager.FontProperties(family='Times New Roman',
-                                       style='normal', size=30)
-    plt.legend(by_label.values(), by_label.keys(), fontsize=30, loc='best', prop=font)
+    # font = font_manager.FontProperties(family='Times New Roman',
+    #                                    style='normal', size=30)
+    # plt.legend(by_label.values(), by_label.keys(), fontsize=30, loc='best', prop=font)
+    plt.legend(by_label.values(), by_label.keys(), fontsize=30, loc='best')
 
     # ax.legend(prop=font)
-    plt.title(title + '. Patient ' + str(pat_name) + '. Lesion ' + str(lesion_id), fontsize=30, **csfont)
+    plt.title(title + '. Patient ' + str(pat_name) + '. Lesion ' + str(lesion_id), fontsize=30)
     figpathHist = os.path.join(rootdir, figName_hist)
-    gh.save(figpathHist, width=18, height=16, ext=['png', 'eps'])
+    gh.save(figpathHist, width=18, height=16, ext=['png'])
 
     # return the percentages
     return sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated

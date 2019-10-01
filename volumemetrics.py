@@ -95,9 +95,9 @@ class VolumeMetrics:
 
     def get_volume_metrics_df(self):
         volume_metrics_dict = {
-            'Tumour Volume (ml)': self.volume_tumor,
-            'Ablation volume (ml)': self.volume_ablation,
-            'Tumour residual volume (ml)': self.volume_residual,
+            'Tumour Volume [ml]': self.volume_tumor,
+            'Ablation Volume [ml]': self.volume_ablation,
+            'Tumour residual volume [ml]': self.volume_residual,
             'Dice': self.dice,
             'Jaccard': self.jaccard,
             'Volume Overlap Error': self.volumetric_overlap_error,
