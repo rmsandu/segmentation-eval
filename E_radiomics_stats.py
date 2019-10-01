@@ -104,7 +104,7 @@ df_angyodinamics.dropna(subset=['Energy [kj]'], inplace=True)
 df_angyodinamics.dropna(subset=['least_axis_length'], inplace=True)
 title = "Minimum Ablation Diameter vs. MWA Energy for " + str(
     len(df_angyodinamics)) + " tumors treated with Angyodinamics MWA Device"
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'least_axis_length', 'title': title,
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'least_axis_length_ablation', 'title': title,
           'y_label':'Least Ablation Diameter [mm]',
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
@@ -112,16 +112,25 @@ scatter_plot(df_angyodinamics, **kwargs)
 title = "Maximum Ablation Diameter vs. MWA Energy for " + str(
     len(df_angyodinamics)) + " tumors treated with Angyodinamics MWA Device"
 ylabel = "Major Diameter (PCA-based ellipsoid approximation) [mm]"
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'major_axis_length', 'title': title,
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'major_axis_length_ablation', 'title': title,
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
-#TODO: add minor axis
+
+title = "Minor Ablation Diameter vs. MWA Energy for " + str(
+    len(df_angyodinamics)) + " tumors treated with Angyodinamics MWA Device"
+ylabel = "Major Diameter (PCA-based ellipsoid approximation) [mm]"
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'minor_axis_length_ablation', 'title': title,
+          'y_label': ylabel,
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+
+
 #%%
 title = "Ablation Diameter Coronal Plane vs. MWA Energy for " + str(
     len(df_angyodinamics)) + " tumors treated with Angyodinamics MWA Device"
 ylabel = "Diameter Coronal Plane (Euclidean Distances based) [mm]"
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'diameter2D_col', 'title': title,
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'diameter2D_col_ablation', 'title': title,
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
@@ -129,7 +138,7 @@ scatter_plot(df_angyodinamics, **kwargs)
 ylabel = "Diameter Saggital Plane (Euclidean Distances based) [mm]"
 title = "Ablation Diameter Saggital Plane vs. MWA Energy for " + str(
     len(df_angyodinamics)) + " tumors treated with Angyodinamics MWA Device"
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'diameter2D_row', 'title': title,
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'diameter2D_row_ablation', 'title': title,
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
@@ -137,7 +146,7 @@ scatter_plot(df_angyodinamics, **kwargs)
 ylabel = "Diameter Axial Plane (Euclidean Distances based) [mm]"
 title = "Ablation Diameter Coronal Plane vs. MWA Energy for " + str(
     len(df_angyodinamics)) + " tumors treated with Angyodinamics MWA Device"
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'diameter2D_slice', 'title': title,
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'diameter2D_slice_ablation', 'title': title,
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
@@ -145,35 +154,49 @@ scatter_plot(df_angyodinamics, **kwargs)
 #%% Time Duration and Power
 df_angyodinamics["Time_Duration_Applied"] = pd.to_numeric(df_angyodinamics["Time_Duration_Applied"])
 ylabel ='Least Ablation Diameter (PCA-based) [mm]'
-kwargs = {'x_data': 'Time_Duration_Applied', 'y_data': 'least_axis_length',
+kwargs = {'x_data': 'Time_Duration_Applied', 'y_data': 'least_axis_length_ablation',
           'title': 'Time Duration Applied [s] vs Least Axis Ablation Diameter [mm]',
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
 ylabel = 'Major Ablation Diameter (PCA-based) [mm]'
-kwargs = {'x_data': 'Time_Duration_Applied', 'y_data': 'major_axis_length',
+kwargs = {'x_data': 'Time_Duration_Applied', 'y_data': 'major_axis_length_ablation',
           'title': 'Time Duration Applied [s] vs Major Ablation Diameter [mm]',
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
-#TODO: add minor axis
+
+ylabel = 'Minor Ablation Diameter (PCA-based) [mm]'
+kwargs = {'x_data': 'Time_Duration_Applied', 'y_data': 'minor_axis_length',
+          'title': 'Time Duration Applied [s] vs Minor Ablation Diameter [mm]',
+          'y_label': ylabel,
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+
 #%% Power
 df_angyodinamics["Power"] = pd.to_numeric(df_angyodinamics["Power"])
 ylabel = 'Least Ablation Diameter (PCA-based) [mm]'
-kwargs = {'x_data': 'Power', 'y_data': 'least_axis_length',
+kwargs = {'x_data': 'Power', 'y_data': 'least_axis_length_ablation',
           'title': 'Power Applied [W] vs Least Axis Ablation Diameter[mm]',
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
 ylabel = 'Major Ablation Diameter (PCA-based) [mm]'
-kwargs = {'x_data': 'Power', 'y_data': 'major_axis_length',
+kwargs = {'x_data': 'Power', 'y_data': 'major_axis_length_ablation',
           'title': 'Power Applied [W] vs Major Ablation Diameter [mm]',
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
-#todo: add minor axis
+
+ylabel = 'Minor Ablation Diameter (PCA-based) [mm]'
+kwargs = {'x_data': 'Power', 'y_data': 'minor_axis_length_ablation',
+          'title': 'Power Applied [W] vs Minor Ablation Diameter [mm]',
+          'y_label': ylabel,
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+
 #%% percentage distances  histograms
 
 fig, ax = plt.subplots()
@@ -206,15 +229,21 @@ gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
 # %% histogram axes
 plt.figure()
-df_angyodinamics.hist(column=["major_axis_length"])
+df_angyodinamics.hist(column=["major_axis_length_ablation"])
 
-figpathHist = os.path.join("figures", "histogram major axis length")
+figpathHist = os.path.join("figures", "histogram major axis length ablation angyodinamics")
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
-df_angyodinamics.hist(column=["least_axis_length"])
-figpathHist = os.path.join("figures", "histogram least axis length")
+df_angyodinamics.hist(column=["least_axis_length_ablation"])
+figpathHist = os.path.join("figures", "histogram least axis length ablation angyodinamics")
+plt.tick_params(labelsize=20, color='black')
+ax.tick_params(colors='black', labelsize=20)
+gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
+
+df_angyodinamics.hist(column=["minor_axis_length_ablation"])
+figpathHist = os.path.join("figures", "histogram minor axis length ablation angyodinamics")
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
