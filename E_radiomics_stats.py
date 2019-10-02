@@ -173,7 +173,23 @@ kwargs = {'x_data': 'Time_Duration_Applied', 'y_data': 'minor_axis_length',
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
+#
+#%% Ablation vs Tumor Axis
+df_angyodinamics["Time_Duration_Applied"] = pd.to_numeric(df_angyodinamics["Time_Duration_Applied"])
+kwargs = {'x_data': 'least_axis_length_tumor', 'y_data': 'least_axis_length_ablation',
+          'title': ' Least Axis Tumor vs Ablation Diameter [mm]',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
 
+kwargs = {'x_data': 'major_axis_length_tumor', 'y_data': 'major_axis_length_ablation',
+          'title': 'Major Axis Tumor vs Ablation Diameter [mm]',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+
+kwargs = {'x_data': 'minor_axis_length_tumor', 'y_data': 'minor_axis_length_ablation',
+          'title': 'Minor Axis Tumor vs Ablation Diameter [mm]',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
 #%% Power
 df_angyodinamics["Power"] = pd.to_numeric(df_angyodinamics["Power"])
 ylabel = 'Least Ablation Diameter (PCA-based) [mm]'
@@ -196,9 +212,42 @@ kwargs = {'x_data': 'Power', 'y_data': 'minor_axis_length_ablation',
           'y_label': ylabel,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
+#%% Sphericity
+kwargs = {'x_data': 'sphericity_tumor', 'y_data': 'elongation_ablation',
+          'title': ' Sphericity Tumor vs Elongation Ablation',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+kwargs = {'x_data': 'sphericity_tumor', 'y_data': 'sphericity_ablation',
+          'title': ' Sphericity Tumor vs Sphericity Ablation',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'elongation_ablation',
+          'title': ' Elongation Ablation vs Energy Ablation [mm]',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'sphericity_ablation',
+          'title': ' Sphericity Ablation vs Energy Ablation [mm]',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+#%% Gray level variance tumor vs energy
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'intensity_mean_tumor',
+          'title': 'Energy Applied vs Mean Tumor Pixel Intensity',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'intensity_variance_tumor',
+          'title': 'Energy Applied vs VarianceTumor Pixel Intensity',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'intensity_uniformity_tumor',
+          'title': 'Energy Applied vs Tumor Pixel Uniformity',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
 
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'gray_lvl_nonuniformity_tumor',
+          'title': 'Energy Applied vs Tumor Pixel NonUniformity',
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
 #%% percentage distances  histograms
-
 fig, ax = plt.subplots()
 df1["safety_margin_distribution_0"].replace(0, np.nan, inplace=True)
 df1["safety_margin_distribution_5"].replace(0, np.nan, inplace=True)
@@ -224,10 +273,9 @@ figpathHist = os.path.join("figures", "surface margin frequency percentages over
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
-#
 
 
-# %% histogram axes
+# %% histogram axes ablation
 plt.figure()
 df_angyodinamics.hist(column=["major_axis_length_ablation"])
 
@@ -250,5 +298,23 @@ gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
 print('All  plots saved as *.png files in dev folder figures')
 plt.close('all')
-# %%
+# %% histogram axis tumor
+plt.figure()
+df_angyodinamics.hist(column=["major_axis_length_tumor"])
 
+figpathHist = os.path.join("figures", "histogram major axis length tumor angyodinamics")
+plt.tick_params(labelsize=20, color='black')
+ax.tick_params(colors='black', labelsize=20)
+gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
+
+df_angyodinamics.hist(column=["least_axis_length_tumor"])
+figpathHist = os.path.join("figures", "histogram least axis length tumor angyodinamics")
+plt.tick_params(labelsize=20, color='black')
+ax.tick_params(colors='black', labelsize=20)
+gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
+
+df_angyodinamics.hist(column=["minor_axis_length_ablation_tumor"])
+figpathHist = os.path.join("figures", "histogram minor axis length tumor angyodinamics")
+plt.tick_params(labelsize=20, color='black')
+ax.tick_params(colors='black', labelsize=20)
+gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
