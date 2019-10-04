@@ -39,12 +39,13 @@ df['Proximity_to_vessels'].replace('', 'NaN', inplace=True)
 # TODO: with and without vessel proximity
 # TODO: volume into formula
 
-# idx_comments = df.columns.get_loc('Device_name')
-# df1 = df.iloc[:, idx_comments:len(df.columns)].copy()
+idx_comments = df.columns.get_loc('Power')
+df_corr = df.iloc[:, idx_comments:len(df.columns)].copy()
 print('3. Dropping Outliers from the Energy Column using val < quantile 0.99')
 q = df['Energy [kj]'].quantile(0.99)
 df1_no_outliers = df[df['Energy [kj]'] < q]
 df1_no_outliers.reset_index(inplace=True, drop=True)
+
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Tumour Volume [ml]',
           'title': "Tumors Volumes for 3 MWA devices. Outliers Removed.", 'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
@@ -62,6 +63,12 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Tumour coverage ratio',
           'title': "Tumor Coverage Ratio for 3 MWA devices.",
           'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
+#%% Heatmap of correlations
+idx_comments = df.columns.get_loc('Power')
+df_corr = df.iloc[:, idx_comments:len(df.columns)-5].copy()
+sns.heatmap(df_corr.corr(), square=True, annot=True, linewidths=.2, vmin=-1, vmax=1)
+figpathHist = os.path.join("figures", "HeatMap Correlations")
+gh.save(figpathHist, width=24, height=24, ext=['png'], close=True)
 # %% group by proximity to vessels
 groups = df1_no_outliers.groupby('Proximity_to_vessels')
 fig, ax = plt.subplots()
