@@ -58,10 +58,15 @@ def scatter_plot(df1, **kwargs):
         residuals = Y - regr.predict(X)
         SS_res = np.sum(residuals**2)
         r_squared = 1-(SS_res/SS_tot)
+        print(X.shape)
+        print(Y.shape)
+        correlation_coef = np.corrcoef(X[:,0], Y[:,0])[0,1]
         # r_square_sklearn = r2_score(Y, regr.predict(X))
         # print('R-square manual:', r_squared)
         # print('R-square  sklearn:', r_square_sklearn)
-        label = r'$R^2: $' + '{:.2f}'.format(r_squared)
+        print(correlation_coef)
+        # label = r'$R^2: $' + '{0:.2f}, {1:.2f}'.format(r_squared, correlation_coef)
+        label = r'$R^2: $ {0:.2f}; r: {1:.2f}'.format(r_squared, correlation_coef)
         plt.plot(X, regr.predict(X), color='orange', linewidth=3, label=label)
 
     nr_samples = ' Nr. samples: ' + str(len(df))
