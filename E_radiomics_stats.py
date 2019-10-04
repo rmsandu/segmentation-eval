@@ -32,17 +32,18 @@ df = df[df['Device_name'] != 'Boston Scientific (Boston Scientific - RF 3000)']
 print("2. Droping NaNs")
 df.dropna(subset=["Ablation Volume [ml]"], inplace=True)
 df.dropna(subset=['Lesion_ID'], inplace=True)
-df['Proximity_to_vessels'].replace('True', 'YES', inplace=True)
-df['Proximity_to_vessels'].replace('False', 'NO', inplace=True)
+df['Proximity_to_vessels'].replace(True, 'YES', inplace=True)
+df['Proximity_to_vessels'].replace(False, 'NO', inplace=True)
+df['Proximity_to_vessels'].replace('', 'NaN', inplace=True)
 # TODO: with and without comments
 # TODO: with and without vessel proximity
 # TODO: volume into formula
 
-idx_comments = df.columns.get_loc('Device_name')
-df1 = df.iloc[:, idx_comments:len(df.columns)].copy()
+# idx_comments = df.columns.get_loc('Device_name')
+# df1 = df.iloc[:, idx_comments:len(df.columns)].copy()
 print('3. Dropping Outliers from the Energy Column using val < quantile 0.99')
-q = df1['Energy [kj]'].quantile(0.99)
-df1_no_outliers = df1[df1['Energy [kj]'] < q]
+q = df['Energy [kj]'].quantile(0.99)
+df1_no_outliers = df[df['Energy [kj]'] < q]
 df1_no_outliers.reset_index(inplace=True, drop=True)
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Tumour Volume [ml]',
           'title': "Tumors Volumes for 3 MWA devices. Outliers Removed.", 'lin_reg': 1}
@@ -78,9 +79,11 @@ for idx, L in enumerate(L_labels):
 
 plt.xlabel('Energy [kJ]', fontsize=20, color='black')
 plt.ylabel('Ablation Volume [ml]', fontsize=20, color='black')
+plt.title("Ablation Volume vs Energy Grouped by Proximity to Vessels")
 plt.tick_params(labelsize=20, color='black')
 plt.legend(title_fontsize=20)
 ax.tick_params(colors='black', labelsize=20)
+
 figpathHist = os.path.join("figures", "Ablation Volume vs Energy Grouped by Proximity to Vessels")
 gh.save(figpathHist, width=18, height=16, ext=['png'], close=True)
 #%% group by device name
@@ -136,7 +139,7 @@ df_angyodinamics.dropna(subset=['least_axis_length_ablation'], inplace=True)
 title = "Ablation Volumes for tumors treated with Angiodynamics MWA Device"
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
-          title: title,
+          'title': title,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
@@ -146,7 +149,8 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'least_axis_length_ablation', 'titl
 scatter_plot(df_angyodinamics, **kwargs)
 
 title = "Major Ablation Diameter vs. MWA Energy for tumors treated with Angiodynamics MWA Device"
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'major_axis_length_ablation', 'title': title,
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'major_axis_length_ablation',
+          'title': title,
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
@@ -342,10 +346,10 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'gray_lvl_nonuniformity_tumor',
 scatter_plot(df_angyodinamics, **kwargs)
 #%% percentage distances  histograms
 fig, ax = plt.subplots()
-df1["safety_margin_distribution_0"].replace(0, np.nan, inplace=True)
-df1["safety_margin_distribution_5"].replace(0, np.nan, inplace=True)
-df1["safety_margin_distribution_10"].replace(0, np.nan, inplace=True)
-idx_margins = df1.columns.get_loc('safety_margin_distribution_0')
+df["safety_margin_distribution_0"].replace(0, np.nan, inplace=True)
+df["safety_margin_distribution_5"].replace(0, np.nan, inplace=True)
+df["safety_margin_distribution_10"].replace(0, np.nan, inplace=True)
+idx_margins = df.columns.get_loc('safety_margin_distribution_0')
 df_margins = df.iloc[:, idx_margins: idx_margins + 3].copy()
 df_margins.reset_index(drop=True, inplace=True)
 df_margins_sort = pd.DataFrame(np.sort(df_margins.values, axis=0), index=df_margins.index, columns=df_margins.columns)
@@ -360,6 +364,35 @@ for idx, col in enumerate(df_margins.columns):
 
 plt.xlabel('Percentage of Surface Margin Covered for different ablation margins ranges', fontsize=20, color='black')
 plt.ylabel('Frequency', fontsize=20, color='black')
+plt.title('Ablation Surface Margin Coverages [%] Histogram for all MWA device models.')
+plt.legend(fontsize=20)
+plt.xticks(range(0, 101, 10))
+figpathHist = os.path.join("figures", "surface margin frequency percentages overlaid")
+plt.tick_params(labelsize=20, color='black')
+ax.tick_params(colors='black', labelsize=20)
+gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
+
+#%% percentage distances  histograms for angyodinamics
+fig, ax = plt.subplots()
+df_angyodinamics["safety_margin_distribution_0"].replace(0, np.nan, inplace=True)
+df_angyodinamics["safety_margin_distribution_5"].replace(0, np.nan, inplace=True)
+df_angyodinamics["safety_margin_distribution_10"].replace(0, np.nan, inplace=True)
+idx_margins = df.columns.get_loc('safety_margin_distribution_0')
+df_margins = df.iloc[:, idx_margins: idx_margins + 3].copy()
+df_margins.reset_index(drop=True, inplace=True)
+df_margins_sort = pd.DataFrame(np.sort(df_margins.values, axis=0), index=df_margins.index, columns=df_margins.columns)
+# df_margins_sort.hist(alpha=0.5)
+
+labels = [{'Ablation Surface Margin ' + r'$x > 5$' + 'mm '},
+          {'Ablation Surface Margin ' + r'$0 \leq  x \leq 5$' + 'mm'}, {'Ablation Surface Margin ' + r'$x < 0$' + 'mm'}]
+for idx, col in enumerate(df_margins.columns):
+    sns.distplot(df_margins[col], label=labels[idx],
+                 bins=range(0, 101, 10),
+                 kde=False, hist_kws=dict(edgecolor='black'))
+
+plt.xlabel('Percentage of Surface Margin Covered for different ablation margins ranges', fontsize=20, color='black')
+plt.ylabel('Frequency', fontsize=20, color='black')
+plt.title('Ablation Surface Margin Coverages [%] Histogram for Angiodynamic MWA device model.')
 plt.legend(fontsize=20)
 plt.xticks(range(0, 101, 10))
 figpathHist = os.path.join("figures", "surface margin frequency percentages overlaid")
@@ -371,8 +404,8 @@ gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 # %% histogram axes ablation
 plt.figure()
 df_angyodinamics.hist(column=["major_axis_length_ablation"])
-
 figpathHist = os.path.join("figures", "histogram major axis length ablation angyodinamics")
+plt.ylabel('mm')
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 ax.set_xlim([0, 100])
@@ -383,16 +416,18 @@ gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
 df_angyodinamics.hist(column=["least_axis_length_ablation"])
 figpathHist = os.path.join("figures", "histogram least axis length ablation angyodinamics")
+plt.ylabel('mm')
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 ax.set_xlim([0, 100])
 plt.xlim(([0, 100]))
 plt.ylim(([0, 30]))
-plt.ylabel('mm')
+
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
 df_angyodinamics.hist(column=["minor_axis_length_ablation"])
 figpathHist = os.path.join("figures", "histogram minor axis length ablation angyodinamics")
+plt.ylabel('mm')
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 ax.set_xlim([0, 100])
@@ -406,29 +441,34 @@ plt.close('all')
 plt.figure()
 df_angyodinamics.hist(column=["major_axis_length_tumor"])
 figpathHist = os.path.join("figures", "histogram major axis length tumor angyodinamics")
+plt.ylabel('mm')
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 ax.set_xlim([0, 100])
 plt.xlim(([0, 100]))
 plt.ylim(([0, 30]))
-plt.ylabel('mm')
+
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
 df_angyodinamics.hist(column=["least_axis_length_tumor"])
 figpathHist = os.path.join("figures", "histogram least axis length tumor angyodinamics")
+plt.ylabel('mm')
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 ax.set_xlim([0, 100])
 plt.xlim(([0, 100]))
 plt.ylim(([0, 30]))
-plt.ylabel('mm')
+
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
 df_angyodinamics.hist(column=["minor_axis_length_tumor"])
 figpathHist = os.path.join("figures", "histogram minor axis length tumor angyodinamics")
+plt.ylabel('mm')
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 ax.set_xlim([0, 100])
 plt.xlim(([0, 100]))
-plt.ylabel('mm')
+plt.ylim(([0, 30]))
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
+
+plt.close('all')
