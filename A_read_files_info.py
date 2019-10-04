@@ -102,7 +102,7 @@ def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
                     # print('source ct tumor series:', source_ct_tumor_series)
                     # print('idx ct plan:', idx_source_tumor)
                 except IndexError:
-                    print("some nasty error because referenced series uid was not found")
+                    print(ablation_path, "some nasty error because referenced series uid was not found")
                     continue
             else:
                 continue
@@ -138,7 +138,7 @@ def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--rootdir", required=False, help="path to the patient folder to be processed")
-    ap.add_argument("-o", "--plots_dir", required=False, help="path to the output images")
+    ap.add_argument("-o", "--plots_dir", required=True, help="path to the output images")
     ap.add_argument("-b", "--input_batch_proc", required=False, help="input csv file for batch processing")
 
     args = vars(ap.parse_args())
@@ -157,10 +157,12 @@ if __name__ == '__main__':
         list_all_ct_series = create_paths(args["rootdir"])
         df_paths_mapping = pd.DataFrame(list_all_ct_series)
         preprocess_call_main_metrics(df_paths_mapping, args["plots_dir"])
+        print('Extracted metrics from the patient dir: ', args["rootdir"])
+        sys.exit()
     else:
         # batch processing option
         df = pd.read_excel(args["input_batch_proc"])
-        df = df.loc[df['CT plan'] & df['CT validation'] & df['Segmentation_tumor_available'] &
+        df = df.loc[df['CT plan'] & df['Segmentation_tumor_available'] &
                     df['Segmentation_ablation_available']]
         df.drop_duplicates(subset=['Patient_Dir_Paths'], inplace=True)
         df['Patient_Dir_Paths'].fillna("None", inplace=True)
@@ -178,5 +180,10 @@ if __name__ == '__main__':
                     rootdir = os.path.normpath(rootdir)
                     list_all_ct_series = create_paths(rootdir)
                     df_paths_mapping = pd.DataFrame(list_all_ct_series)
-                    # call function to resample images and output csv for main metrics.
-                    preprocess_call_main_metrics(df_paths_mapping, ablation_date_redcap, args["plots_dir"])
+                    if df_paths_mapping.empty is True:
+                        print('No Cas Recordings or segmentations found in this patient folder. Please investigate')
+                        continue
+                    else:
+                        # call function to resample images and output csv for main metrics.
+                        preprocess_call_main_metrics(df_paths_mapping, args["plots_dir"])
+                        print('Extracted metrics from the patient dir: ', rootdir)
