@@ -14,11 +14,11 @@ from volumemetrics import VolumeMetrics
 
 
 def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor,
-                                 ablation_segmentation, tumor_segmentation,
+                                 ablation_segmentation, tumor_segmentation_resampled,
                                  lesion_id, ablation_date, dir_plots,
                                  FLAG_SAVE_TO_EXCEL=True, title='Ablation to Tumor Euclidean Distances'):
     # %% Get Surface Distances between tumor and ablation segmentations
-    surface_distance_metrics = DistanceMetrics(ablation_segmentation, tumor_segmentation)
+    surface_distance_metrics = DistanceMetrics(ablation_segmentation, tumor_segmentation_resampled)
     if surface_distance_metrics.num_tumor_surface_pixels > 0:
         df_distances_1set = surface_distance_metrics.get_SitkDistances()
         distanceMap = surface_distance_metrics.get_surface_distances()
@@ -27,9 +27,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
         df_distances_1set = None
     # %% Get Radiomics Metrics (shape and intensity)
     # ABLATION
-    resizer = ResizeSegmentation(source_ct_ablation, ablation_segmentation)
-    ablation_segmentation_resized = resizer.resample_segmentation()
-    ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation_resized)
+    ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation)
     #
     if ablation_radiomics_metrics.error_flag is False:
         df_ablation_metrics_1set = ablation_radiomics_metrics.get_axis_metrics_df()
@@ -39,9 +37,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     else:
         df_ablation_metrics_1set = None
     # TUMOR
-    resizer = ResizeSegmentation(source_ct_tumor, tumor_segmentation)
-    tumor_segmentation_resized = resizer.resample_segmentation()
-    tumor_radiomics_metrics = RadiomicsMetrics(source_ct_tumor, tumor_segmentation_resized)
+    tumor_radiomics_metrics = RadiomicsMetrics(source_ct_tumor, tumor_segmentation_resampled)
     if tumor_radiomics_metrics.error_flag is False:
         df_tumor_metrics_1set = tumor_radiomics_metrics.get_axis_metrics_df()
         new_columns_name = df_tumor_metrics_1set.columns + '_tumor'
@@ -51,7 +47,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
 
     # %% call function to compute volume metrics
     evaloverlap = VolumeMetrics()
-    evaloverlap.set_image_object(ablation_segmentation, tumor_segmentation)
+    evaloverlap.set_image_object(ablation_segmentation, tumor_segmentation_resampled)
     evaloverlap.set_volume_metrics()
     if evaloverlap.error_flag is False:
         df_volumes_1set = evaloverlap.get_volume_metrics_df()
@@ -59,7 +55,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
         df_volumes_1set = None
     # %% PLOT the color coded histogram of the distances
     if (df_distances_1set is not None) and (distanceMap is not None):
-        try:
+        # try:
             perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = pm.plotHistDistances(pat_name=patient_id,
                                                                                             lesion_id=lesion_id,
                                                                                             rootdir=dir_plots,
@@ -68,10 +64,10 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
                                                                                             title=title,
                                                                                             ablation_date=ablation_date)
 
-        except Exception:
-            print(patient_id, 'error plotting the distances and volumes')
+        # except Exception:
+        #     print(patient_id, 'error plotting the distances and volumes')
     else:
-        return
+        return None
 
     SurfaceDistances_raw_numbers = {
         'patient_id': patient_id,

@@ -35,8 +35,7 @@ class RadiomicsMetrics(object):
                 least_axis_length, minor_axis_length, gray_lvl_nonuniformity, gray_lvl_variance = range(15)
         axis_metrics_results = np.zeros((1, len(AxisMetricsRadiomics.__members__.items())))
         # %% Extract the diameter axis
-        # settings = {'label': 255, 'correctMask': False}
-        settings = {'label': 255}
+        settings = {'label': 255, 'correctMask': True}
         extractor = radiomics.featureextractor.RadiomicsFeatureExtractor(additionalInfo=True, **settings)
         try:
             result = extractor.execute(self.input_image, self.mask_image)
@@ -45,7 +44,6 @@ class RadiomicsMetrics(object):
             self.error_flag = True
             return
         try:
-            # CenterOfMass returns a tuple
             axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass.value] = result['diagnostics_Mask-original_CenterOfMass']
         except Exception:
             axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass.value] = None
