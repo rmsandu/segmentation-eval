@@ -3,11 +3,13 @@
 @author: Raluca Sandu
 """
 import os
+import sys
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from math import pi
 
 import utils.graphing as gh
 from utils.scatter_plot import scatter_plot
@@ -21,16 +23,26 @@ ap.add_argument("-i", "--input_file", required=True, help="input file pooled rad
 args = vars(ap.parse_args())
 
 df = pd.read_excel(args["input_file"], sheet_name="radiomics")
+df['Power'] = pd.to_numeric(df['Power'],  errors='coerce')
+df["Time_Duration_Applied"] = pd.to_numeric(df["Time_Duration_Applied"], errors='coerce')
+df['Energyy [kj]'] = df['Power'] * df['Time_Duration_Applied']/1000
+df['Ablation Volume [ml]_EllipsoidFormula'] = (4 * pi * df['least_axis_length_ablation'] *
+                                               df['major_axis_length_ablation'] * df['minor_axis_length_ablation']) / 3
 # rmv empty rows
 df['Energy [kj]'].replace('', np.nan, inplace=True)
 try:
     df['MISSING'].replace('', np.nan, inplace=True)
 except Exception:
     print("column MISSING is not present in the input file")
+
 print("1. Removing RadioFrequency Devices from the input file")
 df = df[df['Device_name'] != 'Boston Scientific (Boston Scientific - RF 3000)']
 print("2. Droping NaNs")
+print('2.1 Drop Nans from Ablation Volume')
 df.dropna(subset=["Ablation Volume [ml]"], inplace=True)
+print('2.2 Drop Nans from Energy')
+df.dropna(subset=['Energy [kj]'], inplace=True)
+print('2.3 Drop Duplicates from Lesion')
 df.dropna(subset=['Lesion_ID'], inplace=True)
 df['Proximity_to_vessels'].replace(True, 'YES', inplace=True)
 df['Proximity_to_vessels'].replace(False, 'NO', inplace=True)
@@ -38,9 +50,35 @@ df['Proximity_to_vessels'].replace('', 'NaN', inplace=True)
 # TODO: with and without comments
 # TODO: with and without vessel proximity
 # TODO: volume into formula
+df.reset_index(inplace=True, drop=True)
 
-idx_comments = df.columns.get_loc('Power')
-df_corr = df.iloc[:, idx_comments:len(df.columns)].copy()
+#%%  Raw Data
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Tumour Volume [ml]',
+          'title': "Tumors Volumes for 3 MWA devices. ", 'lin_reg': 1}
+scatter_plot(df, **kwargs)
+
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
+          'title': "Ablation Volumes for 3 MWA devices. ",
+          'lin_reg': 1}
+scatter_plot(df, **kwargs)
+
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]_EllipsoidFormula',
+          'title': "Ablation Volumes based on the 3 ellipsoid axes for 3 MWA devices. ",
+          'lin_reg': 1}
+scatter_plot(df, **kwargs)
+
+kwargs = {'x_data': 'Ablation Volume [ml]', 'y_data': 'Ablation Volume [ml]_EllipsoidFormula',
+          'title': "Ablation Volume based on no. of voxels vs. Ablation Volume based on the ellipsoid formula. ",
+          'lin_reg': 1}
+scatter_plot(df, **kwargs)
+
+df['Ratio_AT_vol'] = df['Tumour Volume [ml]'] / df['Ablation Volume [ml]']
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ratio_AT_vol',
+          'title': "Tumor to Ablation Volume Ratio for 3 MWA devices.Outliers Removed.",
+          'y_label': 'R(Tumor Volume: Ablation Volume)', 'lin_reg': 1}
+scatter_plot(df **kwargs)
+
+#%%
 print('3. Dropping Outliers from the Energy Column using val < quantile 0.99')
 q = df['Energy [kj]'].quantile(0.99)
 df1_no_outliers = df[df['Energy [kj]'] < q]
@@ -50,25 +88,43 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Tumour Volume [ml]',
           'title': "Tumors Volumes for 3 MWA devices. Outliers Removed.", 'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
 
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]', 'title': "Ablation Volumes for 3 MWA devices. ",
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
+          'title': "Ablation Volumes for 3 MWA devices.Outliers Removed. ",
+          'lin_reg': 1}
+scatter_plot(df1_no_outliers, **kwargs)
+
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]_EllipsoidFormula',
+          'title': "Ablation Volumes based on the 3 ellipsoid axes for 3 MWA devices.Outliers Removed. ",
+          'lin_reg': 1}
+scatter_plot(df1_no_outliers, **kwargs)
+
+kwargs = {'x_data': 'Ablation Volume [ml]', 'y_data': 'Ablation Volume [ml]_EllipsoidFormula',
+          'title': "Ablation Volume based on no. of voxels vs. Ablation Volume based on the ellipsoid formula. Outliers Removed. ",
           'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
 
 df1_no_outliers['Ratio_AT_vol'] = df1_no_outliers['Tumour Volume [ml]'] / df1_no_outliers['Ablation Volume [ml]']
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ratio_AT_vol',
-          'title': "Tumor to Ablation Volume Ratio for 3 MWA devices.",
+          'title': "Tumor to Ablation Volume Ratio for 3 MWA devices.Outliers Removed.",
           'y_label': 'R(Tumor Volume: Ablation Volume)', 'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Tumour coverage ratio',
-          'title': "Tumor Coverage Ratio for 3 MWA devices.",
-          'lin_reg': 1}
-scatter_plot(df1_no_outliers, **kwargs)
-#%% Heatmap of correlations
+
+# %% Heatmap of correlations
 idx_comments = df.columns.get_loc('Power')
-df_corr = df.iloc[:, idx_comments:len(df.columns)-5].copy()
-sns.heatmap(df_corr.corr(), square=True, annot=True, linewidths=.2, vmin=-1, vmax=1)
+# len(df.columns)
+df_corr = df.iloc[:, idx_comments:len(df.columns) - 10].copy()
+# df_corr = df_corr.pivot('Ablation Volume [ml]', 'Tumor Volume [ml]')
+# , 'Power', 'Time_Duration_Applied'
+df_to_plot = df_corr.corr()
+mask = np.zeros_like(df_to_plot)
+mask[np.triu_indices_from(mask)] = True
+ax = sns.heatmap(df_to_plot, annot=True, vmin=-1, vmax=1, cmap='RdYlGn', linewidths=0.4, linecolor='white', square=True)
+y1, y0 = ax.get_ylim()
+ax.set_ylim(y1 + 0.3, y0 - 0.3)
+plt.show()
 figpathHist = os.path.join("figures", "HeatMap Correlations")
 gh.save(figpathHist, width=24, height=24, ext=['png'], close=True)
+sys.exit()
 # %% group by proximity to vessels
 groups = df1_no_outliers.groupby('Proximity_to_vessels')
 fig, ax = plt.subplots()
@@ -86,14 +142,14 @@ for idx, L in enumerate(L_labels):
 
 plt.xlabel('Energy [kJ]', fontsize=20, color='black')
 plt.ylabel('Ablation Volume [ml]', fontsize=20, color='black')
-plt.title("Ablation Volume vs Energy Grouped by Proximity to Vessels",fontsize=20, color='black')
+plt.title("Ablation Volume vs Energy Grouped by Proximity to Vessels", fontsize=20, color='black')
 plt.tick_params(labelsize=20, color='black')
 plt.legend(title_fontsize=20)
 ax.tick_params(colors='black', labelsize=20)
 
 figpathHist = os.path.join("figures", "Ablation Volume vs Energy Grouped by Proximity to Vessels")
 gh.save(figpathHist, width=18, height=16, ext=['png'], close=True)
-#%% group by device name
+# %% group by device name
 groups = df1_no_outliers.groupby('Device_name')
 fig, ax = plt.subplots()
 lesion_per_device = []
@@ -107,7 +163,6 @@ L_labels = L.get_texts()
 
 for idx, L in enumerate(L_labels):
     L.set_text(device_name_grp[idx] + ' N=' + str(lesion_per_device[idx]))
-
 
 plt.xlabel('Energy [kJ]', fontsize=20, color='black')
 plt.ylabel('Ablation Volume [ml]', fontsize=20, color='black')
@@ -166,8 +221,7 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'minor_axis_length_ablation', 'titl
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
-
-#%%
+# %%
 title = "Ablation Diameter Coronal Plane vs. MWA Energy for tumors treated with Angyodinamics MWA Device"
 ylabel = "Diameter Coronal Plane (Euclidean Distances based) [mm]"
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'diameter2D_col_ablation', 'title': title,
@@ -189,7 +243,7 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'diameter2D_slice_ablation', 'title
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
-#%% Time Duration and Power
+# %% Time Duration and Power
 df_angyodinamics["Time_Duration_Applied"] = pd.to_numeric(df_angyodinamics["Time_Duration_Applied"])
 
 ylabel = 'Least Ablation Diameter (PCA-based) [mm]'
@@ -213,7 +267,7 @@ kwargs = {'x_data': 'Time_Duration_Applied', 'y_data': 'minor_axis_length_ablati
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 #
-#%% Ablation vs Tumor Axis
+# %% Ablation vs Tumor Axis
 df_angyodinamics["Time_Duration_Applied"] = pd.to_numeric(df_angyodinamics["Time_Duration_Applied"])
 kwargs = {'x_data': 'least_axis_length_tumor', 'y_data': 'least_axis_length_ablation',
           'title': ' Least Axis Tumor vs Least Axis Ablation [mm]',
@@ -229,7 +283,7 @@ kwargs = {'x_data': 'minor_axis_length_tumor', 'y_data': 'minor_axis_length_abla
           'title': 'Minor Axis Tumor vs Minor Axis Ablation[mm]',
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
-#%% Power
+# %% Power
 df_angyodinamics["Power"] = pd.to_numeric(df_angyodinamics["Power"])
 ylabel = 'Least Ablation Diameter (PCA-based) [mm]'
 kwargs = {'x_data': 'Power', 'y_data': 'least_axis_length_ablation',
@@ -252,7 +306,7 @@ kwargs = {'x_data': 'Power', 'y_data': 'minor_axis_length_ablation',
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
-#%% Sphericity
+# %% Sphericity
 kwargs = {'x_data': 'sphericity_tumor', 'y_data': 'elongation_ablation',
           'title': ' Sphericity Tumor vs Elongation Ablation',
           'lin_reg': 1}
@@ -273,7 +327,7 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'sphericity_ablation',
           'title': ' Sphericity Ablation vs Energy Ablation [mm]',
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
-#%% Gray level variance tumor vs energy
+# %% Gray level variance tumor vs energy
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'intensity_mean_tumor',
           'title': 'Energy Applied vs Mean Tumor Pixel Intensity',
           'lin_reg': 1}
@@ -291,7 +345,7 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'gray_lvl_nonuniformity_tumor',
           'title': 'Energy Applied vs Tumor Pixel NonUniformity',
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
-#%% tumor size vs intensities
+# %% tumor size vs intensities
 kwargs = {'x_data': 'least_axis_length_tumor', 'y_data': 'intensity_mean_tumor',
           'title': 'Least Axis Length Tumor vs Mean Tumor Pixel Intensity',
           'lin_reg': 1}
@@ -306,7 +360,7 @@ kwargs = {'x_data': 'major_axis_length_tumor', 'y_data': 'intensity_mean_tumor',
           'title': 'Major Axis Length Tumor vs Mean Tumor Pixel Intensity',
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
-#%% gray lvl vs ablation metrics
+# %% gray lvl vs ablation metrics
 kwargs = {'x_data': 'least_axis_length_ablation', 'y_data': 'intensity_mean_tumor',
           'title': 'Least Ablation Axis Length vs Mean Tumor Pixel Intensity',
           'lin_reg': 1}
@@ -351,7 +405,7 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'gray_lvl_nonuniformity_tumor',
           'title': 'Energy Applied vs Tumor Pixel NonUniformity',
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
-#%% percentage distances  histograms
+# %% percentage distances  histograms
 fig, ax = plt.subplots()
 df["safety_margin_distribution_0"].replace(0, np.nan, inplace=True)
 df["safety_margin_distribution_5"].replace(0, np.nan, inplace=True)
@@ -379,7 +433,7 @@ plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
-#%% percentage distances  histograms for angyodinamics
+# %% percentage distances  histograms for angyodinamics
 fig, ax = plt.subplots()
 df_angyodinamics["safety_margin_distribution_0"].replace(0, np.nan, inplace=True)
 df_angyodinamics["safety_margin_distribution_5"].replace(0, np.nan, inplace=True)
@@ -406,7 +460,6 @@ figpathHist = os.path.join("figures", "surface margin frequency percentages over
 plt.tick_params(labelsize=20, color='black')
 ax.tick_params(colors='black', labelsize=20)
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
-
 
 # %% histogram axes ablation
 plt.figure()
@@ -479,3 +532,10 @@ plt.ylim(([0, 30]))
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
 plt.close('all')
+
+#%% write to Excel
+
+writer = pd.ExcelWriter(args["input_file"])
+df.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
+writer.save()
+
