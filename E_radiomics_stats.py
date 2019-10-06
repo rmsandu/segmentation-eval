@@ -5,12 +5,13 @@
 import os
 import sys
 import argparse
+from collections import defaultdict
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from math import pi
-
 import utils.graphing as gh
 from utils.scatter_plot import scatter_plot
 
@@ -20,14 +21,58 @@ plt.style.use('ggplot')
 # %%
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--input_file", required=True, help="input file pooled radiomics ")
+ap.add_argument("-a", "--ablation_devices_brochure", required=False, help="input file ablation device brochure ")
 args = vars(ap.parse_args())
 
 df = pd.read_excel(args["input_file"], sheet_name="radiomics")
-df['Power'] = pd.to_numeric(df['Power'],  errors='coerce')
-df["Time_Duration_Applied"] = pd.to_numeric(df["Time_Duration_Applied"], errors='coerce')
-df['Energyy [kj]'] = df['Power'] * df['Time_Duration_Applied']/1000
-df['Ablation Volume [ml]_EllipsoidFormula'] = (4 * pi * df['least_axis_length_ablation'] *
-                                               df['major_axis_length_ablation'] * df['minor_axis_length_ablation']) / 3
+try:
+    df_ablation_devices = pd.read_excel(args["ablation_devices_brochure"])
+except Exception:
+    print('file with ablation devices info brochure not provided')
+
+# df['Energy [kj]'] = df['Energy [kj]'].apply(literal_eval)
+# df['Power'] = pd.to_numeric(df_ablation_devices['Power'],  errors='coerce')
+# df["Time_Duration_Applied"] = pd.to_numeric(df_ablation_devices["Time_Duration_Applied"], errors='coerce')
+# df['Power'] = pd.to_numeric(df['Power'],  errors='coerce')
+# df["Time_Duration_Applied"] = pd.to_numeric(df["Time_Duration_Applied"], errors='coerce')
+df['Ablation Volume [ml]_EllipsoidFormula'] = (pi * df['least_axis_length_ablation'] *
+                                               df['major_axis_length_ablation'] * df[
+                                                   'minor_axis_length_ablation']) / 6000
+
+dd = defaultdict(list)
+dict_devices = df_ablation_devices.to_dict('records', into=dd)
+ablation_radii = []
+for index, row in df.iterrows():
+    power = row['Power']
+    time = row['Time_Duration_Applied']
+    device = row['Device_name']
+    flag = False
+    if power != np.nan and time != np.nan:
+        for item in dict_devices:
+            if item['Power'] == power and item['Device_name'] == device and item['Time_Duration_Applied'] == time:
+                ablation_radii.append(item['Radii'])
+                flag = True
+        if flag is False:
+            ablation_radii.append('0 0 0')
+
+print(len(ablation_radii))
+print(len(df))
+df['Ablation_Radii_Brochure'] = ablation_radii
+# df['Ablation_Volume_Brochure'] = pi * (
+#             df['Ablation_Radii_Brochure'].split()[0] * df['Ablation_Radii_Brochure'].split()[1] *
+#             df['Ablation_Radii_Brochure'].split()[1]) / 6000
+df['first_axis_ablation_brochure'] = pd.to_numeric(df['Ablation_Radii_Brochure'].apply(lambda x: x.split()[0]))
+df['second_axis_ablation_brochure'] = pd.to_numeric(df['Ablation_Radii_Brochure'].apply(lambda x: x.split()[1]))
+df['third_axis_ablation_brochure'] = pd.to_numeric(df['Ablation_Radii_Brochure'].apply(lambda x: x.split()[2]))
+df['Ablation_Volume_Brochure'] = 4* pi * (df['first_axis_ablation_brochure'] *
+                                       df['second_axis_ablation_brochure'] * df['third_axis_ablation_brochure'])/3000
+# %% write to Excel
+
+writer = pd.ExcelWriter('Radiomics_Radii_MAVERRIC.xlsx')
+df.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
+writer.save()
+
+# %%
 # rmv empty rows
 df['Energy [kj]'].replace('', np.nan, inplace=True)
 try:
@@ -52,7 +97,7 @@ df['Proximity_to_vessels'].replace('', 'NaN', inplace=True)
 # TODO: volume into formula
 df.reset_index(inplace=True, drop=True)
 
-#%%  Raw Data
+# %%  Raw Data
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Tumour Volume [ml]',
           'title': "Tumors Volumes for 3 MWA devices. ", 'lin_reg': 1}
 scatter_plot(df, **kwargs)
@@ -76,9 +121,9 @@ df['Ratio_AT_vol'] = df['Tumour Volume [ml]'] / df['Ablation Volume [ml]']
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ratio_AT_vol',
           'title': "Tumor to Ablation Volume Ratio for 3 MWA devices.Outliers Removed.",
           'y_label': 'R(Tumor Volume: Ablation Volume)', 'lin_reg': 1}
-scatter_plot(df **kwargs)
+scatter_plot(df ** kwargs)
 
-#%%
+# %%
 print('3. Dropping Outliers from the Energy Column using val < quantile 0.99')
 q = df['Energy [kj]'].quantile(0.99)
 df1_no_outliers = df[df['Energy [kj]'] < q]
@@ -532,10 +577,3 @@ plt.ylim(([0, 30]))
 gh.save(figpathHist, ext=['png'], close=True, width=18, height=16)
 
 plt.close('all')
-
-#%% write to Excel
-
-writer = pd.ExcelWriter(args["input_file"])
-df.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
-writer.save()
-
