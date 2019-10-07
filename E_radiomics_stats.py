@@ -129,23 +129,23 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ratio_AT_vol',
 scatter_plot(df, ** kwargs)
 
 #%% BOXPLOTS
-medianprops = dict(linewidth=4, color='k')
-boxprops = dict(linewidth=3, color='blue', facecolor='blue')
+# medianprops = dict(linewidth=4, color='k')
+# boxprops = dict(linewidth=3, color='blue', facecolor='blue')
 
 ax = df.boxplot(column=['Ablation Volume [ml]', 'Ablation Volume [ml]_PCA_axes', 'Ablation_Volume_Brochure'],
-                fontsize=25,
+                fontsize=8,
                 notch=True,
                 patch_artist=True,
-                whiskerprops={'linewidth': 2},
-                capprops={'linewidth': 2},
-                medianprops=medianprops
+                whiskerprops={'linewidth': 1},
+                capprops={'linewidth': 1},
+                return_type='axes'
                 )
 
 plt.show()
-plt.ylim([-1, 120])
-plt.tick_params(labelsize=20, color='black')
-ax.tick_params(colors='black', labelsize=25)
-ax.set_ylim([-1, 120])
+plt.ylim([-1, 150])
+plt.tick_params(labelsize=8, color='black')
+ax.tick_params(colors='black', labelsize=8, color='k')
+ax.set_ylim([-2, 150])
 figpathHist = os.path.join("figures", "boxplot volumes")
 gh.save(figpathHist, ext=['png'], close=True)
 
@@ -343,9 +343,11 @@ kwargs = {'x_data': 'Power', 'y_data': 'minor_axis_length_ablation',
 scatter_plot(df_angyodinamics, **kwargs)
 
 # %% Gray level variance tumor vs energy
+# diameter3D_tumor
+# Tumour Volume [ml]
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'intensity_mean_tumor',
           'title': 'Energy Applied vs Mean Tumor Pixel Intensity',
-          'colormap': 'Tumor Volume [ml]',
+          'colormap': 'Tumour Volume [ml]',
           'lin_reg': 1}
 scatter_plot(df, **kwargs)
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'intensity_variance_tumor',
