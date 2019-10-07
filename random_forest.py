@@ -50,32 +50,33 @@ print('No. of training samples:', len(df_x))
 n_estimators = 100
 min_samples_leaf = 2
 min_sample_split = 2
-clf = RandomForestRegressor(n_estimators=n_estimators,
-                            random_state=1,
+clf_h = RandomForestRegressor(n_estimators=n_estimators,
+                            random_state=0,
                             min_samples_leaf=min_samples_leaf,
                             min_samples_split=min_samples_leaf,
                             oob_score=True)
 
-clf.fit(X, y)
-print("Score of the training dataset obtained using an out-of-bag estimate:  %0.2f" % clf.oob_score_)
-print("Prediction computed with out-of-bag estimate on the training set:  " % clf.oob_prediction_)
-importances = list(clf.feature_importances_)
-feature_list = X.columns.to_list()
-feature_importances = [(feature, round(importance, 2)) for feature, importance in
-                       zip(feature_list, importances)]
-feature_importances = sorted(feature_importances, key=lambda x: x[1],
-                             reverse=True)
-[print('Variable: {:20} Importance: {}'.format(*pair)) for pair in feature_importances]
 
 # %%# predict the on the hold-out test data
 X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                    test_size=0.3)
+                                                    test_size=0.3,
+                                                    random_state=0)
 
 print('X train shape and Y train shape:', X_train.shape, y_train.shape)
 print('X test shape and Y test shape:', X_test.shape, y_test.shape)
 
-predicted_labels_holdout_test = clf.predict(X_test)
+clf_h.fit(X_train, y_train)
+predicted_labels_holdout_test = clf_h.predict(X_test)
+print("Score of the training dataset obtained using an out-of-bag estimate:  %0.2f" % clf_h.oob_score_)
+# print("Prediction computed with out-of-bag estimate on the training set:  " % clf.oob_prediction_)
 
+importances = list(clf_h.feature_importances_)
+feature_list = X_train.columns.to_list()
+feature_importances = [(feature, round(importance, 2)) for feature, importance in
+                       zip(feature_list, importances)]
+feature_importances = sorted(feature_importances, key=lambda x: x[1],
+                             reverse=True)
+[print('Variable Train/Test Set 70/30: {:20} Importance: {}'.format(*pair)) for pair in feature_importances]
 
 fig, ax = plt.subplots()
 ax.scatter(y_test, predicted_labels_holdout_test, edgecolors=(0, 0, 0))
@@ -106,7 +107,29 @@ figpathHist = os.path.join("figures", "Random_Forest_Model_Accuracy_Hold_OutTrai
     min_samples_leaf) + '_No_estimators_' + str(n_estimators))
 gh.save(figpathHist, ext=['png'], close=True)
 # %%
-n_folds = 3
+n_estimators = 100
+min_samples_leaf = 2
+min_sample_split = 2
+clf = RandomForestRegressor(n_estimators=n_estimators,
+                            random_state=0,
+                            min_samples_leaf=min_samples_leaf,
+                            min_samples_split=min_samples_leaf,
+                            oob_score=True)
+
+clf.fit(X, y)
+# print("Score of the training dataset obtained using an out-of-bag estimate:  %0.2f" % clf.oob_score_)
+# print("Prediction computed with out-of-bag estimate on the training set:  " % clf.oob_prediction_)
+importances = list(clf.feature_importances_)
+feature_list = X.columns.to_list()
+feature_importances = [(feature, round(importance, 2)) for feature, importance in
+                       zip(feature_list, importances)]
+feature_importances = sorted(feature_importances, key=lambda x: x[1],
+                             reverse=True)
+[print('Variable: {:20} Importance: {}'.format(*pair)) for pair in feature_importances]
+
+
+#%%
+n_folds = 10
 predicted_crossval = cross_val_predict(clf, X, y, cv=n_folds)
 fig, ax = plt.subplots()
 ax.scatter(y, predicted_crossval, edgecolors=(0, 0, 0))
@@ -151,7 +174,7 @@ errors = abs(predicted_labels_holdout_test - y_test)  # Print out the mean absol
 # mape = 100 * (errors / y_test)  # Calculate and display accuracy
 # accuracy = 100 - np.mean(mape)
 # print('Accuracy:', round(accuracy, 2), '%.')
-print("Accuracy score:", round(clf.score(X_test, y_test), 2))
+print('Number of folds:' + str(n_folds) +". Accuracy score:", round(clf.score(X_test, y_test), 2))
 r2 = r2_score(y_test, predicted_labels_holdout_test)
 print('R-square, coeff of determination:', round(r2, 2), '%.')
 median_err = median_absolute_error(y_test, predicted_labels_holdout_test)
