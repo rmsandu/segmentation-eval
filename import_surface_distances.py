@@ -81,8 +81,7 @@ for idx, row in df_final.iterrows():
 
 print(len(surface_distances))
 df_final['surface_distances'] = surface_distances
-print(type(df_final.surface_distances.loc[0]))
-print(df_final.surface_distances.loc[0])
+
 #%%
 #
 # df1 = df_final.set_index('LTP')
@@ -98,80 +97,85 @@ res = (res['surface_distances'].apply(pd.Series)
 res.rename({'index':'LTP'}, axis=1, inplace=True)
 
 # plot the new data
-res.boxplot(column=['distances'], by='LTP', return_type='axes')
-# dst_ltp = []
-# dst_no_ltp = []
-#
-# for idx, row in df_final.iterrows():
-#     if row['LTP'] == 1:
-#         dst_no_ltp.append(row['surface_distances'])
-#         dst_ltp.append(np.nan)
-#     if row['LTP'] == 0:
-#         dst_ltp.append(row['surface_distances'])
-#         dst_no_ltp.append(np.nan)
-
-# new_df = pd.DataFrame(columns=['No LTP at 6m', 'LTP at 6m'], index=range(0, len(dst_ltp)))
-# new_df['No LTP at 6m'] = dst_no_ltp
-# new_df['LTP at 6m'] = dst_ltp
-# df1 = new_df.transpose()
-# fig, ax = plt.subplots(figsize=(10,8))
-# df1.boxplot(column=['No LTP at 6m', 'LTP at 6m'])
-# df_ltp = df_ltp.groupby('LTP')
-# ls = df_ltp.surface_distances.values.tolist()
-# df_ltp['dst'] = ls
-# df_ltp.boxplot(column='dst', by='LTP', ax=ax, return_type='axes')
-# boxplot_ltp = ax.boxplot(df_ltp.surface_distances.values.tolist())
-
-# ax = df_ltp.boxplot(column='surface_distances', ax=ax, return_type='axes')
-
-
-#
-# plt.show()
-# # plt.ylim([-1, 150])
-# plt.tick_params(labelsize=8, color='black')
-# ax.tick_params(colors='black', labelsize=8, color='k')
-# ax.set_ylim([-1, 20])
-# figpathHist = os.path.join("figures", "boxplot LTP ablation volumes")
-#%%
-# df_ltp = df_final.groupby('LTP')
 fig, ax = plt.subplots(figsize=(10,8))
-df_final.boxplot(column='Ablation Volume [ml]', by='LTP', ax=ax, return_type='axes', patch_artist=True)
+bp_dict = res.boxplot(column=['distances'],  notch=True, by='LTP', ax=ax, return_type='both', patch_artist=True,  showfliers=False)
 
-plt.show()
-# plt.ylim([-1, 150])
-# plt.tick_params(labelsize=8, color='black')
-# ax.tick_params(colors='black', labelsize=8, color='k')
+for row_key, (ax,row) in bp_dict.iteritems():
+    ax.set_xlabel('')
+    for i,box in enumerate(row['boxes']):
+        box.set_facecolor('CornflowerBlue')
+        box.set_edgecolor('RoyalBlue')
+    for i, box in enumerate(row['medians']):
+        box.set_color(color='Black')
+        box.set_linewidth(2)
+    for i, box in enumerate(row['whiskers']):
+        box.set_color(color='Black')
+
+xticklabels = ['LTP', 'No LTP']
+xtickNames = plt.setp(ax, xticklabels=xticklabels)
+plt.setp(xtickNames,  fontsize=12, color='black')
+plt.ylabel('Tumor to Ablation Euclidean Surface Distances [mm]', fontsize=12, color='black')
+ax.tick_params(colors='black')
+# [ax_tmp.set_xlabel('aaaa') for ax_tmp in np.asarray(bp).reshape(-1)]
+# fig = np.asarray(bp).reshape(-1)[0].get_figure()
+fig.suptitle('Ablation Margin by Local Tumor Progression (LTP)')
+figpathHist = os.path.join("figures", "boxplot LTP ablation margin")
+gh.save(figpathHist, ext=['png'], close=True)
+#%%
+fig, ax = plt.subplots(figsize=(10,8))
+bp_dict = df_final.boxplot(column='Ablation Volume [ml]', by='LTP', ax=ax, return_type='both', patch_artist=True)
+
+for row_key, (ax,row) in bp_dict.iteritems():
+    ax.set_xlabel('')
+    for i,box in enumerate(row['boxes']):
+        box.set_facecolor('CornflowerBlue')
+        box.set_edgecolor('RoyalBlue')
+    for i, box in enumerate(row['medians']):
+        box.set_color(color='Black')
+        box.set_linewidth(2)
+    for i, box in enumerate(row['whiskers']):
+        box.set_color(color='Black')
+
+xticklabels = ['LTP', 'No LTP']
+xtickNames = plt.setp(ax, xticklabels=xticklabels)
+plt.setp(xtickNames,  fontsize=12, color='black')
+plt.ylabel('Ablation Volume [ml]', fontsize=12, color='black')
+ax.tick_params(colors='black')
+# [ax_tmp.set_xlabel('aaaa') for ax_tmp in np.asarray(bp).reshape(-1)]
+# fig = np.asarray(bp).reshape(-1)[0].get_figure()
+fig.suptitle('Ablation Volumes Grouped by Local Tumor Progression (LTP)')
+
 ax.set_ylim([-1, 100])
 figpathHist = os.path.join("figures", "boxplot LTP ablation volumes")
-
+gh.save(figpathHist, ext=['png'], close=True)
 #%%
 fig, ax = plt.subplots(figsize=(10,8))
 props = dict(boxes="DarkGreen", whiskers="DarkOrange", medians="DarkBlue", caps="Gray")
 bp_dict = df_final.boxplot(column='Tumour Volume [ml]', by='LTP', ax=ax, return_type='both',
                          patch_artist=True, labels=['LTP', 'No LTP'])
-colors = ['b', 'y', 'm', 'c', 'g', 'b', 'r', 'k', ]
+
 for row_key, (ax,row) in bp_dict.iteritems():
     ax.set_xlabel('')
     for i,box in enumerate(row['boxes']):
-        box.set_facecolor('DarkOrange')
+        box.set_facecolor('CornflowerBlue')
+        box.set_edgecolor('RoyalBlue')
+    for i, box in enumerate(row['medians']):
+        box.set_color(color='Black')
+        box.set_linewidth(2)
+    for i, box in enumerate(row['whiskers']):
+        box.set_color(color='Black')
 
-
+xticklabels = ['LTP', 'No LTP']
+xtickNames = plt.setp(ax, xticklabels=xticklabels)
+plt.setp(xtickNames,  fontsize=12, color='black')
+plt.ylabel('Tumor Volume [ml]', fontsize=12, color='black')
+ax.tick_params(colors='black')
 # [ax_tmp.set_xlabel('aaaa') for ax_tmp in np.asarray(bp).reshape(-1)]
 # fig = np.asarray(bp).reshape(-1)[0].get_figure()
-fig.suptitle('New title here')
-# df.plot.box(color=props, patch_artist=True)
-# plt.setp(bplot['medians'], color='black', linewidth=1.5)
-# plt.setp(bplot['means'], marker='D', markeredgecolor='darkred',
-#          markerfacecolor='darkred', label='Mean')
-# plt.show()
-# plt.ylim([-1, 150])
-# ax.tick_params(labelsize=8, color='black')
-# ax.xaxis.label.set_color('black')
-
-# ax.tick_params(colors='black', labelsize=8, color='k')
+fig.suptitle('Tumor Volumes Grouped by Local Tumor Progression (LTP)')
 ax.set_ylim([-1, 20])
 figpathHist = os.path.join("figures", "boxplot LTP tumor volumes")
-# gh.save(figpathHist, ext=['png'], close=True)
+gh.save(figpathHist, ext=['png'], close=True)
 
 #%% TODO: write treatment id as well. the unique key must be formed out of: [patient_id, treatment_id, lesion_id]
 # filepath_excel = os.path.join(outdir, "Radiomics_Radii_Chemo_LTP_Distances_MAVERRIC.xlsx")
