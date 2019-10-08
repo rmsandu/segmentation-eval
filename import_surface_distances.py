@@ -82,6 +82,8 @@ for idx, row in df_final.iterrows():
 print(len(surface_distances))
 df_final['surface_distances'] = surface_distances
 
+#%% drop subcapsular lesions
+# df_final = df_final[df_final['Proximity_to_surface'] == False]
 #%%
 #
 # df1 = df_final.set_index('LTP')
@@ -118,8 +120,10 @@ plt.ylabel('Tumor to Ablation Euclidean Surface Distances [mm]', fontsize=12, co
 ax.tick_params(colors='black')
 # [ax_tmp.set_xlabel('aaaa') for ax_tmp in np.asarray(bp).reshape(-1)]
 # fig = np.asarray(bp).reshape(-1)[0].get_figure()
-fig.suptitle('Ablation Margin by Local Tumor Progression (LTP)')
-figpathHist = os.path.join("figures", "boxplot LTP ablation margin")
+plt.title('Ablation Margin by Local Tumor Progression (LTP)')
+fig.suptitle('')
+ax.set_ylim([-10, 17])
+figpathHist = os.path.join("figures", "boxplot LTP ablation margin_all_lesions")
 gh.save(figpathHist, ext=['png'], close=True)
 #%%
 fig, ax = plt.subplots(figsize=(10,8))
@@ -144,9 +148,8 @@ ax.tick_params(colors='black')
 # [ax_tmp.set_xlabel('aaaa') for ax_tmp in np.asarray(bp).reshape(-1)]
 # fig = np.asarray(bp).reshape(-1)[0].get_figure()
 fig.suptitle('Ablation Volumes Grouped by Local Tumor Progression (LTP)')
-
 ax.set_ylim([-1, 100])
-figpathHist = os.path.join("figures", "boxplot LTP ablation volumes")
+figpathHist = os.path.join("figures", "boxplot LTP ablation volumes_all_lesions")
 gh.save(figpathHist, ext=['png'], close=True)
 #%%
 fig, ax = plt.subplots(figsize=(10,8))
@@ -174,7 +177,7 @@ ax.tick_params(colors='black')
 # fig = np.asarray(bp).reshape(-1)[0].get_figure()
 fig.suptitle('Tumor Volumes Grouped by Local Tumor Progression (LTP)')
 ax.set_ylim([-1, 20])
-figpathHist = os.path.join("figures", "boxplot LTP tumor volumes")
+figpathHist = os.path.join("figures", "boxplot LTP tumor volumes_all_lesions")
 gh.save(figpathHist, ext=['png'], close=True)
 
 #%% TODO: write treatment id as well. the unique key must be formed out of: [patient_id, treatment_id, lesion_id]
