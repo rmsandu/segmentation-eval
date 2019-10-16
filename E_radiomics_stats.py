@@ -3,6 +3,7 @@
 @author: Raluca Sandu
 """
 import os
+from six import iteritems
 import sys
 import argparse
 from collections import defaultdict
@@ -21,50 +22,9 @@ plt.style.use('ggplot')
 # %%
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--input_file", required=True, help="input file pooled radiomics ")
-ap.add_argument("-a", "--ablation_devices_brochure", required=False, help="input file ablation device brochure ")
 args = vars(ap.parse_args())
 
 df = pd.read_excel(args["input_file"], sheet_name="radiomics")
-try:
-    df_ablation_devices = pd.read_excel(args["ablation_devices_brochure"])
-except Exception:
-    print('file with ablation devices info brochure not provided')
-
-df['Ablation Volume [ml]_PCA_axes'] = (pi * df['least_axis_length_ablation'] *
-                                       df['major_axis_length_ablation'] * df[
-                                           'minor_axis_length_ablation']) / 6000
-
-dd = defaultdict(list)
-dict_devices = df_ablation_devices.to_dict('records', into=dd)
-ablation_radii = []
-for index, row in df.iterrows():
-    power = row['Power']
-    time = row['Time_Duration_Applied']
-    device = row['Device_name']
-    flag = False
-    if power != np.nan and time != np.nan:
-        for item in dict_devices:
-            if item['Power'] == power and item['Device_name'] == device and item['Time_Duration_Applied'] == time:
-                ablation_radii.append(item['Radii'])
-                flag = True
-        if flag is False:
-            ablation_radii.append('0 0 0')
-
-df['Ablation_Radii_Brochure'] = ablation_radii
-df['first_axis_ablation_brochure'] = pd.to_numeric(df['Ablation_Radii_Brochure'].apply(lambda x: x.split()[0]))
-df['second_axis_ablation_brochure'] = pd.to_numeric(df['Ablation_Radii_Brochure'].apply(lambda x: x.split()[1]))
-df['third_axis_ablation_brochure'] = pd.to_numeric(df['Ablation_Radii_Brochure'].apply(lambda x: x.split()[2]))
-df['Ablation_Volume_Brochure'] = 4 * pi * (df['first_axis_ablation_brochure'] *
-                                           df['second_axis_ablation_brochure'] *
-                                           df['third_axis_ablation_brochure']) / 3000
-df['Ablation_Volume_Brochure'].replace(0, np.nan, inplace=True)
-df['third_axis_ablation_brochure'].replace(0, np.nan, inplace=True)
-df['second_axis_ablation_brochure'].replace(0, np.nan, inplace=True)
-df['first_axis_ablation_brochure'].replace(0, np.nan, inplace=True)
-#  write to Excel
-writer = pd.ExcelWriter('Radiomics_Radii_MAVERRIC.xlsx')
-df.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
-writer.save()
 
 # %%
 # rmv empty rows
@@ -90,11 +50,11 @@ df['Proximity_to_vessels'].replace('', 'NaN', inplace=True)
 df.reset_index(inplace=True, drop=True)
 
 # %%  Raw Data
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]_PCA_axes',
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (parametrized_formula)',
           'title': "Energy vs Ablation Volume PCA axes for 3 MWA devices. ", 'lin_reg': 1}
 scatter_plot(df, **kwargs)
 
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation_Volume_Brochure',
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (manufacturers)',
           'title': "Ablation Volumes from Brochure for 3 MWA devices. ", 'lin_reg': 1}
 
 scatter_plot(df, **kwargs)
@@ -102,7 +62,7 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Tumour Volume [ml]',
           'title': "Tumors Volumes for 3 MWA devices. ", 'lin_reg': 1}
 scatter_plot(df, **kwargs)
 
-kwargs = {'x_data': 'Ablation_Volume_Brochure', 'y_data': 'Ablation Volume [ml]',
+kwargs = {'x_data': 'Ablation Volume [ml] (manufacturers)', 'y_data': 'Ablation Volume [ml]',
           'title': "Ablation Volumes from Manufacturer's Brochure vs Resulted Volume for 3 MWA devices. ",
           'lin_reg': 1}
 scatter_plot(df, **kwargs)
@@ -112,12 +72,18 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'lin_reg': 1}
 scatter_plot(df, **kwargs)
 
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]_PCA_axes',
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
+          'title': "Ablation Volume [ml] for 3 MWA devices by Number of Chemotherapy cycles Before Ablation. ",
+          'lin_reg': 1,
+          'size': 'no_chemo_cycle'}
+scatter_plot(df, **kwargs)
+
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (parametrized_formula)',
           'title': "Energy vs Ablation Volume PCA Axes for 3 MWA devices. ",
           'lin_reg': 1}
 scatter_plot(df, **kwargs)
 
-kwargs = {'x_data': 'Ablation Volume [ml]', 'y_data': 'Ablation Volume [ml]_PCA_axes',
+kwargs = {'x_data': 'Ablation Volume [ml]', 'y_data': 'Ablation Volume [ml] (parametrized_formula)',
           'title': "Ablation Volume based on no. of voxels vs. Ablation Volume PCA axes for 3 MWA devices. ",
           'lin_reg': 1}
 scatter_plot(df, **kwargs)
@@ -129,23 +95,48 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ratio_AT_vol',
 scatter_plot(df, ** kwargs)
 
 #%% BOXPLOTS
-# medianprops = dict(linewidth=4, color='k')
-# boxprops = dict(linewidth=3, color='blue', facecolor='blue')
 
-ax = df.boxplot(column=['Ablation Volume [ml]', 'Ablation Volume [ml]_PCA_axes', 'Ablation_Volume_Brochure'],
-                fontsize=8,
-                notch=True,
-                patch_artist=True,
-                whiskerprops={'linewidth': 1},
-                capprops={'linewidth': 1},
-                return_type='axes'
-                )
+fig, ax = plt.subplots(figsize=(12,10))
+bp_dict = df.boxplot(column=['Ablation Volume [ml]', 'Ablation Volume [ml] (parametrized_formula)',
+                             'Ablation Volume [ml] (manufacturers)'],
+                     notch=True,
+                     patch_artist=True,
+                     return_type='both'
+                     )
+ax.set_xlabel('')
+row = bp_dict.lines
+# for idx,row in enumerate(lines):
+for i,box in enumerate(row['fliers']):
+    box.set_marker('o')
+    # box.set_edgecolor('RoyalBlue')
+for i,box in enumerate(row['boxes']):
+    if i==0:
+        box.set_facecolor('Blue')
+        box.set_edgecolor('MediumBlue')
+    elif i==1:
+        box.set_facecolor('BlueViolet')
+        box.set_edgecolor('BlueViolet')
+    elif i==2:
+        box.set_facecolor('DeepSkyBlue')
+        box.set_edgecolor('DodgerBlue')
 
-plt.show()
-plt.ylim([-1, 150])
-plt.tick_params(labelsize=8, color='black')
-ax.tick_params(colors='black', labelsize=8, color='k')
+for i, box in enumerate(row['medians']):
+    box.set_color(color='Black')
+    box.set_linewidth(2)
+for i, box in enumerate(row['whiskers']):
+    box.set_color(color='Black')
+    box.set_linewidth(2)
+
+xticklabels = ['Ablation Volume [ml]', 'Ablation Volume [ml](Ellipsoid Formula)',
+               'Ablation Volume [ml](Manufacturers Brochure)']
+xtickNames = plt.setp(ax, xticklabels=xticklabels)
+plt.setp(xtickNames, fontsize=10, color='black')
+plt.ylim([-2, 150])
+plt.ylabel('Ablation Volumes [ml]', fontsize=14)
+plt.tick_params(labelsize=10, color='black')
+ax.tick_params(colors='black', labelsize=10, color='k')
 ax.set_ylim([-2, 150])
+plt.title('Comparison of Ablation Volumes [ml] from MAVERRIC Dataset', fontsize=16)
 figpathHist = os.path.join("figures", "boxplot volumes")
 gh.save(figpathHist, ext=['png'], close=True)
 
@@ -155,17 +146,17 @@ q = df['Energy [kj]'].quantile(0.99)
 df1_no_outliers = df[df['Energy [kj]'] < q]
 df1_no_outliers.reset_index(inplace=True, drop=True)
 
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]_PCA_axes',
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (parametrized_formula)',
           'title': "Energy vs Ablation Volume PCA axes for 3 MWA devices. Outliers Removed.",
           'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
 
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation_Volume_Brochure',
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (manufacturers)',
           'title': "Ablation Volumes from Brochure for 3 MWA devices. Outliers Removed. ", 'lin_reg': 1}
 
 scatter_plot(df1_no_outliers, **kwargs)
 
-kwargs = {'x_data': 'Ablation_Volume_Brochure', 'y_data': 'Ablation Volume [ml]',
+kwargs = {'x_data': 'Ablation Volume [ml] (manufacturers)', 'y_data': 'Ablation Volume [ml]',
           'title': "Ablation Volumes from Manufacturer's Brochure vs "
                    "Resulted Volume for 3 MWA devices. Outliers Removed. ",
           'lin_reg': 1}
@@ -181,12 +172,18 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
 
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]_PCA_axes',
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
+          'title': "Ablation Volume [ml] for 3 MWA devices by Number of Chemotherapy cycles Before Ablation. Outliers Removed. ",
+          'lin_reg': 1,
+          'size': 'no_chemo_cycle'}
+scatter_plot(df, **kwargs)
+
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (parametrized_formula)',
           'title': "Ablation Volumes based on the 3 ellipsoid axes for 3 MWA devices. Outliers Removed. ",
           'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
 
-kwargs = {'x_data': 'Ablation Volume [ml]', 'y_data': 'Ablation Volume [ml]_PCA_axes',
+kwargs = {'x_data': 'Ablation Volume [ml]', 'y_data': 'Ablation Volume [ml] (parametrized_formula)',
           'title': "Ablation Volume based on no. of voxels vs. Ablation Volume based on the ellipsoid formula. Outliers Removed. ",
           'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
@@ -195,6 +192,19 @@ df1_no_outliers['Ratio_AT_vol'] = df1_no_outliers['Tumour Volume [ml]'] / df1_no
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ratio_AT_vol',
           'title': "Tumor to Ablation Volume Ratio for 3 MWA devices.Outliers Removed.",
           'y_label': 'R(Tumor Volume: Ablation Volume)', 'lin_reg': 1}
+scatter_plot(df1_no_outliers, **kwargs)
+
+title = "Major Ablation Diameter vs. Least Axis Diameter."
+kwargs = {'x_data': 'least_axis_length_ablation', 'y_data': 'major_axis_length_ablation',
+          'title': title,
+          'lin_reg': 1}
+scatter_plot(df1_no_outliers, **kwargs)
+
+
+title = "Major Ablation Diameter vs. Minor Axis Diameter(Angiodynamics)."
+kwargs = {'x_data': 'minor_axis_length_ablation', 'y_data': 'major_axis_length_ablation',
+          'title': title,
+          'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
 
 # %% group by proximity to vessels
@@ -206,17 +216,17 @@ df_angyodinamics = df[df["Device_name"] == "Angyodinamics (Acculis)"]
 # df_angyodinamics.dropna(subset=['Energy [kj]'], inplace=True)
 # df_angyodinamics.dropna(subset=['least_axis_length_ablation'], inplace=True)
 
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation_Volume_Brochure',
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (manufacturers)',
           'title': "Ablation Volumes from Brochure for Angiodynamics. ", 'lin_reg': 1}
 
 scatter_plot(df_angyodinamics, **kwargs)
 
-kwargs = {'x_data': 'Ablation_Volume_Brochure', 'y_data': 'Ablation Volume [ml]',
+kwargs = {'x_data': 'Ablation Volume [ml] (manufacturers)', 'y_data': 'Ablation Volume [ml]',
           'title': "Ablation Volumes from Manufacturer's Brochure vs Resulted Measured Ablation Volume for Angiodynamics. ",
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]_PCA_axes',
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (parametrized_formula)',
           'title': "Ablation Volumes PCA axes for Angiodynamics. ", 'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
@@ -241,6 +251,18 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'minor_axis_length_ablation', 'titl
           'lin_reg': 1}
 scatter_plot(df_angyodinamics, **kwargs)
 
+title = "Major Ablation Diameter vs. Least Axis Diameter (Angiodynamics)."
+kwargs = {'x_data': 'least_axis_length_ablation', 'y_data': 'major_axis_length_ablation',
+          'title': title,
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
+
+
+title = "Major Ablation Diameter vs. Minor Axis Diameter(Angiodynamics)."
+kwargs = {'x_data': 'minor_axis_length_ablation', 'y_data': 'major_axis_length_ablation',
+          'title': title,
+          'lin_reg': 1}
+scatter_plot(df_angyodinamics, **kwargs)
 # %%
 # title = "Ablation Diameter Coronal Plane vs. MWA Energy for tumors treated with Angyodinamics."
 # ylabel = "Diameter Coronal Plane (Euclidean Distances based) [mm]"

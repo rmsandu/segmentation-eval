@@ -47,6 +47,11 @@ def scatter_plot(df1,  **kwargs):
         cbar.ax.set_title(kwargs['colormap'], fontsize=8)
     else:
         df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=14)
+    if kwargs.get('size') is not None:
+        size = df_to_plot[kwargs['size']] + 10
+        df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=size)
+        # cbar = plt.colorbar()
+        # cbar.ax.set_title(kwargs['colormap'], fontsize=8)
 
     if kwargs.get('x_label') is not None and kwargs.get('y_label') is None:
         plt.xlabel(kwargs['x_label'], fontsize=8, color='k')
@@ -88,6 +93,7 @@ def scatter_plot(df1,  **kwargs):
 
 
 def scatter_plot_groups(df1_no_outliers):
+
     groups = df1_no_outliers.groupby('Proximity_to_vessels')
     fig, ax = plt.subplots()
     lesion_per_device = []
@@ -109,7 +115,7 @@ def scatter_plot_groups(df1_no_outliers):
     plt.legend(title_fontsize=20)
     ax.tick_params(colors='black', labelsize=20)
 
-    figpathHist = os.path.join("figures", "Ablation Volume vs Energy Grouped by Proximity to Vessels")
+    figpathHist = os.path.join("figures", "Ablation Volume vs Energy Grouped by Proximity to Vessels.")
     gh.save(figpathHist, width=18, height=16, ext=['png'], close=True)
     # %% group by device name
     groups = df1_no_outliers.groupby('Device_name')
@@ -126,32 +132,39 @@ def scatter_plot_groups(df1_no_outliers):
     for idx, L in enumerate(L_labels):
         L.set_text(device_name_grp[idx] + ' N=' + str(lesion_per_device[idx]))
 
+    plt.title('Ablation Volume [ml] vs Energy [kJ] per MWA Device Type.')
     plt.xlabel('Energy [kJ]', fontsize=20, color='black')
     plt.ylabel('Ablation Volume [ml]', fontsize=20, color='black')
     plt.tick_params(labelsize=20, color='black')
     plt.legend(title_fontsize=20)
     ax.tick_params(colors='black', labelsize=20)
-    figpathHist = os.path.join("figures", "Ablation Volume vs  Energy per MWA Device Category")
+    figpathHist = os.path.join("figures", "Ablation Volume vs  Energy per MWA Device Category.")
     gh.save(figpathHist, width=18, height=16, ext=['png'], close=True)
 
+    # chemotherapy
+    groups = df1_no_outliers.groupby('chemo_before_ablation')
     fig, ax = plt.subplots()
     lesion_per_device = []
     device_name_grp = []
-
     for name, group in groups:
-        ax.plot(group["Energy [kj]"], group["Tumour Volume [ml]"], marker='o', linestyle='', ms=14, label=name)
+        ax.plot(group["Energy [kj]"], group["Ablation Volume [ml]"], marker='o', linestyle='', ms=14, label=name)
         lesion_per_device.append(len(group))
         device_name_grp.append(name)
     L = ax.legend()
     L_labels = L.get_texts()
+
     for idx, L in enumerate(L_labels):
         L.set_text(device_name_grp[idx] + ' N=' + str(lesion_per_device[idx]))
-    plt.ylabel('Tumor Volume [ml]', fontsize=20, color='black')
+
+    plt.title('Ablation Volume [ml] vs Energy [kJ] grouped by Chemotherapy Treatment before Ablation.')
     plt.xlabel('Energy [kJ]', fontsize=20, color='black')
+    plt.ylabel('Ablation Volume [ml]', fontsize=20, color='black')
     plt.tick_params(labelsize=20, color='black')
+    plt.legend(title_fontsize=20)
     ax.tick_params(colors='black', labelsize=20)
-    # plt.legend(fontsize=12)
-    figpathHist = os.path.join("figures", "Tumor Volume vs  Energy per MWA Device Category")
+    figpathHist = os.path.join("figures", "Ablation Volume vs  Energy grouped by chemotherapy.")
     gh.save(figpathHist, width=18, height=16, ext=['png'], close=True)
+
+
 
 
