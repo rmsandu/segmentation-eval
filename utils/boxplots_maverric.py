@@ -32,6 +32,11 @@ def plot_boxplots(df):
     df_chemo.dropna(subset=['chemo_before_ablation'], inplace=True)
     df_chemo['chemo_before_ablation'].replace('No', False, inplace=True)
     df_chemo['chemo_before_ablation'].replace('Yes', True, inplace=True)
+
+    df.dropna(subset=['Ablation Volume [ml]'], inplace=True)
+    df.dropna(subset=['chemo_before_ablation'], inplace=True)
+    df['chemo_before_ablation'].replace('No', False, inplace=True)
+    df['chemo_before_ablation'].replace('Yes', True, inplace=True)
     # ttest
     no_chemo_df = df_chemo[df_chemo['chemo_before_ablation'] == False]
     no_chemo = no_chemo_df['Ablation Volume [ml]'].tolist()
@@ -86,12 +91,12 @@ def plot_boxplots(df):
         print("p = " + str(p))
 
     fig, ax = plt.subplots(figsize=(12, 10))
-    bp_dict = df_chemo.boxplot(column=['Ablation Volume [ml]'],
-                               ax=ax,
-                               notch=True,
-                               by='chemo_before_ablation',
-                               patch_artist=True,
-                               return_type='both')
+    bp_dict = df.boxplot(column=['Ablation Volume [ml]'],
+                         ax=ax,
+                         notch=True,
+                         by='chemo_before_ablation',
+                         patch_artist=True,
+                         return_type='both')
     ax.set_xlabel('')
     plt.show()
     for row_key, (ax, row) in bp_dict.iteritems():
