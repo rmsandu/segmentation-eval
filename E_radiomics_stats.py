@@ -106,20 +106,20 @@ scatter_plot(df, **kwargs)
 title = "Least Ablation Diameter vs. MWA Energy for 3 MWA Devices."
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'least_axis_length_ablation', 'title': title,
           'lin_reg': 1,
-          'ylabel': 'Least Ablation Radii [mm]'}
+          'y_label': 'Least Ablation Diameter [mm]'}
 scatter_plot(df, **kwargs)
 
-title = "Major Ablation Diameter vs. MWA Energy for 3 MWA Devices."
+title = "Maximum Ablation Diameter vs. MWA Energy for 3 MWA Devices."
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'major_axis_length_ablation',
           'title': title,
           'lin_reg': 1,
-           'ylabel': 'Maximum Ablation Radii [mm]'}
+           'y_label': 'Maximum Ablation Diameter [mm]'}
 scatter_plot(df, **kwargs)
 
-title = "Minor Ablation Diameter vs. MWA Energy for 3 MWA Devices."
+title = "Minimum Ablation Diameter vs. MWA Energy for 3 MWA Devices."
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'minor_axis_length_ablation', 'title': title,
           'lin_reg': 1,
-          'ylabel': 'Minimum Ablation Radii [mm]'}
+          'y_label': 'Minimum Ablation Diameter [mm]'}
 scatter_plot(df, **kwargs)
 
 
@@ -186,7 +186,7 @@ kwargs = {'x_data': 'minor_axis_length_ablation', 'y_data': 'major_axis_length_a
 scatter_plot(df1_no_outliers, **kwargs)
 
 # %% group by proximity to vessels
-scatter_plot_groups(df1_no_outliers)
+scatter_plot_groups(df)
 
 # %% ANGYODINAMICS
 fig, ax = plt.subplots()
@@ -216,20 +216,20 @@ scatter_plot(df_angyodinamics, **kwargs)
 title = "Least Ablation Diameter vs. MWA Energy for tumors treated with Angiodynamics."
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'least_axis_length_ablation', 'title': title,
           'lin_reg': 1,
-          'ylabel': 'Least Ablation Radii [mm]'}
+          'y_label': 'Least Ablation Diameter [mm]'}
 scatter_plot(df_angyodinamics, **kwargs)
 
 title = "Major Ablation Diameter vs. MWA Energy for tumors treated with Angiodynamics."
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'major_axis_length_ablation',
           'title': title,
           'lin_reg': 1,
-           'ylabel': 'Maximum Ablation Radii [mm]'}
+           'y_label': 'Maximum Ablation Diameter [mm]'}
 scatter_plot(df_angyodinamics, **kwargs)
 
 title = "Minor Ablation Diameter vs. MWA Energy for  tumors treated with Angiodynamics."
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'minor_axis_length_ablation', 'title': title,
           'lin_reg': 1,
-          'ylabel': 'Minimum Ablation Radii [mm]'}
+          'y_label': 'Minimum Ablation Diameter [mm]'}
 scatter_plot(df_angyodinamics, **kwargs)
 
 
