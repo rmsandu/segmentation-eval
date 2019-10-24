@@ -2,18 +2,16 @@
 """
 @author: Raluca Sandu
 """
-import os
-from six import iteritems
-import sys
 import argparse
-from collections import defaultdict
-from utils.boxplots_maverric import plot_boxplots
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from math import pi
+
 import utils.graphing as gh
+from utils.boxplots_maverric import plot_boxplots
 from utils.scatter_plot import scatter_plot, scatter_plot_groups
 
 sns.set(style="ticks")
@@ -48,7 +46,7 @@ df['Proximity_to_vessels'].replace(False, 'NO', inplace=True)
 df['Proximity_to_vessels'].replace('', 'NaN', inplace=True)
 
 df.reset_index(inplace=True, drop=True)
-#%% BOXPLOTS
+# %% BOXPLOTS
 plot_boxplots(df)
 # %%  Raw Data
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (parametrized_formula)',
@@ -101,7 +99,7 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ratio_AT_vol',
           'y_label': 'R(Tumor Volume: Ablation Volume)', 'lin_reg': 1}
 scatter_plot(df, **kwargs)
 
-#%% AXES VS ENERGY ALL
+# %% AXES VS ENERGY ALL
 
 title = "Least Ablation Diameter vs. MWA Energy for 3 MWA Devices."
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'least_axis_length_ablation', 'title': title,
@@ -113,7 +111,7 @@ title = "Maximum Ablation Diameter vs. MWA Energy for 3 MWA Devices."
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'major_axis_length_ablation',
           'title': title,
           'lin_reg': 1,
-           'y_label': 'Maximum Ablation Diameter [mm]'}
+          'y_label': 'Maximum Ablation Diameter [mm]'}
 scatter_plot(df, **kwargs)
 
 title = "Minimum Ablation Diameter vs. MWA Energy for 3 MWA Devices."
@@ -121,8 +119,6 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'minor_axis_length_ablation', 'titl
           'lin_reg': 1,
           'y_label': 'Minimum Ablation Diameter [mm]'}
 scatter_plot(df, **kwargs)
-
-
 
 # %%
 print('3. Dropping Outliers from the Energy Column using val < quantile 0.98')
@@ -154,7 +150,6 @@ kwargs = {'x_data': 'Tumour Volume [ml]', 'y_data': 'Ablation Volume [ml]',
           'title': "Tumor Volume [ml] vs Ablation Volume [ml] for 3 MWA devices. Outliers Removed. ",
           'lin_reg': 1}
 scatter_plot(df1_no_outliers, **kwargs)
-
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'title': "Ablation Volume [ml] for 3 MWA devices by Number of Chemotherapy cycles Before Ablation. Outliers Removed. ",
@@ -223,7 +218,7 @@ title = "Major Ablation Diameter vs. MWA Energy for tumors treated with Angiodyn
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'major_axis_length_ablation',
           'title': title,
           'lin_reg': 1,
-           'y_label': 'Maximum Ablation Diameter [mm]'}
+          'y_label': 'Maximum Ablation Diameter [mm]'}
 scatter_plot(df_angyodinamics, **kwargs)
 
 title = "Minor Ablation Diameter vs. MWA Energy for  tumors treated with Angiodynamics."
@@ -231,7 +226,6 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'minor_axis_length_ablation', 'titl
           'lin_reg': 1,
           'y_label': 'Minimum Ablation Diameter [mm]'}
 scatter_plot(df_angyodinamics, **kwargs)
-
 
 # %% Gray level variance tumor vs energy
 # diameter3D_tumor
