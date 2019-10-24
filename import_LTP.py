@@ -7,7 +7,7 @@
 import numpy as np
 import pandas as pd
 file_redcap = r"C:\develop\segmentation-eval\redcap_file_all_2019-10-14.xlsx"
-file_radiomics = r"C:\develop\segmentation-eval\Radiomics_Radii_Chemo_MAVERRIC.xlsx"
+file_radiomics = r"C:\develop\segmentation-eval\Radiomics_Radii_Chemo_ECALSS.xlsx"
 
 # Number of completely ablated lesions
 # Number of incomplete ablations
@@ -41,10 +41,10 @@ for idx, patient_id in enumerate(patient_ids):
 
     if nr_completely_ablated == no_of_lesions:
         for i in range(0, int(nr_completely_ablated)):
-            LTP.append(True)
+            LTP.append(False)
     elif nr_incompletely_ablated == no_of_lesions:
         for i in range(0,  int(nr_incompletely_ablated)):
-            LTP.append(False)
+            LTP.append(True)
     elif nr_completely_ablated != no_of_lesions and nr_incompletely_ablated != no_of_lesions:
         print('this patient must be updted for LTP:', patient_id)
         for i in range(0, int(no_of_lesions)):
@@ -53,6 +53,6 @@ for idx, patient_id in enumerate(patient_ids):
 print('No of lesions in RedCap:', np.array(no_lesions_total).sum())
 df_radiomics['LTP'] = LTP
 
-writer = pd.ExcelWriter('Radiomics_Radii_Chemo_LTP_MAVERRIC_141019.xlsx')
+writer = pd.ExcelWriter('Radiomics_Radii_Chemo_LTP_ECALSS.xlsx')
 df_radiomics.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
 writer.save()

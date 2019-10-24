@@ -10,8 +10,8 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
-file_redcap = r"C:\develop\segmentation-eval\redcap_file_all.xlsx"
-file_radiomics = r"C:\develop\segmentation-eval\Radiomics_Radii_MAVERRIC.xlsx"
+file_redcap = r"C:\develop\segmentation-eval\redcap_file_all_2019-10-14.xlsx"
+file_radiomics = r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ECALSS.xlsx"
 
 df_redcap = pd.read_excel(file_redcap)
 df_radiomics = pd.read_excel(file_radiomics)
@@ -40,7 +40,7 @@ df_radiomics['chemo_before_ablation'] = chemo_before_ablation
 df_radiomics['no_chemo_cycle'] = no_chemo_cycle
 df_radiomics['no_chemo_cycle'].replace(np.nan, 0, inplace=True)
 
-writer = pd.ExcelWriter('Radiomics_Radii_Chemo_MAVERRIC.xlsx')
+writer = pd.ExcelWriter('Radiomics_Radii_Chemo_ECALSS.xlsx')
 df_radiomics.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
 writer.save()
 # df_radiomics['chemo_type'] = chemo_type
