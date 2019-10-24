@@ -60,7 +60,7 @@ print(len(frames))
 result = pd.concat(frames, ignore_index=True)
 df_final = pd.merge(df_download_db_all_info, result, how="outer", on=['Patient_ID', 'Lesion_ID'])
 # TODO: write treatment id as well. the unique key must be formed out of: [patient_id, treatment_id, lesion_id]
-filepath_excel = os.path.join(args["output_dir"], "Radiomics_MAVERRIC.xlsx")
+filepath_excel = os.path.join(args["output_dir"], "Radiomics_MAVERRIC_ECALSS.xlsx")
 writer = pd.ExcelWriter(filepath_excel)
 df_final.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
 writer.save()
