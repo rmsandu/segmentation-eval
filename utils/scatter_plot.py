@@ -130,9 +130,9 @@ def scatter_plot_groups(df1_no_outliers):
     L_labels = L.get_texts()
 
     for idx, L in enumerate(L_labels):
-        L.set_text(device_name_grp[idx] + ' N=' + str(lesion_per_device[idx]))
+        L.set_text(str(device_name_grp[idx]) + ' N=' + str(lesion_per_device[idx]))
 
-    plt.title('Ablation Volume [ml] vs Energy [kJ] per MWA Device Type.')
+    plt.title('Ablation Volume [ml] vs Energy [kJ] per MWA Device Type.', fontsize=20)
     plt.xlabel('Energy [kJ]', fontsize=20, color='black')
     plt.ylabel('Ablation Volume [ml]', fontsize=20, color='black')
     plt.tick_params(labelsize=20, color='black')
@@ -154,9 +154,9 @@ def scatter_plot_groups(df1_no_outliers):
     L_labels = L.get_texts()
 
     for idx, L in enumerate(L_labels):
-        L.set_text(device_name_grp[idx] + ' N=' + str(lesion_per_device[idx]))
+        L.set_text(str(device_name_grp[idx]) + ' N=' + str(lesion_per_device[idx]))
 
-    plt.title('Ablation Volume [ml] vs Energy [kJ] grouped by Chemotherapy Treatment before Ablation.')
+    plt.title('Ablation Volume [ml] vs Energy [kJ] grouped by Chemotherapy Treatment before Ablation.', fontsize=20)
     plt.xlabel('Energy [kJ]', fontsize=20, color='black')
     plt.ylabel('Ablation Volume [ml]', fontsize=20, color='black')
     plt.tick_params(labelsize=20, color='black')

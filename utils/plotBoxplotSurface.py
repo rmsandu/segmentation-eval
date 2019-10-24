@@ -5,7 +5,7 @@ Created on Mon Dec 18 11:58:43 2017
 @author: Raluca Sandu
 """
 import os
-import graphing as gh
+import utils.graphing as gh
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 plt.style.use('ggplot')
