@@ -7,7 +7,7 @@ Created on Tue Nov 14 11:43:36 2017
 import os
 import time
 import pandas as pd
-import plotHistDistances as pm
+import plot_ablation_margin_hist as pm
 from B_ResampleSegmentations import ResizeSegmentation
 from distancemetrics import DistanceMetrics, RadiomicsMetrics
 from volumemetrics import VolumeMetrics
