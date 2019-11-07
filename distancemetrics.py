@@ -31,10 +31,11 @@ class RadiomicsMetrics(object):
         self.error_flag = False
 
         class AxisMetricsRadiomics(Enum):
-            center_of_mass_x, center_of_mass_y, center_of_mass_z,\
+            center_of_mass_x, center_of_mass_y, center_of_mass_z, \
+            center_of_mass_index_x, center_of_mass_index_y, center_of_index_z, \
             elongation, sphericity, intensity_mean, intensity_variance, intensity_uniformity, \
             diameter3D, diameter2D_slice, diameter2D_col, diameter2D_row, major_axis_length, \
-            least_axis_length, minor_axis_length, gray_lvl_nonuniformity, gray_lvl_variance = range(15)
+            least_axis_length, minor_axis_length, gray_lvl_nonuniformity, gray_lvl_variance = range(20)
 
         axis_metrics_results = np.zeros((1, len(AxisMetricsRadiomics.__members__.items())))
         # %% Extract the diameter axis
@@ -54,7 +55,21 @@ class RadiomicsMetrics(object):
             axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_z.value] = \
                 result['diagnostics_Mask-original_CenterOfMass'][2]
         except Exception:
-            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_x.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_y.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_z.value] = None
+        try:
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_index_x.value] = \
+                result['diagnostics_Mask-original_CenterOfMassIndex'][0]
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_index_y.value] = \
+                result['diagnostics_Mask-original_CenterOfMassIndex'][1]
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_index_z.value] = \
+                result['diagnostics_Mask-original_CenterOfMassIndex'][2]
+        except Exception:
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_index_x.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_index_y.value] = None
+            axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_index_z.value] = None
+
         try:
             axis_metrics_results[0, AxisMetricsRadiomics.elongation.value] = result['original_shape_Elongation']
         except Exception:
