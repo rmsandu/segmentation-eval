@@ -35,7 +35,7 @@ def scatter_plot(df1,  **kwargs):
         print('No Y input data to plot')
         return
     df_to_plot = df1.copy()
-    # drop nans
+    # drop NaNs from both  x and y
     df_to_plot.dropna(subset=[kwargs["x_data"]], inplace=True)
     df_to_plot.dropna(subset=[kwargs["y_data"]], inplace=True)
     if kwargs.get('colormap') is not None:
@@ -48,8 +48,8 @@ def scatter_plot(df1,  **kwargs):
     else:
         df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=14)
     if kwargs.get('size') is not None:
-        size = df_to_plot[kwargs['size']] + 10
-        df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=size)
+        size = 50*df_to_plot[kwargs['size']]
+        df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=size, alpha=0.5)
         # cbar = plt.colorbar()
         # cbar.ax.set_title(kwargs['colormap'], fontsize=8)
 
@@ -79,7 +79,7 @@ def scatter_plot(df1,  **kwargs):
         plt.plot(X, regr.predict(X), color='orange', linewidth=1.5, label=label)
 
     nr_samples = ' Nr. samples: ' + str(len(df_to_plot))
-    plt.title(kwargs['title'] + nr_samples, fontsize=8)
+    plt.title(kwargs['title'] + nr_samples, fontsize=6)
     plt.legend(fontsize=10)
     plt.tick_params(labelsize=8, color='black')
     ax.tick_params(axis='y', labelsize=8, color='k')
