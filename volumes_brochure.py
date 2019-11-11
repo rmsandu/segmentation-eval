@@ -9,7 +9,7 @@ from math import pi
 import numpy as np
 
 file_ablation = r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx"
-file_maverric = r""
+file_maverric = r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_111119.xlsx"
 df = pd.read_excel(file_ablation)
 
 dd = defaultdict(list)
@@ -37,7 +37,7 @@ df['Ablation Volume [ml]_brochure'] = 4 * pi * (df['major_axis_ablation_brochure
                                                        df['least_axis_ablation_brochure']) / 3000
 df['Ablation Volume [ml]_brochure'].replace(0, np.nan, inplace=True)
 df['Energy_brochure'] = df['Power'] * df['Time_Duration_Applied'] / 1000
-writer = pd.ExcelWriter(file)
+writer = pd.ExcelWriter(file_ablation)
 df.to_excel(writer,  index=False, float_format='%.4f')
 writer.save()
 

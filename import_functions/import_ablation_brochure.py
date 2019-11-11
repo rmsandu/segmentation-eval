@@ -16,7 +16,10 @@ ap.add_argument("-i", "--input_file", required=True, help="input file pooled rad
 ap.add_argument("-a", "--ablation_devices_brochure", required=False, help="input file ablation device brochure ")
 args = vars(ap.parse_args())
 
-df = pd.read_excel(args["input_file"], sheet_name="radiomics")
+df = pd.read_excel(args["input_file"], sheet_name="radiomics_1")
+
+df.drop_duplicates(subset=['Lesion_ID'], inplace=True)
+print(len(df))
 try:
     df_ablation_devices = pd.read_excel(args["ablation_devices_brochure"])
 except Exception:
