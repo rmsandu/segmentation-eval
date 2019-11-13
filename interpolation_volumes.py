@@ -3,47 +3,56 @@
 @author: Raluca Sandu
 """
 import os
-import pandas as pd
-from scipy.interpolate import interp1d
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from scipy.interpolate import interp1d
 from sklearn import linear_model
+
 import utils.graphing as gh
 
 
-def interpolation_fct(df_ablation, df_radiomics, title):
+def interpolation_fct(df_ablation, df_radiomics, title, flag_size=False):
     x = np.asarray(df_ablation['Energy_brochure'])
     y = np.asarray(df_ablation['Ablation Volume [ml]_brochure'])
     f = interp1d(x, y, fill_value="extrapolate")
     df_radiomics.dropna(subset=['Ablation Volume [ml]'], inplace=True)
     energy = np.asarray(df_radiomics['Energy [kj]'])
     print('No of samples for ' + title + ': ', len(energy))
-    ablation_vol_predicted_brochure = f(energy)
+    ablation_vol_interpolated_brochure = f(energy)
     fig, ax = plt.subplots()
-    plt.title(title)
     plt.plot(x, y, 'o', energy, f(energy), '*')
     plt.legend(['data ' + title, 'linear interpolation'], loc='best')
     plt.xlabel('Energy [kJ]')
     plt.ylim([0, 120])
     plt.xlim([0, 80])
-    plt.ylabel('Predicted Ablation Volume Brochure [ml]')
+    plt.ylabel('Effective Ablation Volume Brochure [ml]')
     plt.grid('on')
     plt.show()
     figpathHist = os.path.join("figures", title + '_interpolation')
-    gh.save(figpathHist, ext=["png"], close=True)
+    gh.save(figpathHist, width=8, height=8, ext=["png"], close=True)
     # PREDICTED VS MEASURED
     ablation_vol_calculated = np.asarray(df_radiomics['Ablation Volume [ml]'])
     print(len(ablation_vol_calculated))
     fig, ax = plt.subplots()
-    size = [50*n for n in df_radiomics['Tumour Volume [ml]']]
-    plt.scatter(ablation_vol_predicted_brochure, ablation_vol_calculated, marker='o',alpha=0.5, s=size)
-    plt.ylabel('Measured Ablation Volume [ml]')
-    plt.xlabel('Predicted Ablation Volume Brochure [ml]')
+    if flag_size is True:
+        size = np.asarray([50 * n for n in df_radiomics['Tumour Volume [ml]']])
+        sc = ax.scatter(ablation_vol_interpolated_brochure, ablation_vol_calculated, color='steelblue', marker='o',
+                        alpha=0.7, s=size)
+        legend_1 = ax.legend(*sc.legend_elements("sizes", num=5, func=lambda x: x / 50, color='steelblue'),
+                             title='Tumor Size [ml]', labelspacing=3, borderpad=1.5, handletextpad=3.5,
+                             fontsize=14, loc='upper right')
+        legend_1.get_title().set_fontsize('18')
+        ax.add_artist(legend_1)
+    else:
+        sc = plt.scatter(ablation_vol_interpolated_brochure, ablation_vol_calculated, marker='o')
+    plt.ylabel('Effective Ablation Volume [ml] for ' + title, fontsize=18)
+    plt.xlabel('Predicted Ablation Volume Brochure [ml] for ' + title, fontsize=18)
     plt.ylim([0, 100])
     plt.xlim([0, 100])
-    plt.title(title + '  Nr. Samples: ' + str(len(ablation_vol_calculated)))
-    plt.grid('on')
-    X = ablation_vol_predicted_brochure.reshape(len(ablation_vol_predicted_brochure), 1)
+    # plt.title(title + '  Nr. Samples: ' + str(len(ablation_vol_calculated)))
+    X = ablation_vol_interpolated_brochure.reshape(len(ablation_vol_interpolated_brochure), 1)
     Y = ablation_vol_calculated.reshape(len(ablation_vol_calculated), 1)
     regr = linear_model.LinearRegression()
     regr.fit(X, Y)
@@ -52,17 +61,22 @@ def interpolation_fct(df_ablation, df_radiomics, title):
     SS_res = np.sum(residuals ** 2)
     r_squared = 1 - (SS_res / SS_tot)
     correlation_coef = np.corrcoef(X[:, 0], Y[:, 0])[0, 1]
-    label = r'$R^2: $ {0:.2f}; r: {1:.2f}'.format(r_squared, correlation_coef)
-    plt.plot(X, regr.predict(X), color='orange', linewidth=1.5, label=label)
-    plt.legend(fontsize=10)
+    label_r2 = r'$R^2:{0:.2f}$'.format(r_squared)
+    label_r = r'$r: {0:.2f}$'.format(correlation_coef)
+    ax.tick_params(axis='y', labelsize=18, color='k')
+    ax.tick_params(axis='x', labelsize=18, color='k')
+    plt.tick_params(labelsize=18, color='black')
+    reg = plt.plot(X, regr.predict(X), color='orange', linewidth=1.5, label='Linear Regression')
+    plt.plot([], [], ' ', label=label_r)
+    plt.plot([], [], ' ', label=label_r2)
+    plt.legend(fontsize=18, loc='upper left')
     figpathHist = os.path.join("figures", title + '_measured_vs_predicted_volume')
-    gh.save(figpathHist, ext=["png"], close=True)
+    gh.save(figpathHist, width=10, height=10, ext=["png"], close=True)
 
-    # return energy_interp
+    return ablation_vol_interpolated_brochure
 
 
 if __name__ == '__main__':
-
     df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
     df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_111119.xlsx")
     # sort values
@@ -77,6 +91,6 @@ if __name__ == '__main__':
     df_radiomics_angyodinamics = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
 
-    interpolation_fct(df_amica, df_radiomics_amica, 'Amica')
-    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Angyodinamics (Solero)')
-    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien')
+    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', flag_size=True)
+    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Angyodinamics (Solero)', flag_size=True)
+    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', flag_size=True)
