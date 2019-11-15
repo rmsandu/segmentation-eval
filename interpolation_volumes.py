@@ -7,20 +7,37 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, griddata
 from sklearn import linear_model
 
 import utils.graphing as gh
 
 
-def interpolation_fct(df_ablation, df_radiomics, title, flag_size=False):
-    x = np.asarray(df_ablation['Energy_brochure'])
-    y = np.asarray(df_ablation['Ablation Volume [ml]_brochure'])
-    f = interp1d(x, y, fill_value="extrapolate")
-    df_radiomics.dropna(subset=['Ablation Volume [ml]'], inplace=True)
-    energy = np.asarray(df_radiomics['Energy [kj]'])
-    print('No of samples for ' + title + ': ', len(energy))
-    ablation_vol_interpolated_brochure = f(energy)
+def interpolation_fct(df_ablation, df_radiomics, title, single_interpolation=True, flag_size=False):
+    if single_interpolation is True:
+        # perform interpolation as a function of energy
+        df_radiomics.dropna(subset=['Energy [kj]'], inplace=True)
+        x = np.asarray(df_ablation['Energy_brochure'])
+        y = np.asarray(df_ablation['Ablation Volume [ml]_brochure'])
+        f = interp1d(x, y, fill_value="extrapolate")
+        df_radiomics.dropna(subset=['Ablation Volume [ml]'], inplace=True)
+        energy = np.asarray(df_radiomics['Energy [kj]'])
+        print('No of samples for ' + title + ': ', len(energy))
+        ablation_vol_interpolated_brochure = f(energy)
+    else:
+        # perform interpolation as a function of  power and time (multivariate interpolation)
+        df_radiomics.dropna(subset=['Power'], inplace=True)
+        df_radiomics.dropna(subset=['Time_Duration_Applied'], inplace=True)
+        points_power = np.asarray(df_ablation['Power']).reshape((len(df_ablation), 1))
+        points_time = np.asarray(df_ablation['Time_Duration_Applied']).reshape((len(df_ablation), 1))
+        points = np.hstack((points_power, points_time))
+        print(len(points))
+        values = np.asarray(df_ablation['Ablation Volume [ml]_brochure']).reshape((len(df_ablation), 1))
+        grid_x = np.asarray(df_radiomics['Power']).reshape((len(df_radiomics), 1))
+        grid_y = np.asarray(df_radiomics['Time_Duration_Applied']).reshape((len(df_radiomics), 1))
+        xi = np.hstack((grid_x, grid_y))
+        ablation_vol_interpolated_brochure = griddata(points, values, xi, method='linear')
+
     fig, ax = plt.subplots()
     plt.plot(x, y, 'o', energy, f(energy), '*')
     plt.legend(['data ' + title, 'linear interpolation'], loc='best')
@@ -46,7 +63,7 @@ def interpolation_fct(df_ablation, df_radiomics, title, flag_size=False):
         legend_1.get_title().set_fontsize('18')
         ax.add_artist(legend_1)
     else:
-        sc = plt.scatter(ablation_vol_interpolated_brochure, ablation_vol_calculated, marker='o')
+        sc = plt.scatter(ablation_vol_interpolated_brochure, ablation_vol_calculated, color='steelblue', marker='o')
     plt.ylabel('Effective Ablation Volume [ml] for ' + title, fontsize=18)
     plt.xlabel('Predicted Ablation Volume Brochure [ml] for ' + title, fontsize=18)
     plt.ylim([0, 100])
@@ -84,13 +101,13 @@ if __name__ == '__main__':
     df_amica = df_ablation[df_ablation['Device_name'] == 'Amica (Probe)']
     df_angyodinamics = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
     df_covidien = df_ablation[df_ablation['Device_name'] == 'Covidien (Covidien MWA)']
-    df_radiomics.dropna(subset=['Energy [kj]'], inplace=True)
     df_radiomics.sort_values(by=['Energy [kj]'], inplace=True)
-    df_radiomics = df_radiomics[(df_radiomics['Energy [kj]'] > 0) & (df_radiomics['Energy [kj]'] <= 70)]
+    df_radiomics = df_radiomics[(df_radiomics['Energy [kj]'] > 0) & (df_radiomics['Energy [kj]'] <= 100)]
     df_radiomics_amica = df_radiomics[df_radiomics['Device_name'] == 'Amica (Probe)']
     df_radiomics_angyodinamics = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
 
-    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', flag_size=True)
-    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Angyodinamics (Solero)', flag_size=True)
-    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', flag_size=True)
+    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', single_interpolation=False, flag_size=False)
+    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Angyodinamics (Solero)',
+                      single_interpolation=False, flag_size=False)
+    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', single_interpolation=False, flag_size=False)
