@@ -24,33 +24,32 @@ def interpolation_fct(df_ablation, df_radiomics, title, single_interpolation=Tru
         energy = np.asarray(df_radiomics['Energy [kj]'])
         print('No of samples for ' + title + ': ', len(energy))
         ablation_vol_interpolated_brochure = f(energy)
+        fig, ax = plt.subplots()
+        plt.plot(x, y, 'o', energy, f(energy), '*')
+        plt.legend(['data ' + title, 'linear interpolation'], loc='best')
+        plt.xlabel('Energy [kJ]')
+        plt.ylim([0, 120])
+        plt.xlim([0, 80])
+        plt.ylabel('Effective Ablation Volume Brochure [ml]')
+        plt.grid('on')
+        plt.show()
+        figpathHist = os.path.join("figures", title + '_interpolation')
+        gh.save(figpathHist, width=8, height=8, ext=["png"], close=True)
     else:
         # perform interpolation as a function of  power and time (multivariate interpolation)
-        df_radiomics.dropna(subset=['Power'], inplace=True)
-        df_radiomics.dropna(subset=['Time_Duration_Applied'], inplace=True)
         points_power = np.asarray(df_ablation['Power']).reshape((len(df_ablation), 1))
         points_time = np.asarray(df_ablation['Time_Duration_Applied']).reshape((len(df_ablation), 1))
         points = np.hstack((points_power, points_time))
-        print(len(points))
         values = np.asarray(df_ablation['Ablation Volume [ml]_brochure']).reshape((len(df_ablation), 1))
+        df_radiomics.dropna(subset=['Power', 'Time_Duration_Applied'], inplace=True)
         grid_x = np.asarray(df_radiomics['Power']).reshape((len(df_radiomics), 1))
         grid_y = np.asarray(df_radiomics['Time_Duration_Applied']).reshape((len(df_radiomics), 1))
         xi = np.hstack((grid_x, grid_y))
         ablation_vol_interpolated_brochure = griddata(points, values, xi, method='linear')
 
-    fig, ax = plt.subplots()
-    plt.plot(x, y, 'o', energy, f(energy), '*')
-    plt.legend(['data ' + title, 'linear interpolation'], loc='best')
-    plt.xlabel('Energy [kJ]')
-    plt.ylim([0, 120])
-    plt.xlim([0, 80])
-    plt.ylabel('Effective Ablation Volume Brochure [ml]')
-    plt.grid('on')
-    plt.show()
-    figpathHist = os.path.join("figures", title + '_interpolation')
-    gh.save(figpathHist, width=8, height=8, ext=["png"], close=True)
+
     # PREDICTED VS MEASURED
-    ablation_vol_calculated = np.asarray(df_radiomics['Ablation Volume [ml]'])
+    ablation_vol_calculated = np.asarray(df_radiomics['Ablation Volume [ml]']).reshape(len(df_radiomics),1)
     print(len(ablation_vol_calculated))
     fig, ax = plt.subplots()
     if flag_size is True:
@@ -71,6 +70,11 @@ def interpolation_fct(df_ablation, df_radiomics, title, single_interpolation=Tru
     # plt.title(title + '  Nr. Samples: ' + str(len(ablation_vol_calculated)))
     X = ablation_vol_interpolated_brochure.reshape(len(ablation_vol_interpolated_brochure), 1)
     Y = ablation_vol_calculated.reshape(len(ablation_vol_calculated), 1)
+    mask = ~np.isnan(X) & ~np.isnan(Y)
+    X = X[mask]
+    Y = Y[mask]
+    X = X.reshape(len(X),1)
+    Y = Y.reshape(len(Y), 1)
     regr = linear_model.LinearRegression()
     regr.fit(X, Y)
     SS_tot = np.sum((Y - np.mean(Y)) ** 2)
@@ -107,7 +111,7 @@ if __name__ == '__main__':
     df_radiomics_angyodinamics = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
 
-    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', single_interpolation=False, flag_size=False)
+    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', single_interpolation=True, flag_size=False)
     interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Angyodinamics (Solero)',
-                      single_interpolation=False, flag_size=False)
-    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', single_interpolation=False, flag_size=False)
+                      single_interpolation=True, flag_size=False)
+    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', single_interpolation=True, flag_size=False)
