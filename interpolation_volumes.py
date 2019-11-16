@@ -13,7 +13,7 @@ from sklearn import linear_model
 import utils.graphing as gh
 
 
-def interpolation_fct(df_ablation, df_radiomics, title, single_interpolation=True, flag_size=False):
+def interpolation_fct(df_ablation, df_radiomics, title, single_interpolation=True, flag_size=False, flag=None):
     if single_interpolation is True:
         # perform interpolation as a function of energy
         df_radiomics.dropna(subset=['Energy [kj]'], inplace=True)
@@ -49,21 +49,22 @@ def interpolation_fct(df_ablation, df_radiomics, title, single_interpolation=Tru
 
     # PREDICTED VS MEASURED
     ablation_vol_measured = np.asarray(df_radiomics['Ablation Volume [ml]']).reshape(len(df_radiomics), 1)
-    tumor_vol = np.asarray(df_radiomics['Tumour Volume [ml]']).reshape(len(df_radiomics), 1)
-    mask = ~np.isnan(ablation_vol_measured)
-    # tumor_vol_size = tumor_vol[mask]
-    # print('length_tumor_vol', len(tumor_vol_size))
-    # print('length ablation vol measured', len(ablation_vol_measured))
+    if flag == 'Tumour Volume [ml]':
+        size_values = np.asarray(df_radiomics['Tumour Volume [ml]']).reshape(len(df_radiomics), 1)
+    elif flag == 'No. chemo cycles':
+        # df_radiomics['no_chemo_cycle'] = df_radiomics['no_chemo_cycle'] +  1
+        size_values = np.asarray(df_radiomics['no_chemo_cycle']).reshape(len(df_radiomics), 1)
+
     fig, ax = plt.subplots()
     if flag_size is True:
-        size = np.asarray([50 * n for n in tumor_vol]).reshape(len(tumor_vol), 1)
+        size = np.asarray([100 * (n + 1) for n in size_values]).reshape(len(size_values), 1)
         size_mask = ~np.isnan(size)
         size = size[size_mask]
         sc = ax.scatter(ablation_vol_interpolated_brochure, ablation_vol_measured, color='steelblue', marker='o',
                         alpha=0.7, s=size)
         plt.show()
-        legend_1 = ax.legend(*sc.legend_elements("sizes", num=5, func=lambda x: x / 50, color='steelblue'),
-                             title='Tumor Volume [ml]', labelspacing=1.5, borderpad=1.5, handletextpad=3.5,
+        legend_1 = ax.legend(*sc.legend_elements("sizes", num=6, func=lambda x: x / 100 - 1, color='steelblue'),
+                             title=flag, labelspacing=1.5, borderpad=1.5, handletextpad=3.5,
                              fontsize=18, loc='upper right')
         legend_1.get_title().set_fontsize('18')
         ax.add_artist(legend_1)
@@ -98,9 +99,9 @@ def interpolation_fct(df_ablation, df_radiomics, title, single_interpolation=Tru
     plt.plot([], [], ' ', label=label_r)
     plt.plot([], [], ' ', label=label_r2)
     plt.legend(fontsize=20, loc='upper left')
-    if flag_size:
+    if flag is not None:
         figpathHist = os.path.join("figures",
-                                   title + '_measured_vs_predicted_volume_power_time_interpolation_tumor_volume')
+                                   title + '_measured_vs_predicted_volume_power_time_interpolation' +  flag)
     else:
         figpathHist = os.path.join("figures", title + '_measured_vs_predicted_volume_power_time_interpolation')
     gh.save(figpathHist, width=11, height=11, ext=["png"], close=True, tight=True, dpi=600)
@@ -122,7 +123,11 @@ if __name__ == '__main__':
     df_radiomics_angyodinamics = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
 
-    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', single_interpolation=False, flag_size=False)
+
+    # flag_options : 1. flag == 'No. chemo cycles' 2. flag == 'Tumour Volume [ml]'
+    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', single_interpolation=False, flag_size=True,
+                      flag='No. chemo cycles')
     interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Angyodinamics (Solero)',
-                      single_interpolation=False, flag_size=False)
-    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', single_interpolation=False, flag_size=False)
+                      single_interpolation=False, flag_size=True, flag='No. chemo cycles')
+    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', single_interpolation=False, flag_size=True,
+                      flag='No. chemo cycles')
