@@ -15,7 +15,7 @@ from utils.boxplots_maverric import plot_boxplots_chemo, plot_boxplots_volumes, 
 from utils.scatter_plot import scatter_plot, scatter_plot_groups
 
 sns.set(style="ticks")
-plt.style.use('ggplot')
+# plt.style.use('ggplot')
 
 # %%
 ap = argparse.ArgumentParser()
@@ -67,27 +67,45 @@ df.reset_index(inplace=True, drop=True)
 
 
 # %%  Raw Data
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (parametrized_formula)',
-          'title': "Energy vs Ablation Volume PCA axes. " + flag_subcapsular_title, 'lin_reg': 1}
-scatter_plot(df, **kwargs)
-
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml] (manufacturers)',
-          'title': "Ablation Volumes MWA Brochure. " + flag_subcapsular_title, 'lin_reg': 1}
-
-scatter_plot(df, **kwargs)
-kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Tumour Volume [ml]',
-          'title': "Tumors Volumes for 3 MWA devices. ", 'lin_reg': 1}
-scatter_plot(df, **kwargs)
-
-kwargs = {'x_data': 'Ablation Volume [ml] (manufacturers)', 'y_data': 'Ablation Volume [ml]',
-          'title': "Ablation Volumes from MWA Brochure vs. Measured Volume. " + flag_subcapsular_title,
-          'lin_reg': 1}
-scatter_plot(df, **kwargs)
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
+          'y_label': 'Effective Ablation Volume [ml] for 3 MWA Devices',
           'title': "Ablation Volume [ml] for 3 MWA devices. " + flag_subcapsular_title,
+          'size': 'no_chemo_cycle',
+          'x_lim': 160,
+          'y_lim': 160,
           'lin_reg': 1}
 scatter_plot(df, **kwargs)
+
+df_radiomics_amica = df[df['Device_name'] == 'Amica (Probe)']
+df_radiomics_angyodinamics = df[df['Device_name'] == 'Angyodinamics (Acculis)']
+df_radiomics_covidien = df[df['Device_name'] == 'Covidien (Covidien MWA)']
+
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
+          'y_label': 'Effective Ablation Volume [ml] for Amica',
+          'title': "Ablation Volume [ml] for Amica " + flag_subcapsular_title,
+          'x_lim': 160,
+          'y_lim': 160,
+          'lin_reg': 1}
+scatter_plot(df_radiomics_amica, **kwargs)
+
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
+          'y_label': 'Effective Ablation Volume [ml] for Angyiodinamics (Solero)',
+          'title': "Ablation Volume [ml] for Angyiodinamics (Solero) " + flag_subcapsular_title,
+          'x_lim': 160,
+          'y_lim': 160,
+          'lin_reg': 1}
+scatter_plot(df_radiomics_angyodinamics, **kwargs)
+
+kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
+          'y_label': 'Effective Ablation Volume [ml] for Covidien',
+          'title': "Ablation Volume [ml] for Covidien " + flag_subcapsular_title,
+          'x_lim': 160,
+          'y_lim': 160,
+          'lin_reg': 1}
+scatter_plot(df_radiomics_covidien, **kwargs)
+
+sys.exit()
 
 try:
     df['Power'] = pd.to_numeric(df['Power'], errors='coerce')
@@ -121,12 +139,14 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Time_Duration_Applied',
 scatter_plot(df, **kwargs)
 
 kwargs = {'x_data': 'Tumour Volume [ml]', 'y_data': 'Ablation Volume [ml]',
+          'y_label': 'Effective Ablation Volume [ml] for 3 MWA Devices',
           'title': "Tumor Volume [ml] vs Ablation Volume [ml] for 3 MWA devices. " + flag_subcapsular_title,
           'lin_reg': 1}
 
 scatter_plot(df, **kwargs)
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
+          'y_label': 'Effective Ablation Volume [ml] for 3 MWA Devices',
           'title': "Ablation Volume [ml] for 3 MWA devices by Number of Chemotherapy cycles Before Ablation. ",
           'lin_reg': 1,
           'size': 'no_chemo_cycle'}
