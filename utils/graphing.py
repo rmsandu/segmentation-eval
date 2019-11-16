@@ -20,7 +20,7 @@ import sys
 
 
 def save(path, fignum=None, close=True, width=None, height=None,
-         ext=None, verbose=False):
+         ext=None, verbose=False, tight=False, dpi=300):
     """Save a figure from pyplot.
     Parameters:
     path [string] : The path (and filename, without the extension) to
@@ -81,8 +81,12 @@ def save(path, fignum=None, close=True, width=None, height=None,
         if verbose:
             sys.stdout.write("Saving figure to '%s'..." % savepath)
 
-        # Actually save the figure
-        plt.savefig(savepath, pad_inches=0, dpi=300)
+        if tight:
+            plt.savefig(savepath, pad_inches=0, dpi=dpi, bbox_inches='tight')
+        else:
+            plt.savefig(savepath, pad_inches=1, dpi=dpi)
+
+
 
     # Close it
     if close:
