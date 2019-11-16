@@ -126,3 +126,6 @@ db.sqlite3
 
 # Archive
 /archive
+
+# Figures
+/figures
