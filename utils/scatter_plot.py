@@ -36,8 +36,8 @@ def scatter_plot(df1,  **kwargs):
         return
     df_to_plot = df1.copy()
     # drop NaNs from both  x and y
-    df_to_plot.dropna(subset=[kwargs["x_data"]], inplace=True)
-    df_to_plot.dropna(subset=[kwargs["y_data"]], inplace=True)
+    # df_to_plot.dropna(inplace=True)
+    df_to_plot.dropna(subset=[kwargs["y_data"], kwargs["x_data"]], inplace=True)
     if kwargs.get('colormap') is not None:
         X_scatter = df_to_plot[kwargs['x_data']]
         Y_scatter = df_to_plot[kwargs['y_data']]
@@ -48,20 +48,25 @@ def scatter_plot(df1,  **kwargs):
     else:
         df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=14)
     if kwargs.get('size') is not None:
-        size = 50*df_to_plot[kwargs['size']]
-        df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=size, alpha=0.5)
-        # cbar = plt.colorbar()
-        # cbar.ax.set_title(kwargs['colormap'], fontsize=8)
+        size = np.asarray(100*df_to_plot[kwargs['size']]).reshape(len(df_to_plot), 1)
+        size_mask = ~np.isnan(size)
+        size = size[size_mask]
+        sc = df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=size, alpha=0.6, color='steelblue', marker='o')
+        legend_1 = ax.legend(*sc.legend_elements("sizes", num=6, func=lambda x: x / 100, color='steelblue'),
+                             title=kwargs['size'], labelspacing=1.5, borderpad=1.5, handletextpad=3.5,
+                             fontsize=18, loc='upper right')
+        legend_1.get_title().set_fontsize('18')
+        ax.add_artist(legend_1)
 
     if kwargs.get('x_label') is not None and kwargs.get('y_label') is None:
-        plt.xlabel(kwargs['x_label'], fontsize=8, color='k')
-        plt.ylabel(kwargs['y_data'], fontsize=8, color='k')
+        plt.xlabel(kwargs['x_label'], fontsize=20, color='k')
+        plt.ylabel(kwargs['y_data'], fontsize=20, color='k')
     elif kwargs.get('y_label') is not None and kwargs.get('x_label') is None:
-        plt.ylabel(kwargs['y_label'], fontsize=8, color='k')
-        plt.xlabel(kwargs['x_data'], fontsize=8, color='k')
+        plt.ylabel(kwargs['y_label'], fontsize=20, color='k')
+        plt.xlabel(kwargs['x_data'], fontsize=20, color='k')
     elif kwargs.get('x_label') is None and kwargs.get('y_label') is None:
-        plt.xlabel(kwargs['x_data'], fontsize=8, color='k')
-        plt.ylabel(kwargs['y_data'], fontsize=8, color='k')
+        plt.xlabel(kwargs['x_data'], fontsize=20, color='k')
+        plt.ylabel(kwargs['y_data'], fontsize=20, color='k')
 
     if kwargs.get('lin_reg') is not None:
         X = np.array(df_to_plot[kwargs['x_data']])
@@ -78,12 +83,15 @@ def scatter_plot(df1,  **kwargs):
         label = r'$R^2: $ {0:.2f}; r: {1:.2f}'.format(r_squared, correlation_coef)
         plt.plot(X, regr.predict(X), color='orange', linewidth=1.5, label=label)
 
-    nr_samples = ' Nr. samples: ' + str(len(df_to_plot))
-    plt.title(kwargs['title'] + nr_samples, fontsize=6)
-    plt.legend(fontsize=10)
-    plt.tick_params(labelsize=8, color='black')
-    ax.tick_params(axis='y', labelsize=8, color='k')
-    ax.tick_params(axis='x', labelsize=8, color='k')
+    if kwargs.get('x_lim') is not None and kwargs.get('y_lim') is not None:
+        plt.xlim([0, kwargs['x_lim']])
+        plt.ylim([0, kwargs['y_lim']])
+    title = kwargs['title'] + ' Nr. samples: ' + str(len(df_to_plot))
+    # plt.title(kwargs['title'] + nr_samples, fontsize=6)
+    plt.legend(fontsize=20)
+    plt.tick_params(labelsize=20, color='black')
+    ax.tick_params(axis='y', labelsize=20, color='k')
+    ax.tick_params(axis='x', labelsize=20, color='k')
     ax.xaxis.label.set_color('black')
     ax.yaxis.label.set_color('black')
     matplotlib.rc('axes', labelcolor='black')
