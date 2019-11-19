@@ -14,7 +14,7 @@ from scipy.stats import shapiro
 import utils.graphing as gh
 
 sns.set(style="ticks")
-plt.style.use('ggplot')
+# plt.style.use('ggplot')
 
 
 def plot_boxplots_chemo(df):

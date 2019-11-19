@@ -46,7 +46,7 @@ def scatter_plot(df1,  **kwargs):
         cbar = plt.colorbar()
         cbar.ax.set_title(kwargs['colormap'], fontsize=8)
     else:
-        df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=60, alpha=0.7)
+        df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=80, alpha=0.7)
     if kwargs.get('size') is not None:
         size = np.asarray(50 * (df_to_plot[kwargs['size']] + 1)).reshape(len(df_to_plot), 1)
         size_mask = ~np.isnan(size)
@@ -61,16 +61,6 @@ def scatter_plot(df1,  **kwargs):
                              fontsize=18, loc='upper right')
         legend_1.get_title().set_fontsize('18')
         ax.add_artist(legend_1)
-
-    if kwargs.get('x_label') is not None and kwargs.get('y_label') is None:
-        plt.xlabel(kwargs['x_label'], fontsize=20, color='k')
-        plt.ylabel(kwargs['y_data'], fontsize=20, color='k')
-    elif kwargs.get('y_label') is not None and kwargs.get('x_label') is None:
-        plt.ylabel(kwargs['y_label'], fontsize=20, color='k')
-        plt.xlabel(kwargs['x_data'], fontsize=20, color='k')
-    elif kwargs.get('x_label') is None and kwargs.get('y_label') is None:
-        plt.xlabel(kwargs['x_data'], fontsize=20, color='k')
-        plt.ylabel(kwargs['y_data'], fontsize=20, color='k')
 
     if kwargs.get('lin_reg') is not None:
         X = np.array(df_to_plot[kwargs['x_data']])
@@ -101,6 +91,17 @@ def scatter_plot(df1,  **kwargs):
     ax.yaxis.label.set_color('black')
     matplotlib.rc('axes', labelcolor='black')
     figpathHist = os.path.join("figures", title)
+
+    if kwargs.get('x_label') is not None and kwargs.get('y_label') is None:
+        plt.xlabel(kwargs['x_label'], fontsize=20, color='k')
+        plt.ylabel(kwargs['y_data'], fontsize=20, color='k')
+    elif kwargs.get('y_label') is not None and kwargs.get('x_label') is None:
+        plt.ylabel(kwargs['y_label'], fontsize=20, color='k')
+        plt.xlabel(kwargs['x_data'], fontsize=20, color='k')
+    elif kwargs.get('x_label') is None and kwargs.get('y_label') is None:
+        plt.xlabel(kwargs['x_data'], fontsize=20, color='k')
+        plt.ylabel(kwargs['y_data'], fontsize=20, color='k')
+
     gh.save(figpathHist, width=12, height=12, ext=["png"], tight=True, close=True, dpi=600)
     plt.close('all')
 

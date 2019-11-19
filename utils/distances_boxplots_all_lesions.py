@@ -6,7 +6,7 @@ Created on Wed Nov 29 19:15:03 2017
 """
 import os
 import numpy as np
-import graphing as gh
+import utils.graphing as gh
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 # %%
@@ -51,4 +51,3 @@ def plotBoxplots(data, rootdir):
     figpath_png = os.path.join(rootdir, 'boxplots_forDistanceMaps.png')
     plt.show()
     gh.save(figpath_png, width=30, height=28)
-
