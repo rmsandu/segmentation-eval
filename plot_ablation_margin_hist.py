@@ -63,9 +63,9 @@ def plotHistDistances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, tit
     # %%
     '''edit the axes limits and labels'''
     # csfont = {'fontname': 'Times New Roman'}
-    plt.xlabel('Euclidean Distances (mm)', fontsize=30, color='black')
-    plt.tick_params(labelsize=30, color='black')
-    ax.tick_params(colors='black', labelsize=30)
+    plt.xlabel('Euclidean Distances [mm]', fontsize=35, color='black')
+    plt.tick_params(labelsize=35, color='black')
+    ax.tick_params(colors='black', labelsize=35)
     plt.grid(True)
     # TODO: set equal axis limits
     ax.set_xlim([-15, 15])
@@ -79,19 +79,20 @@ def plotHistDistances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, tit
     new_yticks[0] = 0
     plt.yticks(new_yticks, yticks_percent)
 
-    plt.ylabel('Frequency of percentage of tumor surface voxels', fontsize=30, color='black')
+    plt.ylabel('Percentage of tumor surface voxels covered', fontsize=35, color='black')
 
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     # font = font_manager.FontProperties(family='Times New Roman',
     #                                    style='normal', size=30)
     # plt.legend(by_label.values(), by_label.keys(), fontsize=30, loc='best', prop=font)
-    plt.legend(by_label.values(), by_label.keys(), fontsize=30, loc='best')
-
+    plt.legend(by_label.values(), by_label.keys(), fontsize=35, loc='best')
+    plt.xticks(fontsize=35)
+    ax.tick_params(axis='both', labelsize=40)
     # ax.legend(prop=font)
-    plt.title(title + '. Patient ' + str(pat_name) + '. Lesion ' + str(lesion_id), fontsize=30)
+    plt.title(title + '. Patient ' + str(pat_name) + '. Lesion ' + str(lesion_id), fontsize=35)
     figpathHist = os.path.join(rootdir, figName_hist)
-    gh.save(figpathHist, width=18, height=16, ext=['png'])
+    gh.save(figpathHist, width=20, height=18, ext=['png'])
 
     # return the percentages
     return sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated

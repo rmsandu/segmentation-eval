@@ -96,12 +96,14 @@ for row_key, (ax, row) in bp_dict.iteritems():
 
 xticklabels = ['No LTP', 'LTP']
 xtickNames = plt.setp(ax, xticklabels=xticklabels)
-plt.setp(xtickNames, fontsize=12, color='black')
-plt.ylabel('Tumor to Ablation Euclidean Surface Distances [mm]', fontsize=12, color='black')
+plt.setp(xtickNames, fontsize=20, color='black')
+plt.ylabel('Ablation Margin Distances [mm]', fontsize=18, color='black')
 ax.tick_params(colors='black')
+plt.xticks(fontsize=18)
+ax.tick_params(axis='both', labelsize=20)
 # [ax_tmp.set_xlabel('aaaa') for ax_tmp in np.asarray(bp).reshape(-1)]
 # fig = np.asarray(bp).reshape(-1)[0].get_figure()
-plt.title('Ablation Margin by Local Tumor Progression (LTP). Number of samples: ' + str(len(df_final)) + '.')
+plt.title('Ablation Margin by Local Tumor Progression (LTP). Number of samples: ' + str(len(df_final)) + '.', fontsize=20)
 fig.suptitle('')
 # ax.set_ylim([-10, 17])
 figpathHist = os.path.join("figures", "boxplot LTP ablation margin_not_subcapsular_outliers")
@@ -123,16 +125,18 @@ for row_key, (ax, row) in bp_dict.iteritems():
 
 xticklabels = ['No LTP', 'LTP']
 xtickNames = plt.setp(ax, xticklabels=xticklabels)
-plt.setp(xtickNames, fontsize=12, color='black')
-plt.ylabel('Ablation Volume [ml]', fontsize=12, color='black')
+plt.setp(xtickNames, fontsize=20, color='black')
+plt.ylabel('Effective Ablation Volume [ml]', fontsize=20, color='black')
 ax.tick_params(colors='black')
+plt.xticks(fontsize=20)
+ax.tick_params(axis='both', labelsize=20)
 # [ax_tmp.set_xlabel('aaaa') for ax_tmp in np.asarray(bp).reshape(-1)]
 # fig = np.asarray(bp).reshape(-1)[0].get_figure()
-plt.title('Ablation Volumes Grouped by Local Tumor Progression (LTP). Number of samples: ' + str(len(df_final)) + '.')
+plt.title('Ablation Volumes [ml]', fontsize=20)
 fig.suptitle('')
 ax.set_ylim([-1, 100])
 figpathHist = os.path.join("figures", "boxplot LTP ablation volumes_not_subcapsular")
-gh.save(figpathHist, ext=['png'], close=True)
+gh.save(figpathHist, ext=['png'], tight=True, dpi=600, close=True)
 # %%
 fig, ax = plt.subplots(figsize=(10, 8))
 # props = dict(boxes="DarkGreen", whiskers="DarkOrange", medians="DarkBlue", caps="Gray")
@@ -152,13 +156,15 @@ for row_key, (ax, row) in bp_dict.iteritems():
 
 xticklabels = ['No LTP', 'LTP']
 xtickNames = plt.setp(ax, xticklabels=xticklabels)
-plt.setp(xtickNames, fontsize=12, color='black')
-plt.ylabel('Tumor Volume [ml]', fontsize=12, color='black')
+plt.setp(xtickNames, fontsize=20, color='black')
+plt.ylabel('Tumor Volume [ml]', fontsize=20, color='black')
 ax.tick_params(colors='black')
+plt.xticks(fontsize=20)
+ax.tick_params(axis='both', labelsize=20)
 # [ax_tmp.set_xlabel('aaaa') for ax_tmp in np.asarray(bp).reshape(-1)]
 # fig = np.asarray(bp).reshape(-1)[0].get_figure()
-plt.title('Tumor Volumes Grouped by Local Tumor Progression (LTP).Number of samples: ' + str(len(df_final)) + '.')
+plt.title('Tumor Volumes [ml]', fontsize=20)
 fig.suptitle('')
 ax.set_ylim([-1, 20])
 figpathHist = os.path.join("figures", "boxplot LTP tumor volumes_not_subcapsular")
-gh.save(figpathHist, ext=['png'], close=True)
+gh.save(figpathHist, ext=['png'], close=True, dpi=600, tight=True)

@@ -3,19 +3,17 @@
 @author: Raluca Sandu
 """
 import argparse
-import os
 import sys
-import matplotlib.pyplot as plt
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
-import utils.graphing as gh
+import matplotlib.pyplot as plt
 from utils.boxplots_maverric import plot_boxplots_chemo, plot_boxplots_volumes, plot_boxplots_subcapsular
-from utils.scatter_plot import scatter_plot, scatter_plot_groups
+from utils.scatter_plot import scatter_plot
 
 sns.set(style="ticks")
-# plt.style.use('ggplot')
+plt.style.use('ggplot')
 
 # %%
 ap = argparse.ArgumentParser()
@@ -69,11 +67,11 @@ df.reset_index(inplace=True, drop=True)
 # %%  Raw Data
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
-          'y_label': 'Effective Ablation Volume [ml] for 3 MWA Devices',
+          'x_label': 'Energy [kJ]',
+          'y_label': 'Effective Ablation Volume [ml] for 3 Microwave Devices',
           'title': "Ablation Volume [ml] for 3 MWA devices. " + flag_subcapsular_title,
-          'size': 'no_chemo_cycle',
-          'x_lim': 160,
-          'y_lim': 160,
+          'x_lim': 180,
+          'y_lim': 180,
           'lin_reg': 1}
 scatter_plot(df, **kwargs)
 

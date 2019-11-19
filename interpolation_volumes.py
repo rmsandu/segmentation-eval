@@ -3,7 +3,7 @@
 @author: Raluca Sandu
 """
 import os
-
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -11,6 +11,7 @@ from scipy.interpolate import interp1d, griddata
 from sklearn import linear_model
 
 import utils.graphing as gh
+plt.style.use('ggplot')
 
 
 def interpolation_fct(df_ablation, df_radiomics, title, single_interpolation=True, flag_size=False, flag=None):
@@ -99,6 +100,10 @@ def interpolation_fct(df_ablation, df_radiomics, title, single_interpolation=Tru
     plt.plot([], [], ' ', label=label_r)
     plt.plot([], [], ' ', label=label_r2)
     plt.legend(fontsize=20, loc='upper left')
+    ax.xaxis.label.set_color('black')
+    ax.yaxis.label.set_color('black')
+    ax.xaxis.ticks.set_color('black')
+    matplotlib.rc('axes', labelcolor='black')
     if flag is not None:
         figpathHist = os.path.join("figures",
                                    title + '_measured_vs_predicted_volume_power_time_interpolation' +  flag)
@@ -123,11 +128,8 @@ if __name__ == '__main__':
     df_radiomics_angyodinamics = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
 
-
     # flag_options : 1. flag == 'No. chemo cycles' 2. flag == 'Tumour Volume [ml]'
-    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', single_interpolation=False, flag_size=True,
-                      flag='No. chemo cycles')
+    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', single_interpolation=False, flag_size=False)
     interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Angyodinamics (Solero)',
-                      single_interpolation=False, flag_size=True, flag='No. chemo cycles')
-    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', single_interpolation=False, flag_size=True,
-                      flag='No. chemo cycles')
+                      single_interpolation=False, flag_size=False)
+    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', single_interpolation=False, flag_size=False)
