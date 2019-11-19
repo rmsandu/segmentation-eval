@@ -3,13 +3,12 @@
 @author: Raluca Sandu
 """
 import os
-
-import matplotlib
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.interpolate import griddata
-from sklearn import linear_model
+
 
 import utils.graphing as gh
 
@@ -38,7 +37,7 @@ def draw_pie(dist,
     return ax
 
 
-def interpolation_fct(df_ablation, df_radiomics, title=None, lin_regr=False):
+def interpolation_fct(df_ablation, df_radiomics, title=None):
     """
     Interpolate the missing ablation volumes using the power and time from the brochure
     :param df_ablation:
@@ -50,6 +49,7 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, lin_regr=False):
     :param ratio_10:
     :return:
     """
+    fontsize = 22
     # perform interpolation as a function of  power and time (multivariate interpolation)
     points_power = np.asarray(df_ablation['Power']).reshape((len(df_ablation), 1))
     points_time = np.asarray(df_ablation['Time_Duration_Applied']).reshape((len(df_ablation), 1))
@@ -76,35 +76,17 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, lin_regr=False):
         ratio_10 = ratios_10[idx] / 100
         draw_pie([ratio_0, ratio_5, ratio_10], xs, ys, 500, colors=['red', 'orange', 'green'], ax=ax)
 
-    plt.ylabel('Effective Ablation Volume [ml] for ' + title, fontsize=20)
-    plt.xlabel('Predicted Ablation Volume Brochure [ml] for ' + title, fontsize=20)
-
-    if lin_regr is True:
-        X = ablation_vol_interpolated_brochure.reshape(len(ablation_vol_interpolated_brochure), 1)
-        Y = ablation_vol_measured.reshape(len(ablation_vol_measured), 1)
-        mask = ~np.isnan(X) & ~np.isnan(Y)
-        X = X[mask]
-        Y = Y[mask]
-        X = X.reshape(len(X), 1)
-        Y = Y.reshape(len(Y), 1)
-        regr = linear_model.LinearRegression()
-        regr.fit(X, Y)
-        SS_tot = np.sum((Y - np.mean(Y)) ** 2)
-        residuals = Y - regr.predict(X)
-        SS_res = np.sum(residuals ** 2)
-        r_squared = 1 - (SS_res / SS_tot)
-        correlation_coef = np.corrcoef(X[:, 0], Y[:, 0])[0, 1]
-        label_r2 = r'$R^2:{0:.2f}$'.format(r_squared)
-        label_r = r'$r: {0:.2f}$'.format(correlation_coef)
-        reg = plt.plot(X, regr.predict(X), color='orange', linewidth=1.5, label='Linear Regression')
-        plt.plot([], [], ' ', label=label_r)
-        plt.plot([], [], ' ', label=label_r2)
-        plt.legend(fontsize=20, loc='upper left')
+    plt.ylabel('Effective Ablation Volume [ml] for ' + title, fontsize=fontsize)
+    plt.xlabel('Predicted Ablation Volume Brochure [ml] for ' + title, fontsize=fontsize)
     plt.xlim([0, 70])
-    plt.ylim([0, 100])
-    ax.tick_params(axis='y', labelsize=20, color='k')
-    ax.tick_params(axis='x', labelsize=20, color='k')
-    plt.tick_params(labelsize=20, color='black')
+    plt.ylim([0, 120])
+    red_patch = mpatches.Patch(color='red', label='Ablation Surface Margin ' + r'$x < 0$' + 'mm')
+    orange_patch = mpatches.Patch(color='orange', label='Ablation Surface Margin ' + r'$0 \leq  x \leq 5$' + 'mm')
+    green_patch = mpatches.Patch(color='darkgreen', label='Ablation Surface Margin ' + r'$x > 5$' + 'mm')
+    plt.legend(handles=[red_patch, orange_patch, green_patch], fontsize=fontsize, loc='upper right')
+    ax.tick_params(axis='y', labelsize=fontsize, color='k')
+    ax.tick_params(axis='x', labelsize=fontsize, color='k')
+    plt.tick_params(labelsize=fontsize, color='black')
     figpath = os.path.join("figures", title + "_pie_charts")
     gh.save(figpath, width=14, height=10, close=True, dpi=600, tight=True)
     plt.show()
@@ -129,9 +111,9 @@ if __name__ == '__main__':
     df_radiomics_angyodinamics = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
 
-    interpolation_fct(df_amica, df_radiomics_amica, title='Amica', lin_regr=False)
-    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, title='Angyodinamics (Solero)', lin_regr=False)
-    interpolation_fct(df_covidien, df_radiomics_covidien, title='Covidien', lin_regr=False)
+    interpolation_fct(df_amica, df_radiomics_amica, title='Amica')
+    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, title='Angyodinamics (Solero)')
+    interpolation_fct(df_covidien, df_radiomics_covidien, title='Covidien')
 
 
     # fig, ax = plt.subplots()
