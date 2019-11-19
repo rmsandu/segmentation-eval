@@ -8,12 +8,12 @@ import sys
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
+
 from utils.boxplots_maverric import plot_boxplots_chemo, plot_boxplots_volumes, plot_boxplots_subcapsular
 from utils.scatter_plot import scatter_plot
 
 sns.set(style="ticks")
-plt.style.use('ggplot')
+# plt.style.use('ggplot')
 
 # %%
 ap = argparse.ArgumentParser()
@@ -70,8 +70,8 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'x_label': 'Energy [kJ]',
           'y_label': 'Effective Ablation Volume [ml] for 3 Microwave Devices',
           'title': "Ablation Volume [ml] for 3 MWA devices. " + flag_subcapsular_title,
-          'x_lim': 180,
-          'y_lim': 180,
+          'x_lim': 120,
+          'y_lim': 120,
           'lin_reg': 1}
 scatter_plot(df, **kwargs)
 
@@ -82,24 +82,24 @@ df_radiomics_covidien = df[df['Device_name'] == 'Covidien (Covidien MWA)']
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'y_label': 'Effective Ablation Volume [ml] for Amica',
           'title': "Ablation Volume [ml] for Amica " + flag_subcapsular_title,
-          'x_lim': 160,
-          'y_lim': 160,
+          'x_lim': 120,
+          'y_lim': 120,
           'lin_reg': 1}
 scatter_plot(df_radiomics_amica, **kwargs)
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'y_label': 'Effective Ablation Volume [ml] for Angyiodinamics (Solero)',
           'title': "Ablation Volume [ml] for Angyiodinamics (Solero) " + flag_subcapsular_title,
-          'x_lim': 160,
-          'y_lim': 160,
+          'x_lim': 120,
+          'y_lim': 120,
           'lin_reg': 1}
 scatter_plot(df_radiomics_angyodinamics, **kwargs)
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'y_label': 'Effective Ablation Volume [ml] for Covidien',
           'title': "Ablation Volume [ml] for Covidien " + flag_subcapsular_title,
-          'x_lim': 160,
-          'y_lim': 160,
+          'x_lim': 120,
+          'y_lim': 120,
           'lin_reg': 1}
 scatter_plot(df_radiomics_covidien, **kwargs)
 

@@ -2,17 +2,18 @@
 """
 @author: Raluca Sandu
 """
-import utils.graphing as gh
-import matplotlib.pyplot as plt
-import matplotlib
 import os
+
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from sklearn import linear_model
-from sklearn.metrics import r2_score
+
+import utils.graphing as gh
 
 sns.set(style="ticks")
-plt.style.use('ggplot')
+# plt.style.use('ggplot')
 
 
 def scatter_plot(df1,  **kwargs):
@@ -28,6 +29,7 @@ def scatter_plot(df1,  **kwargs):
     :return:
     """
     fig, ax = plt.subplots()
+    fontsize = 22
     if kwargs.get('x_data') is None:
         print('No X input data to plot')
         return
@@ -46,7 +48,7 @@ def scatter_plot(df1,  **kwargs):
         cbar = plt.colorbar()
         cbar.ax.set_title(kwargs['colormap'], fontsize=8)
     else:
-        df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=80, alpha=0.7)
+        df_to_plot.plot.scatter(x=kwargs["x_data"], y=kwargs["y_data"], s=100, alpha=0.7)
     if kwargs.get('size') is not None:
         size = np.asarray(50 * (df_to_plot[kwargs['size']] + 1)).reshape(len(df_to_plot), 1)
         size_mask = ~np.isnan(size)
@@ -58,8 +60,8 @@ def scatter_plot(df1,  **kwargs):
         sc = ax.scatter(x, y, s=size, alpha=0.6,  marker='o', color='steelblue')
         legend_1 = ax.legend(*sc.legend_elements("sizes", num=6, func=lambda x: x / 50 - 1, color='steelblue'),
                              title=kwargs['size'], labelspacing=1.5, borderpad=1.5, handletextpad=3.5,
-                             fontsize=18, loc='upper right')
-        legend_1.get_title().set_fontsize('18')
+                             fontsize=fontsize, loc='upper right')
+        legend_1.get_title().set_fontsize(str(fontsize))
         ax.add_artist(legend_1)
 
     if kwargs.get('lin_reg') is not None:
@@ -79,29 +81,28 @@ def scatter_plot(df1,  **kwargs):
         plt.plot(X, regr.predict(X), color='orange', linewidth=1.5, label='Linear Regression')
         plt.plot([], [], ' ', label=label_r)
         plt.plot([], [], ' ', label=label_r2)
-        plt.legend(fontsize=20, loc='upper left')
+        plt.legend(fontsize=fontsize, loc='upper left')
     if kwargs.get('x_lim') is not None and kwargs.get('y_lim') is not None:
         plt.xlim([0, kwargs['x_lim']])
         plt.ylim([0, kwargs['y_lim']])
     title = kwargs['title']
-    plt.tick_params(labelsize=20, color='black')
-    ax.tick_params(axis='y', labelsize=20, color='k')
-    ax.tick_params(axis='x', labelsize=20, color='k')
+    plt.tick_params(labelsize=fontsize, color='black')
+    ax.tick_params(axis='y', labelsize=fontsize, color='k')
+    ax.tick_params(axis='x', labelsize=fontsize, color='k')
     ax.xaxis.label.set_color('black')
     ax.yaxis.label.set_color('black')
     matplotlib.rc('axes', labelcolor='black')
     figpathHist = os.path.join("figures", title)
 
     if kwargs.get('x_label') is not None and kwargs.get('y_label') is None:
-        plt.xlabel(kwargs['x_label'], fontsize=20, color='k')
-        plt.ylabel(kwargs['y_data'], fontsize=20, color='k')
+        plt.xlabel(kwargs['x_label'], fontsize=fontsize, color='k')
+        plt.ylabel(kwargs['y_data'], fontsize=fontsize, color='k')
     elif kwargs.get('y_label') is not None and kwargs.get('x_label') is None:
-        plt.ylabel(kwargs['y_label'], fontsize=20, color='k')
-        plt.xlabel(kwargs['x_data'], fontsize=20, color='k')
+        plt.ylabel(kwargs['y_label'], fontsize=fontsize, color='k')
+        plt.xlabel(kwargs['x_data'], fontsize=fontsize, color='k')
     elif kwargs.get('x_label') is None and kwargs.get('y_label') is None:
-        plt.xlabel(kwargs['x_data'], fontsize=20, color='k')
-        plt.ylabel(kwargs['y_data'], fontsize=20, color='k')
-
+        plt.xlabel(kwargs['x_data'], fontsize=fontsize, color='k')
+        plt.ylabel(kwargs['y_data'], fontsize=fontsize, color='k')
     gh.save(figpathHist, width=12, height=12, ext=["png"], tight=True, close=True, dpi=600)
     plt.close('all')
 
