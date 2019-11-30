@@ -70,8 +70,8 @@ kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'x_label': 'Energy [kJ]',
           'y_label': 'Effective Ablation Volume [ml] for 3 Microwave Devices',
           'title': "Ablation Volume [ml] for 3 MWA devices. " + flag_subcapsular_title,
-          'x_lim': 120,
-          'y_lim': 120,
+          'x_lim': 100,
+          'y_lim': 100,
           'lin_reg': 1}
 scatter_plot(df, **kwargs)
 
@@ -80,23 +80,26 @@ df_radiomics_angyodinamics = df[df['Device_name'] == 'Angyodinamics (Acculis)']
 df_radiomics_covidien = df[df['Device_name'] == 'Covidien (Covidien MWA)']
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
-          'y_label': 'Effective Ablation Volume [ml] for Amica',
+          'y_label': 'Effective Ablation Volume [ml]',
+          'legend_title': 'Amica',
           'title': "Ablation Volume [ml] for Amica " + flag_subcapsular_title,
-          'x_lim': 120,
-          'y_lim': 120,
+          'x_lim': 100,
+          'y_lim': 100,
           'lin_reg': 1}
 scatter_plot(df_radiomics_amica, **kwargs)
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
-          'y_label': 'Effective Ablation Volume [ml] for Angyiodinamics (Solero)',
+          'y_label': 'Effective Ablation Volume [ml] ',
+          'legend_title': 'Solero',
           'title': "Ablation Volume [ml] for Angyiodinamics (Solero) " + flag_subcapsular_title,
-          'x_lim': 120,
-          'y_lim': 120,
+          'x_lim': 100,
+          'y_lim': 100,
           'lin_reg': 1}
 scatter_plot(df_radiomics_angyodinamics, **kwargs)
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'y_label': 'Effective Ablation Volume [ml] for Covidien',
+          'legend_title': 'Covidien',
           'title': "Ablation Volume [ml] for Covidien " + flag_subcapsular_title,
           'x_lim': 120,
           'y_lim': 120,
