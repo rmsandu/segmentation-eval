@@ -3,19 +3,21 @@
 @author: Raluca Sandu
 """
 import os
-import matplotlib
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d, griddata
+from scipy.interpolate import griddata
 from sklearn import linear_model
 
 import utils.graphing as gh
+
+
 # plt.style.use('ggplot')
 
 
-def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_size=False, flag=None, flag_energy_axis=False):
-
+def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_size=False, flag=None,
+                      flag_energy_axis=False):
     # perform interpolation as a function of  power and time (multivariate interpolation)
     points_power = np.asarray(df_ablation['Power']).reshape((len(df_ablation), 1))
     points_time = np.asarray(df_ablation['Time_Duration_Applied']).reshape((len(df_ablation), 1))
@@ -36,7 +38,6 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_size=F
         size_values = np.asarray(df_radiomics['no_chemo_cycle']).reshape(len(df_radiomics), 1)
 
     fig, ax = plt.subplots()
-    ax2 = ax.twiny()
 
     if flag_size is True:
         size = np.asarray([100 * (n + 1) for n in size_values]).reshape(len(size_values), 1)
@@ -44,20 +45,19 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_size=F
         size = size[size_mask]
         sc = ax.scatter(ablation_vol_interpolated_brochure, ablation_vol_measured, color='steelblue', marker='o',
                         alpha=0.7, s=size)
-        plt.show()
-        legend_1 = ax.legend(*sc.legend_elements("sizes", num='auto', func=lambda x: x / 100 - 1, color='steelblue'),
-                             title=flag, labelspacing=1.5, borderpad=1.5, handletextpad=3.5,
-                             fontsize=fontsize, loc='upper right')
+        legend_1 = ax.legend(*sc.legend_elements("sizes", num=5, func=lambda x: x / 100 - 1, color='steelblue'),
+                             title=flag, labelspacing=1.5, borderpad=0.75, handletextpad=2,
+                             fontsize=fontsize - 2, loc='upper right')
         legend_1.get_title().set_fontsize(str(fontsize))
         ax.add_artist(legend_1)
     elif flag_energy_axis:
+        ax2 = ax.twiny()
         ax.scatter(ablation_vol_interpolated_brochure, ablation_vol_measured, color='steelblue', marker='o', s=100)
         ax.set_ylabel('Effective Ablation Volume [ml]', fontsize=fontsize)
         ax.set_xlabel('Predicted Ablation Volume Brochure [ml]', fontsize=fontsize)
         ax.tick_params(axis='x', labelcolor='steelblue')
         ax.set_ylim([0, 100])
         ax.set_xlim([0, 100])
-
         energy = df_radiomics['Energy [kj]']
         ax2.scatter(energy, ablation_vol_measured, color='purple', marker='*', s=100, alpha=0.5)
         ax2.set_xlabel('Energy [kj]', color='purple', fontsize=fontsize)
@@ -67,10 +67,10 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_size=F
     else:
         sc = plt.scatter(ablation_vol_interpolated_brochure, ablation_vol_measured, color='steelblue', marker='o',
                          s=100)
-        plt.ylabel('Effective Ablation Volume [ml]', fontsize=fontsize)
-        plt.xlabel('Predicted Ablation Volume Brochure [ml]', fontsize=fontsize)
-        plt.ylim([0, 120])
-        plt.xlim([0, 120])
+    plt.ylabel('Effective Ablation Volume [ml]', fontsize=fontsize)
+    plt.xlabel('Predicted Ablation Volume Brochure [ml]', fontsize=fontsize)
+    plt.ylim([0, 100])
+    plt.xlim([0, 100])
     # get the data ready for linear regression
     X = ablation_vol_interpolated_brochure.reshape(len(ablation_vol_interpolated_brochure), 1)
     Y = ablation_vol_measured.reshape(len(ablation_vol_measured), 1)
@@ -92,16 +92,19 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_size=F
     ax.tick_params(axis='y', labelsize=fontsize, color='k')
     ax.tick_params(axis='x', labelsize=fontsize, color='k')
     plt.tick_params(labelsize=fontsize, color='black')
-    reg = plt.plot(X, regr.predict(X), color='orange', linewidth=1.5, label='Linear Regression')
-    plt.plot([], [], ' ', label='n = '+ str(nr_samples))
     # plt.plot([], [], ' ', label=label_r)
     # plt.plot([], [], ' ', label=label_r2)
-    plt.legend(fontsize=fontsize, loc='best', title=title, title_fontsize=fontsize)
     if flag is not None:
+        reg = plt.plot(X, regr.predict(X), color='orange', linewidth=1.5)
+        plt.legend(fontsize=fontsize, loc='upper left', title=title + ' (n = ' + str(nr_samples) + ' )',
+                   title_fontsize=fontsize, labelspacing=0)
         figpathHist = os.path.join("figures",
-                                   title + '_measured_vs_predicted_volume_power_time_interpolation' + flag)
+                                   title + flag + '_ablation_vol_interpolated')
     else:
-        figpathHist = os.path.join("figures", title + '_measured_vs_predicted_volume_power_time_interpolation')
+        reg = plt.plot(X, regr.predict(X), color='orange', linewidth=1.5, label='Linear Regression')
+        plt.plot([], [], ' ', label='n = ' + str(nr_samples))
+        plt.legend(fontsize=fontsize, loc='upper left', title=title, title_fontsize=fontsize - 2)
+        figpathHist = os.path.join("figures", title + '_ablation_vol_interpolated')
     gh.save(figpathHist, width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
 
     return ablation_vol_interpolated_brochure
@@ -122,6 +125,6 @@ if __name__ == '__main__':
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
 
     # flag_options : 1. flag == 'No. chemo cycles' 2. flag == 'Tumour Volume [ml]'
-    interpolation_fct(df_amica, df_radiomics_amica, 'Amica')
-    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Solero')
-    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien')
+    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', flag_size=True, flag='Tumour Volume [ml]')
+    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Solero', flag_size=True, flag='Tumour Volume [ml]')
+    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', flag_size=True, flag='Tumour Volume [ml]')
