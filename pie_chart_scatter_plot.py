@@ -112,7 +112,7 @@ if __name__ == '__main__':
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
 
     interpolation_fct(df_amica, df_radiomics_amica, title='Amica')
-    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, title='Angyodinamics (Solero)')
+    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, title='Solero')
     interpolation_fct(df_covidien, df_radiomics_covidien, title='Covidien')
 
 
