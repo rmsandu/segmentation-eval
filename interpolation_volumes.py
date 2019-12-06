@@ -51,7 +51,7 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag=None,
         df = pd.DataFrame(data=dict(x=ablation_vol_interpolated_brochure, y=ablation_vol_measured, sizes=size_values))
         df.dropna(inplace=True)
         bins = np.arange(start=0, stop=30, step=6)
-        grouped = df.groupby(np.digitize(df.sizes, bins, right=True))
+        grouped = df.groupby(np.digitize(df.sizes, bins))
         sizes = [150 * (i + 1.) for i in range(5)]
         labels = ['0-5', '5-10', '15-20', '20-25', '25-30']
         nr_samples = len(df)
@@ -109,7 +109,6 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag=None,
     Y = Y[mask]
     X = X.reshape(len(X), 1)
     Y = Y.reshape(len(Y), 1)
-
     regr = linear_model.LinearRegression()
     regr.fit(X, Y)
     SS_tot = np.sum((Y - np.mean(Y)) ** 2)
@@ -124,7 +123,7 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag=None,
     plt.tick_params(labelsize=fontsize, color='black')
     # plt.plot([], [], ' ', label=label_r)
     # plt.plot([], [], ' ', label=label_r2)
-    reg = plt.plot(X, regr.predict(X), color='black', linewidth=1.5, linestyle='--', label='Linear Regression')
+    reg = plt.plot(X, regr.predict(X), color='black', linewidth=1.5, label='Linear Regression')
     if flag is not None:
         # these are matplotlib.patch.Patch properties
         props = dict(boxstyle='round', facecolor='white', edgecolor='gray')
