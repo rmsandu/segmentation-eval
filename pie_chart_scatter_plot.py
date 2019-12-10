@@ -76,14 +76,18 @@ def interpolation_fct(df_ablation, df_radiomics, title=None):
         ratio_10 = ratios_10[idx] / 100
         draw_pie([ratio_0, ratio_5, ratio_10], xs, ys, 500, colors=['red', 'orange', 'green'], ax=ax)
 
-    plt.ylabel('Effective Ablation Volume [ml] for ' + title, fontsize=fontsize)
-    plt.xlabel('Predicted Ablation Volume Brochure [ml] for ' + title, fontsize=fontsize)
-    plt.xlim([0, 70])
-    plt.ylim([0, 120])
+    nr_samples = len(ablation_vol_measured)
+    plt.ylabel('Effective Ablation Volume [ml]', fontsize=fontsize)
+    plt.xlabel('Predicted Ablation Volume Brochure [ml]', fontsize=fontsize)
+    plt.xlim([0, 100])
+    plt.ylim([0, 100])
     red_patch = mpatches.Patch(color='red', label='Ablation Surface Margin ' + r'$x < 0$' + 'mm')
     orange_patch = mpatches.Patch(color='orange', label='Ablation Surface Margin ' + r'$0 \leq  x \leq 5$' + 'mm')
     green_patch = mpatches.Patch(color='darkgreen', label='Ablation Surface Margin ' + r'$x > 5$' + 'mm')
-    plt.legend(handles=[red_patch, orange_patch, green_patch], fontsize=fontsize, loc='upper right')
+    plt.legend(handles=[red_patch, orange_patch, green_patch], fontsize=fontsize, loc='best')
+    props = dict(boxstyle='round', facecolor='white', edgecolor='gray')
+    textstr = title
+    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=20, verticalalignment='top', bbox=props)
     ax.tick_params(axis='y', labelsize=fontsize, color='k')
     ax.tick_params(axis='x', labelsize=fontsize, color='k')
     plt.tick_params(labelsize=fontsize, color='black')
@@ -95,9 +99,10 @@ def interpolation_fct(df_ablation, df_radiomics, title=None):
 if __name__ == '__main__':
 
     df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_111119.xlsx")
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated.xlsx")
     # sort values
     df_ablation.sort_values(by=['Energy_brochure'], inplace=True)
+    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == True]
     df_radiomics.dropna(subset=['safety_margin_distribution_0',
                                 'safety_margin_distribution_5',
                                 'safety_margin_distribution_10'],
@@ -111,9 +116,9 @@ if __name__ == '__main__':
     df_radiomics_angyodinamics = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
 
-    interpolation_fct(df_amica, df_radiomics_amica, title='Amica')
-    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, title='Solero')
-    interpolation_fct(df_covidien, df_radiomics_covidien, title='Covidien')
+    interpolation_fct(df_amica, df_radiomics_amica, title='Amica (Subcapsular)')
+    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, title='Solero (Subcapsular)')
+    interpolation_fct(df_covidien, df_radiomics_covidien, title='Covidien  (Subcapsular)')
 
 
     # fig, ax = plt.subplots()
