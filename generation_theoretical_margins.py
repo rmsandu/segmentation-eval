@@ -54,14 +54,14 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_tumor=
     df = pd.DataFrame(data=dict(x=tumor_volume, y=ablation_vol_interpolated_brochure, subcapsular=subcapsular))
     df.dropna(inplace=True)
     grouped = df.groupby(subcapsular)
-    labels = ['Subcapsular Tumors', 'Deep Tumors']
+    labels = ['Deep Tumors', 'Subcapsular Tumors']
     for i, (name, group) in enumerate(grouped):
-        plt.scatter(group.x, group.y, alpha=0.5, label=labels[i], s=100)
+        plt.scatter(group.x, group.y, alpha=0.5, label=labels[i], s=200)
     plt.legend(title=title + '(n = ' + str(len(df)) + ' )', title_fontsize=fontsize, fontsize=fontsize)
     plt.ylabel('Predicted Ablation Volume [ml]', fontsize=fontsize)
     plt.xlabel(flag_tumor, fontsize=fontsize)
-    plt.xlim([0, 100])
-    plt.ylim([0, 100])
+    plt.xlim([-1, 100])
+    plt.ylim([-1, 100])
     ax.tick_params(axis='y', labelsize=fontsize, color='k')
     ax.tick_params(axis='x', labelsize=fontsize, color='k')
     plt.tick_params(labelsize=fontsize, color='black')
