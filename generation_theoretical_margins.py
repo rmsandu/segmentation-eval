@@ -41,6 +41,7 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_tumor=
 
     ablation_vol_interpolated_brochure = griddata(power_and_time_brochure, ablation_vol_brochure,
                                                   power_and_time_effective, method='linear')
+    # interchange ablation_vol_interpolated and ablation_vol_measured for plotting on the "Y-axis"
     ablation_vol_interpolated_brochure = ablation_vol_interpolated_brochure.reshape(len(df_radiomics), )
     ablation_vol_measured = np.asarray(df_radiomics['Ablation Volume [ml]']).reshape(len(df_radiomics), )
     # %% PLOT Tumor Volume vs PAV (per colours subcapsular vs. non-subcapsular)
@@ -60,10 +61,14 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_tumor=
     plt.legend(title=title + '(n = ' + str(len(df)) + ' )', title_fontsize=fontsize, fontsize=fontsize)
     plt.ylabel('Predicted Ablation Volume [ml]', fontsize=fontsize)
     plt.xlabel(flag_tumor, fontsize=fontsize)
-    plt.xlim([-1, 100])
-    plt.ylim([-1, 100])
+    # plt.xlim([, 200])
     ax.tick_params(axis='y', labelsize=fontsize, color='k')
     ax.tick_params(axis='x', labelsize=fontsize, color='k')
+    ax.set_xscale('log')
+    plt.ylim([-1, 100])
+    plt.xlim([0.03251566067053182, 684.15])
+    # xlims = ax.get_xlim()
+    # plt.axis('square')
     plt.tick_params(labelsize=fontsize, color='black')
     if lin_regr is True:
         X = np.asarray(df.x).reshape(len(df), 1)
@@ -83,10 +88,10 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_tumor=
         plt.plot([], [], ' ', label=label_r)
         plt.plot([], [], ' ', label=label_r2)
         reg = plt.plot(X, regr.predict(X), color='black', linewidth=1.5, label='Linear Regression')
-        plt.legend(title=title, title_fontsize=fontsize, fontsize=fontsize)
+        plt.legend(title=title, title_fontsize=fontsize, fontsize=fontsize, loc='best')
     plt.show()
-    figpath = os.path.join("figures", title +  '_PAV_vs_' + flag_tumor)
-    gh.save(figpath, width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
+    figpath = os.path.join("figures", title + '_PAV_vs_' + flag_tumor)
+    gh.save(figpath, width=12, height=12, ext=["png"], close=True, tight=False, dpi=600)
 
 
 if __name__ == '__main__':
@@ -110,17 +115,18 @@ if __name__ == '__main__':
     df_radiomics_angyodinamics.reset_index(inplace=True)
     df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
     df_radiomics_covidien.reset_index(inplace=True)
+    #
+    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Solero', fontsize=24,
+                      flag_tumor='Tumour Volume + 10mm margin [ml]', lin_regr=False)
+    # interpolation_fct(df_amica, df_radiomics_amica, 'Amica', fontsize=24,
+    #                   flag_tumor='Tumour Volume + 10mm margin [ml]')
+    # interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', fontsize=24,
+    #                   flag_tumor='Tumour Volume + 10mm margin [ml]')
 
     interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Solero', fontsize=24,
-                      flag_tumor='Tumour Volume + 10mm margin [ml]')
-    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Solero', fontsize=24,
-                      flag_tumor='Tumour Volume [ml]')
-    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', fontsize=24,
-                      flag_tumor='Tumour Volume + 10mm margin [ml]')
-    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', fontsize=24,
-                      flag_tumor='Tumour Volume + 10mm margin [ml]')
-    interpolation_fct(df_amica, df_radiomics_amica, 'Amica', fontsize=24,
-                      flag_tumor='Tumour Volume [ml]')
-    interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', fontsize=24,
-                      flag_tumor='Tumour Volume [ml]')
+                      flag_tumor='Tumour Volume [ml]', lin_regr=False)
+    # interpolation_fct(df_amica, df_radiomics_amica, 'Amica', fontsize=24,
+    #                   flag_tumor='Tumour Volume [ml]')
+    # interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien', fontsize=24,
+    #                   flag_tumor='Tumour Volume [ml]')
 
