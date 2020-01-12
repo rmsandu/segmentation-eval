@@ -15,13 +15,9 @@ import utils.graphing as gh
 sns.set(style="ticks")
 
 
-def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured):
+def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured, flag_subcapsular=None):
     """
-    BOXPLOTS ABLATION VOLUMES
-    :param df:
-    :return:
     """
-
     # drop the nans 
     effective_ablation_vol = ablation_vol_measured[~np.isnan(ablation_vol_measured)]
     predicted_ablation_vol = ablation_vol_brochure[~np.isnan(ablation_vol_brochure)]
@@ -57,7 +53,7 @@ def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured):
 
     fig, ax = plt.subplots(figsize=(12, 10))
     bplot = plt.boxplot(x=[predicted_ablation_vol, effective_ablation_vol],
-                        notch=False,
+                        notch=True,
                         patch_artist=True,
                         widths=0.4
                         )
@@ -68,8 +64,12 @@ def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured):
     plt.setp(boxes[1], color='seagreen')
     plt.setp(boxes[0], color='sandybrown')
 
-
-    xticklabels = ['PAV', 'EAV']
+    if flag_subcapsular is False:
+        xticklabels = ['PAV', 'EAV (Deep Tumors)']
+    elif flag_subcapsular is True:
+        xticklabels = ['PAV', 'EAV (Subcapsular Tumors)']
+    else:
+        xticklabels = ['PAV', 'EAV']
     xtickNames = plt.setp(ax, xticklabels=xticklabels)
     plt.setp(xtickNames, fontsize=10, color='black')
     plt.ylim([-2, 100])
@@ -78,5 +78,5 @@ def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured):
     ax.tick_params(colors='black', labelsize=24, color='k')
     ax.set_ylim([-2, 100])
     # plt.title('Comparison of Ablation Volumes [ml] from MAVERRIC Dataset', fontsize=16)
-    figpathHist = os.path.join("figures", "boxplot volumes EAV vs PAV Solero")
+    figpathHist = os.path.join("figures", "boxplot volumes EAV vs PAV Solero. Subcapsular - " + str(flag_subcapsular))
     gh.save(figpathHist, ext=['png'], close=True, tight=True)
