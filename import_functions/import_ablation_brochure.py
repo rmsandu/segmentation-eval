@@ -11,24 +11,18 @@ import numpy as np
 import pandas as pd
 
 # %%
-ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--input_file", required=True, help="input file pooled radiomics ")
-ap.add_argument("-a", "--ablation_devices_brochure", required=False, help="input file ablation device brochure ")
-args = vars(ap.parse_args())
 
-df = pd.read_excel(args["input_file"], sheet_name="radiomics_1")
-
+file_maverric_radiomics = r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated_COPY.xlsx"
+file_ablation_devices = r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx"
+df = pd.read_excel(file_maverric_radiomics)
+df_ablation_devices = pd.read_excel(file_ablation_devices)
 df.drop_duplicates(subset=['Lesion_ID'], inplace=True)
 print(len(df))
-try:
-    df_ablation_devices = pd.read_excel(args["ablation_devices_brochure"])
-except Exception:
-    print('file with ablation devices info brochure not provided')
-    sys.exit()
 
-df['Ablation Volume [ml] (parametrized_formula)'] = (pi * df['least_axis_length_ablation'] *
-                                                     df['major_axis_length_ablation'] * df[
-                                                         'minor_axis_length_ablation']) / 6000
+
+# df['Ablation Volume [ml]_brochure'] = (pi * df['least_axis_length_ablation'] *
+#                                                      df['major_axis_length_ablation'] * df[
+#                                                          'minor_axis_length_ablation']) / 6000
 
 dd = defaultdict(list)
 dict_devices = df_ablation_devices.to_dict('records', into=dd)
@@ -57,7 +51,15 @@ df['Ablation Volume [ml] (manufacturers)'].replace(0, np.nan, inplace=True)
 df['minor_axis_ablation_brochure'].replace(0, np.nan, inplace=True)
 df['least_axis_ablation_brochure'].replace(0, np.nan, inplace=True)
 df['major_axis_ablation_brochure'].replace(0, np.nan, inplace=True)
+df_ablation_devices['Energy_brochure'] = df_ablation_devices['Power'] * df_ablation_devices['Time_Duration_Applied'] / 1000
+df_ablation_devices['Predicted Ablation Volume (ml)'] = 4 * pi * (df_ablation_devices['major_axis_ablation_brochure'] *
+                                                       df_ablation_devices['minor_axis_ablation_brochure'] *
+                                                       df_ablation_devices['least_axis_ablation_brochure']) / 3000
 #  write to Excel
-writer = pd.ExcelWriter(args["input_file"])
-df.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
+writer = pd.ExcelWriter(file_ablation_devices)
+df_ablation_devices.to_excel(writer,  index=False, float_format='%.4f')
+writer.save()
+
+writer = pd.ExcelWriter(file_maverric_radiomics)
+df.to_excel(writer, index=False, float_format='%.4f')
 writer.save()

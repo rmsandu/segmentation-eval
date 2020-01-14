@@ -15,7 +15,7 @@ import utils.graphing as gh
 sns.set(style="ticks")
 
 
-def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured, flag_subcapsular=None):
+def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured, flag_subcapsular=None, device_name=None):
     """
     """
     # drop the nans 
@@ -53,7 +53,7 @@ def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured, flag_sub
 
     fig, ax = plt.subplots(figsize=(12, 10))
     bplot = plt.boxplot(x=[predicted_ablation_vol, effective_ablation_vol],
-                        notch=True,
+                        notch=False,
                         patch_artist=True,
                         widths=0.4
                         )
@@ -77,6 +77,8 @@ def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured, flag_sub
     plt.tick_params(labelsize=24, color='black')
     ax.tick_params(colors='black', labelsize=24, color='k')
     ax.set_ylim([-2, 100])
+    plt.plot([], [], ' ', label=device_name)
+    plt.legend(fontsize=24, loc='upper right', labelspacing=1, frameon=False)
     # plt.title('Comparison of Ablation Volumes [ml] from MAVERRIC Dataset', fontsize=16)
     figpathHist = os.path.join("figures", "boxplot volumes EAV vs PAV Solero. Subcapsular - " + str(flag_subcapsular))
     gh.save(figpathHist, ext=['png'], close=True, tight=True)
