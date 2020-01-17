@@ -3,22 +3,20 @@
 @author: Raluca Sandu
 """
 
-# -*- coding: utf-8 -*-
-"""
-@author: Raluca Sandu
-"""
 import os
+import sys
 import matplotlib.pyplot as plt
-
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from scipy import stats
 from scipy.interpolate import griddata
-from sklearn import linear_model
 
+import plot_boxplots_PAV_vs_EAV
 import utils.graphing as gh
 
-def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24):
+
+def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, flag_hue='subcapsular'):
     """
 
     :param df_ablation:
@@ -52,85 +50,87 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24):
         print("something's not right")
 
     # %% PLOT BOXPLOTS
-    # boxplots_PAV_EAV.plot_boxplots_volumes(ablation_vol_interpolated_brochure, ablation_vol_measured, flag_subcapsular='all')
+    # plot_boxplots_PAV_vs_EAV.plot_boxplots_volumes(ablation_vol_interpolated_brochure, ablation_vol_measured,
+    #                                                flag_subcapsular='all')
     # %% PLOT SCATTER PLOTS
-    # fig, ax = plt.subplots()
-    # df.loc[df.my_channel > 20000, 'my_channel'] = 0
     df_radiomics.loc[df_radiomics.no_chemo_cycle > 0, 'no_chemo_cycle'] = 'Yes'
     df_radiomics.loc[df_radiomics.no_chemo_cycle == 0, 'no_chemo_cycle'] = 'No'
     # create new pandas DataFrame for easier plotting
-    df_chemo = pd.DataFrame()
-    df_chemo['PAV'] = ablation_vol_interpolated_brochure
-    df_chemo['EAV'] = ablation_vol_measured
-    df_chemo['Subcapsular'] = df_radiomics['Proximity_to_surface']
-    df_chemo['Energy (kJ)'] = df_radiomics['Energy [kj]']
-    df_chemo.dropna(inplace=True)
-    df_chemo['R(EAV:PAV)'] = df_chemo['EAV'] / df_chemo['PAV']
-    nr_samples = len(df_chemo)
-    Y = np.asarray(df_chemo['R(EAV:PAV)']).reshape(len(df_chemo), 1)
-    X = np.asarray(df_chemo['Energy (kJ)']).reshape(len(df_chemo), 1)
-    regr = linear_model.LinearRegression()
-    regr.fit(X, Y)
-    SS_tot = np.sum((Y - np.mean(Y)) ** 2)
-    residuals = Y - regr.predict(X)
-    SS_res = np.sum(residuals ** 2)
-    r_squared = 1 - (SS_res / SS_tot)
-    correlation_coef = np.corrcoef(X[:, 0], Y[:, 0])[0, 1]
-    label_r2 = r'$R^2:{0:.2f}$'.format(r_squared)
-    label_r = r'$r: {0:.2f}$'.format(correlation_coef)
-    # actually plot
-    # sns.set(font_scale=2)
-    p = sns.lmplot(x="PAV", y="EAV", hue="Subcapsular", data=df_chemo, markers=["*", "s"],
-                    ci=None, scatter_kws={"s": 150, "alpha": 0.5},  line_kws = {'label': 'red'},
-                   legend=True, legend_out = False)
-    #
+    df = pd.DataFrame()
+    df['Tumor_Vol'] = df_radiomics['Tumour Volume [ml]']
+    df['PAV'] = ablation_vol_interpolated_brochure
+    df['EAV'] = ablation_vol_measured
+    df['Subcapsular'] = df_radiomics['Proximity_to_surface']
+    df['Energy (kJ)'] = df_radiomics['Energy [kj]']
+    df['Chemotherapy'] = df_radiomics['no_chemo_cycle']
+    df.dropna(inplace=True)
+    df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
+    if flag_hue == 'chemotherapy':
+        p = sns.lmplot(y="R(EAV:PAV)", x="Tumor_Vol", hue="Chemotherapy", data=df, markers=["o", "D"],
+                       palette=['mediumvioletred', 'darkgreen'],
+                       ci=None, scatter_kws={"s": 150, "alpha": 0.5}, line_kws={'label': 'red'},
+                       legend=True, legend_out=False)
+        chemo_true = df[df['Chemotherapy'] == 'Yes']
+        chemo_false = df[df['Chemotherapy'] == 'No']
+        slope, intercept, r_1, p_value, std_err = stats.linregress(chemo_false['Energy (kJ)'],
+                                                                   chemo_false['R(EAV:PAV)'])
+        slope, intercept, r_2, p_value, std_err = stats.linregress(chemo_true['Energy (kJ)'],
+                                                                   chemo_true['R(EAV:PAV)'])
+        label_2 = 'Chemotherapy: No'
+        label_3 = 'Chemotherapy: Yes'
+
+    elif flag_hue == 'subcapsular':
+        p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Subcapsular", data=df, markers=["*", "s"],
+                       ci=None, scatter_kws={"s": 150, "alpha": 0.5}, line_kws={'label': 'red'},
+                       legend=True, legend_out=False)
+        subcapsular_true = df[df['Subcapsular'] == False]
+        subcapsular_false = df[df['Subcapsular'] == True]
+        slope, intercept, r_1, p_value, std_err = stats.linregress(subcapsular_false['Energy (kJ)'],
+                                                                   subcapsular_false['R(EAV:PAV)'])
+        slope, intercept, r_2, p_value, std_err = stats.linregress(subcapsular_true['Energy (kJ)'],
+                                                                   subcapsular_true['R(EAV:PAV)'])
+        label_2 = 'Deep Tumors'
+        label_3 = 'Subcapsular'
+
+    else:
+        print("The selected variable for category grouping does not exist")
+        sys.exit()
+
     ax = p.axes[0, 0]
-    ax.legend(fontsize=24, title_fontsize=24, title='Acculis')
+    ax.legend(fontsize=24, title_fontsize=24, title=device)
     leg = ax.get_legend()
     L_labels = leg.get_texts()
-    label_line_1 = r'$R^2:{0:.2f}$'.format(0.02)
-    label_line_2 = r'$R^2:{0:.2f}$'.format(0.1)
+    label_line_1 = r'$R^2:{0:.2f}$'.format(r_1)
+    label_line_2 = r'$R^2:{0:.2f}$'.format(r_2)
     L_labels[0].set_text(label_line_1)
     L_labels[1].set_text(label_line_2)
-    L_labels[2].set_text('Deep Tumors')
-    L_labels[3].set_text('Subcapsular Tumors')
-    plt.xlim([0, 100])
-    plt.ylim([0, 100])
-    plt.xlabel('Predicted Ablation Volume (mL)', fontsize=24)
-    plt.ylabel('Effective Ablation Volume (mL)', fontsize=24)
+    L_labels[2].set_text(label_2)
+    L_labels[3].set_text(label_3)
+    # plt.xlim([0, 20])
+    # plt.ylim([0, 100])
+    # plt.xlabel('Predicted Ablation Volume (mL)', fontsize=24)
+    # plt.ylabel('Effective Ablation Volume (mL)', fontsize=24)
+    plt.ylabel('R(EAV:PAV)', fontsize=24)
+    plt.xlabel('Energy (kJ)', fontsize=24)
     ax.tick_params(axis='y', labelsize=fontsize)
     ax.tick_params(axis='x', labelsize=fontsize)
     plt.tick_params(labelsize=fontsize, color='k', width=2, length=10)
     ax.spines['left'].set_linewidth(0.8)
     ax.spines['bottom'].set_linewidth(0.8)
-    # sns.set_context("paper")
-    figpath = os.path.join("figures", 'Acculis_' + '_EAV_PAV_subcapsular_groups')
-
-    gh.save(figpath , width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
-
+    figpath = os.path.join("figures", device + '_ratio_EAV_PAV_groups_' + flag_hue)
+    gh.save(figpath, width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
 
 
 if __name__ == '__main__':
     df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated.xlsx")
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated_Copy.xlsx")
+    df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
+    df_acculis.reset_index(inplace=True)
+    df_radiomics = df_radiomics[(df_radiomics['Comments'].isnull())]
+    df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
+    df_radiomics_acculis.reset_index(inplace=True)
 
-    df_amica = df_ablation[df_ablation['Device_name'] == 'Amica (Probe)']
-    df_amica.reset_index(inplace=True)
-    df_angyodinamics = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
-    df_angyodinamics.reset_index(inplace=True)
-    df_covidien = df_ablation[df_ablation['Device_name'] == 'Covidien (Covidien MWA)']
-    df_covidien.reset_index(inplace=True)
-    # df_radiomics = df_radiomics[(df_radiomics['Energy [kj]'] > 0) & (df_radiomics['Energy [kj]'] <= 100)]
-    df_radiomics_amica = df_radiomics[df_radiomics['Device_name'] == 'Amica (Probe)']
-    df_radiomics_amica.reset_index(inplace=True)
-    df_radiomics_angyodinamics = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
-    df_radiomics_angyodinamics.reset_index(inplace=True)
-    df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
-    df_radiomics_covidien.reset_index(inplace=True)
-
-    # flag_options : 1. flag == 'No. chemo cycles' 2. flag == 'Tumour Volume [ml]'
-
-    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, 'Acculis')
+    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis', flag_hue='chemotherapy')
 
     # interpolation_fct(df_amica, df_radiomics_amica, 'Amica', flag_energy_axis=False, flag_lin_regr=True)
     # interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien',  flag_energy_axis=False, flag_lin_regr=True)
