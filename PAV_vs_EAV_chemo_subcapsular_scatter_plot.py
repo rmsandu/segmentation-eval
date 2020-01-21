@@ -5,6 +5,7 @@
 
 import os
 import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -131,5 +132,5 @@ if __name__ == '__main__':
     df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics_acculis.reset_index(inplace=True)
     # flag_hue='chemotherapy'
+    # %% extract the needle error
     interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis')
-
