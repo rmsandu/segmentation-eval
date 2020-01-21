@@ -3,14 +3,15 @@
 @author: Raluca Sandu
 """
 import os
+
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.interpolate import griddata
 
-
 import utils.graphing as gh
+
 
 def draw_pie(dist,
              xpos,
@@ -19,11 +20,11 @@ def draw_pie(dist,
              ax=None,
              colors=None):
     if ax is None:
-        fig, ax = plt.subplots(figsize=(10,8))
+        fig, ax = plt.subplots(figsize=(10, 8))
 
     # for incremental pie slices
     cumsum = np.cumsum(dist)
-    cumsum = cumsum/ cumsum[-1]
+    cumsum = cumsum / cumsum[-1]
     pie = [0] + cumsum.tolist()
     k = 0
     for r1, r2 in zip(pie[:-1], pie[1:]):
@@ -54,7 +55,7 @@ def interpolation_fct(df_ablation, df_radiomics, title=None):
     points_power = np.asarray(df_ablation['Power']).reshape((len(df_ablation), 1))
     points_time = np.asarray(df_ablation['Time_Duration_Applied']).reshape((len(df_ablation), 1))
     points = np.hstack((points_power, points_time))
-    values = np.asarray(df_ablation['Ablation Volume [ml]_brochure']).reshape((len(df_ablation), 1))
+    values = np.asarray(df_ablation['Predicted Ablation Volume (ml)']).reshape((len(df_ablation), 1))
     df_radiomics.dropna(subset=['Power', 'Time_Duration_Applied'], inplace=True)
     grid_x = np.asarray(df_radiomics['Power']).reshape((len(df_radiomics), 1))
     grid_y = np.asarray(df_radiomics['Time_Duration_Applied']).reshape((len(df_radiomics), 1))
@@ -77,8 +78,8 @@ def interpolation_fct(df_ablation, df_radiomics, title=None):
         draw_pie([ratio_0, ratio_5, ratio_10], xs, ys, 500, colors=['red', 'orange', 'green'], ax=ax)
 
     nr_samples = len(ablation_vol_measured)
-    plt.ylabel('Effective Ablation Volume [ml]', fontsize=fontsize)
-    plt.xlabel('Predicted Ablation Volume Brochure [ml]', fontsize=fontsize)
+    plt.ylabel('Effective Ablation Volume (mL)', fontsize=fontsize)
+    plt.xlabel('Predicted Ablation Volume Brochure (mL)', fontsize=fontsize)
     plt.xlim([0, 100])
     plt.ylim([0, 100])
     red_patch = mpatches.Patch(color='red', label='Ablation Surface Margin ' + r'$x < 0$' + 'mm')
@@ -97,31 +98,23 @@ def interpolation_fct(df_ablation, df_radiomics, title=None):
 
 
 if __name__ == '__main__':
-
     df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated.xlsx")
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated_Copy.xlsx")
     # sort values
     df_ablation.sort_values(by=['Energy_brochure'], inplace=True)
-    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == True]
+    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == False]
     df_radiomics.dropna(subset=['safety_margin_distribution_0',
                                 'safety_margin_distribution_5',
                                 'safety_margin_distribution_10'],
-                                inplace=True)
-    df_amica = df_ablation[df_ablation['Device_name'] == 'Amica (Probe)']
-    df_angyodinamics = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
-    df_covidien = df_ablation[df_ablation['Device_name'] == 'Covidien (Covidien MWA)']
+                        inplace=True)
+
+    df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics.sort_values(by=['Energy [kj]'], inplace=True)
     df_radiomics = df_radiomics[(df_radiomics['Energy [kj]'] > 0) & (df_radiomics['Energy [kj]'] <= 100)]
-    df_radiomics_amica = df_radiomics[df_radiomics['Device_name'] == 'Amica (Probe)']
-    df_radiomics_angyodinamics = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
-    df_radiomics_covidien = df_radiomics[df_radiomics['Device_name'] == 'Covidien (Covidien MWA)']
+    df_radiomics = df_radiomics[(df_radiomics['Comments'].isnull())]
+    df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
 
-    interpolation_fct(df_amica, df_radiomics_amica, title='Amica (Subcapsular)')
-    interpolation_fct(df_angyodinamics, df_radiomics_angyodinamics, title='Solero (Subcapsular)')
-    interpolation_fct(df_covidien, df_radiomics_covidien, title='Covidien  (Subcapsular)')
+    interpolation_fct(df_acculis, df_radiomics_acculis, title='Acculis (Deep Tumors)')
 
 
-    # fig, ax = plt.subplots()
-    # draw_pie([0.2, 0.5, 0.3], 1, 1, 1000, colors=['red', 'orange', 'green'], ax=ax)
-    # draw_pie([0.14, 0.1, 0.5], 2, 2, 1000, colors=['red', 'orange', 'green'], ax=ax)
 

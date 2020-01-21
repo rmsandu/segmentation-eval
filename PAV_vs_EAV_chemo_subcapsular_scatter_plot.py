@@ -50,8 +50,8 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
         print("something's not right")
 
     # %% PLOT BOXPLOTS
-    # plot_boxplots_PAV_vs_EAV.plot_boxplots_volumes(ablation_vol_interpolated_brochure, ablation_vol_measured,
-    #                                                flag_subcapsular='all')
+    plot_boxplots_PAV_vs_EAV.plot_boxplots_volumes(ablation_vol_interpolated_brochure, ablation_vol_measured,
+                                                   flag_subcapsular=False)
     # %% PLOT SCATTER PLOTS
     df_radiomics.loc[df_radiomics.no_chemo_cycle > 0, 'no_chemo_cycle'] = 'Yes'
     df_radiomics.loc[df_radiomics.no_chemo_cycle == 0, 'no_chemo_cycle'] = 'No'
@@ -126,11 +126,10 @@ if __name__ == '__main__':
     df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated_Copy.xlsx")
     df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
     df_acculis.reset_index(inplace=True)
+    # df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == False]
     df_radiomics = df_radiomics[(df_radiomics['Comments'].isnull())]
     df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     df_radiomics_acculis.reset_index(inplace=True)
+    # flag_hue='chemotherapy'
+    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis')
 
-    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis', flag_hue='chemotherapy')
-
-    # interpolation_fct(df_amica, df_radiomics_amica, 'Amica', flag_energy_axis=False, flag_lin_regr=True)
-    # interpolation_fct(df_covidien, df_radiomics_covidien, 'Covidien',  flag_energy_axis=False, flag_lin_regr=True)
