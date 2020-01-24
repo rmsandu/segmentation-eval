@@ -4,7 +4,6 @@
 """
 
 import os
-import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -65,8 +64,9 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
     df['Energy (kJ)'] = df_radiomics['Energy [kj]']
     df['Chemotherapy'] = df_radiomics['no_chemo_cycle']
     df['Proximity_to_vessels'] = df_radiomics['Proximity_to_vessels']
-    df.dropna(inplace=True)
     df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
+    df.dropna(inplace=True)
+    print('Nr Samples used:', str(len(df)))
     if flag_hue == 'chemotherapy':
         p = sns.lmplot(y="R(EAV:PAV)", x="Tumor_Vol", hue="Chemotherapy", data=df, markers=["o", "D"],
                        palette=['mediumvioletred', 'darkgreen'],
@@ -80,6 +80,7 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
                                                                    chemo_true['R(EAV:PAV)'])
         label_2 = 'Chemotherapy: No'
         label_3 = 'Chemotherapy: Yes'
+        ax = p.axes[0, 0]
 
     elif flag_hue == 'subcapsular':
         p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Subcapsular", data=df, markers=["*", "s"],
@@ -93,6 +94,7 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
                                                                    subcapsular_true['R(EAV:PAV)'])
         label_2 = 'Deep Tumors'
         label_3 = 'Subcapsular'
+        ax = p.axes[0, 0]
 
     elif flag_hue == 'vessels':
         p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Proximity_to_vessels", data=df, markers=["*", "s"],
@@ -106,25 +108,28 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
                                                                    subcapsular_true['R(EAV:PAV)'])
         label_2 = 'Proximity to vessels: No'
         label_3 = 'Proximity to vessels: Yes'
+        ax = p.axes[0, 0]
 
     else:
-        print("The selected variable for category grouping does not exist")
-        sys.exit()
+        # NO GROUPING SELECTED
+        # sns.set_palette(sns.cubehelix_palette(8, start=2, rot =0, dark=0, light=.95, reverse=True))
+        slope, intercept, r_square, p_value, std_err = stats.linregress(df['R(EAV:PAV)'], df['Energy (kJ)'])
+        ax = sns.regplot(x="Energy (kJ)", y="R(EAV:PAV)", data=df, color=sns.xkcd_rgb["medium green"],
+                         line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square)},
+                         scatter_kws={"s": 150, "alpha": 0.6})
 
-    ax = p.axes[0, 0]
-    ax.legend(fontsize=24, title_fontsize=24, title=device)
-    leg = ax.get_legend()
-    L_labels = leg.get_texts()
-    label_line_1 = r'$R^2:{0:.2f}$'.format(r_1)
-    label_line_2 = r'$R^2:{0:.2f}$'.format(r_2)
-    L_labels[0].set_text(label_line_1)
-    L_labels[1].set_text(label_line_2)
-    L_labels[2].set_text(label_2)
-    L_labels[3].set_text(label_3)
-    # plt.xlim([0, 20])
-    # plt.ylim([0, 100])
-    # plt.xlabel('Predicted Ablation Volume (mL)', fontsize=24)
-    # plt.ylabel('Effective Ablation Volume (mL)', fontsize=24)
+    if flag_hue in ['vessels', 'subcapsular', 'chemotherapy']:
+        ax.legend(fontsize=24, title_fontsize=24, title=device)
+        leg = ax.get_legend()
+        L_labels = leg.get_texts()
+        label_line_1 = r'$R^2:{0:.2f}$'.format(r_1)
+        label_line_2 = r'$R^2:{0:.2f}$'.format(r_2)
+        L_labels[0].set_text(label_line_1)
+        L_labels[1].set_text(label_line_2)
+        L_labels[2].set_text(label_2)
+        L_labels[3].set_text(label_3)
+    else:
+        ax.legend(fontsize=24, title_fontsize=24, title=device)
     plt.ylabel('R(EAV:PAV)', fontsize=24)
     plt.xlabel('Energy (kJ)', fontsize=24)
     ax.tick_params(axis='y', labelsize=fontsize)
@@ -132,7 +137,7 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
     plt.tick_params(labelsize=fontsize, color='k', width=2, length=10)
     ax.spines['left'].set_linewidth(0.8)
     ax.spines['bottom'].set_linewidth(0.8)
-    figpath = os.path.join("figures", device + '_ratio_EAV_PAV_groups' + flag_hue)
+    figpath = os.path.join("figures", device + '_ratio_EAV_PAV_groups_' + flag_hue)
     gh.save(figpath, width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
 
 
@@ -147,4 +152,4 @@ if __name__ == '__main__':
     df_radiomics_acculis.reset_index(inplace=True)
     # flag_hue='chemotherapy'
     # %% extract the needle error
-    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis', flag_hue='vessels')
+    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis', flag_hue='simple')
