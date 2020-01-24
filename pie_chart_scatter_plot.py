@@ -164,7 +164,7 @@ if __name__ == '__main__':
     df_radiomics_acculis['needle_error'] = list_errors_needle
     df_radiomics_acculis['needle_error'] = df_radiomics_acculis['LateralError']
 
-    # Overlap measurements: Dice score, Volume Overlap Error, Tumour coverage ratio, Tumour residual volume [ml]
+    # Overlap measurements: Dice score, Volume Overlap Error,  Tumour residual volume [ml]
 
     interpolation_fct(df_acculis, df_radiomics_acculis, title='Acculis (Deep Tumors)', flag_needle_error=True,
-                      flag_overlap='Dice')
+                      flag_overlap='Volume Overlap Error')

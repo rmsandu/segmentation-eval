@@ -64,6 +64,7 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
     df['Subcapsular'] = df_radiomics['Proximity_to_surface']
     df['Energy (kJ)'] = df_radiomics['Energy [kj]']
     df['Chemotherapy'] = df_radiomics['no_chemo_cycle']
+    df['Proximity_to_vessels'] = df_radiomics['Proximity_to_vessels']
     df.dropna(inplace=True)
     df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
     if flag_hue == 'chemotherapy':
@@ -93,6 +94,19 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
         label_2 = 'Deep Tumors'
         label_3 = 'Subcapsular'
 
+    elif flag_hue == 'vessels':
+        p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Proximity_to_vessels", data=df, markers=["*", "s"],
+                       ci=None, scatter_kws={"s": 150, "alpha": 0.5}, line_kws={'label': 'red'},
+                       legend=True, legend_out=False)
+        subcapsular_true = df[df['Proximity_to_vessels'] == False]
+        subcapsular_false = df[df['Proximity_to_vessels'] == True]
+        slope, intercept, r_1, p_value, std_err = stats.linregress(subcapsular_false['Energy (kJ)'],
+                                                                   subcapsular_false['R(EAV:PAV)'])
+        slope, intercept, r_2, p_value, std_err = stats.linregress(subcapsular_true['Energy (kJ)'],
+                                                                   subcapsular_true['R(EAV:PAV)'])
+        label_2 = 'Proximity to vessels: No'
+        label_3 = 'Proximity to vessels: Yes'
+
     else:
         print("The selected variable for category grouping does not exist")
         sys.exit()
@@ -118,13 +132,13 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
     plt.tick_params(labelsize=fontsize, color='k', width=2, length=10)
     ax.spines['left'].set_linewidth(0.8)
     ax.spines['bottom'].set_linewidth(0.8)
-    figpath = os.path.join("figures", device + '_ratio_EAV_PAV_groups_' + flag_hue)
+    figpath = os.path.join("figures", device + '_ratio_EAV_PAV_groups' + flag_hue)
     gh.save(figpath, width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
 
 
 if __name__ == '__main__':
     df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated_Copy.xlsx")
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_Acculis_MAVERRIC_22012020.xlsx")
     df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
     df_acculis.reset_index(inplace=True)
     # df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == False]
@@ -133,4 +147,4 @@ if __name__ == '__main__':
     df_radiomics_acculis.reset_index(inplace=True)
     # flag_hue='chemotherapy'
     # %% extract the needle error
-    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis')
+    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis', flag_hue='vessels')
