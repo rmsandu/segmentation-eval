@@ -152,4 +152,4 @@ if __name__ == '__main__':
     df_radiomics_acculis.reset_index(inplace=True)
     # flag_hue='chemotherapy'
     # %% extract the needle error
-    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis', flag_hue='simple')
+    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis MWA System', flag_hue='simple')

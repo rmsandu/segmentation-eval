@@ -79,8 +79,8 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=F
                 draw_pie([ratio_0, ratio_5, ratio_10], xs, ys, 500, colors=['red', 'orange', 'green'], ax=ax)
         plt.ylabel('Effective Ablation Volume (mL)', fontsize=fontsize)
         plt.xlabel('Predicted Ablation Volume Brochure (mL)', fontsize=fontsize)
-        plt.xlim([0, 100])
-        plt.ylim([0, 100])
+        plt.xlim([0, 80])
+        plt.ylim([0, 80])
     else:
         y = ablation_vol_measured / ablation_vol_interpolated_brochure  # ratio EAV/PAV
         fig_title = '_ratio_EAV_PAV'
@@ -96,6 +96,11 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=F
             ylabel_text = 'Volume Overlap Error'
         if flag_overlap == 'Tumour residual volume [ml]':
             y = np.asarray(df_radiomics['Tumour residual volume [ml]']).reshape(len(df_radiomics), 1)
+            # tumor_radius = np.asarray(df_radiomics['major_axis_length_tumor']/2).reshape(len(df_radiomics), 1)
+            # y_normalized = df_radiomics['Tumour residual volume [ml]'] / df_radiomics['Tumour Volume [ml]']
+            # x_normalized = needle_error/tumor_radius
+            # y = np.asarray(y_normalized).reshape(len(df_radiomics), 1)
+            # x = np.asarray(x_normalized).reshape(len(df_radiomics), 1)
             fig_title = '_Tumour residual volume [ml]'
             ylabel_text = 'Tumour residual volume (mL)'
         for idx, val in enumerate(ablation_vol_interpolated_brochure):
@@ -109,10 +114,12 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=F
         # ax.set_xscale('log')
         plt.ylabel(ylabel_text, fontsize=fontsize + 2)
         plt.xlabel('Lateral Needle Error (mm)', fontsize=fontsize + 2)
+        plt.xlim([-0.2, 6])
+        plt.ylim([-0.2, 3])
 
-    red_patch = mpatches.Patch(color='red', label='Ablation Surface Margin ' + r'$x < 0$' + 'mm')
-    orange_patch = mpatches.Patch(color='orange', label='Ablation Surface Margin ' + r'$0 \leq  x \leq 5$' + 'mm')
-    green_patch = mpatches.Patch(color='darkgreen', label='Ablation Surface Margin ' + r'$x > 5$' + 'mm')
+    red_patch = mpatches.Patch(color='red', label='Ablation Margin ' + r'$x < 0$' + 'mm')
+    orange_patch = mpatches.Patch(color='orange', label='Ablation Margin ' + r'$0 \leq  x \leq 5$' + 'mm')
+    green_patch = mpatches.Patch(color='darkgreen', label='Ablation Margin ' + r'$x > 5$' + 'mm')
     plt.legend(handles=[red_patch, orange_patch, green_patch], fontsize=fontsize, loc='best',
                title=title, title_fontsize=21)
     props = dict(boxstyle='round', facecolor='white', edgecolor='gray')
@@ -135,7 +142,7 @@ if __name__ == '__main__':
     df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
 
     # SELECT DEEP / SUBCAPSULAR TUMORS
-    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == False]
+    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == True]
     # SEPARATE THE MARGIN DISTRIBUTION
     df_radiomics.dropna(subset=['safety_margin_distribution_0',
                                 'safety_margin_distribution_5',
@@ -166,5 +173,5 @@ if __name__ == '__main__':
 
     # Overlap measurements: Dice score, Volume Overlap Error,  Tumour residual volume [ml]
 
-    interpolation_fct(df_acculis, df_radiomics_acculis, title='Acculis (Deep Tumors)', flag_needle_error=True,
-                      flag_overlap='Volume Overlap Error')
+    interpolation_fct(df_acculis, df_radiomics_acculis, title='Subcapsular Tumors', flag_needle_error=True,
+                      flag_overlap='Tumour residual volume [ml]')

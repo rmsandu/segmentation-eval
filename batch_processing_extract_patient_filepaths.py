@@ -51,6 +51,6 @@ for patient_id in patient_ids:
 df["Patient_Dir_Paths"] = path_patient_dir_col
 
 df.reset_index(drop=True)
-writer = pd.ExcelWriter("Batch_processing_MAVERRIC.xlsx")
+writer = pd.ExcelWriter("Batch_processing_MAVERRIC_1106.xlsx")
 df.to_excel(writer, index=False, float_format='%.4f')
 writer.save()

@@ -95,8 +95,8 @@ def interpolation_fct(df_ablation, df_radiomics, device_name, fontsize=24, flag=
     plt.ylabel('Effective Ablation Volume (mL)', fontsize=fontsize)
     if flag_energy_axis is False:
         plt.xlabel('Predicted Ablation Volume Brochure (mL)', fontsize=fontsize)
-    plt.ylim([0, 100])
-    plt.xlim([0, 100])
+    plt.ylim([0, 80])
+    plt.xlim([0, 80])
     if flag_lin_regr is True:
         # get the data ready for linear regression
         X = np.asarray(df.x).reshape(len(df.x), 1)
@@ -140,11 +140,11 @@ def interpolation_fct(df_ablation, df_radiomics, device_name, fontsize=24, flag=
 
 if __name__ == '__main__':
     df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated_Copy.xlsx")
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_Acculis_MAVERRIC_22012020.xlsx")
     # select subcapsular values
     # Proximity_to_surface = False --> deep lesions
     # Proximity to surface = True --> subcapsular
-    # df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == False]
+    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == True]
     df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
     df_acculis.reset_index(inplace=True)
     df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
@@ -153,5 +153,5 @@ if __name__ == '__main__':
 
     # flag_options : 1. flag == 'No. chemo cycles' 2. flag == 'Tumour Volume [ml]'
 
-    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis', flag='Tumour Volume [ml]',
+    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis (Subcapsular Tumors)', flag='Tumour Volume [ml]',
                       flag_energy_axis=False, flag_lin_regr=False)
