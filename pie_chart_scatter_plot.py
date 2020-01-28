@@ -113,7 +113,7 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=F
                 draw_pie([ratio_0, ratio_5, ratio_10], xs, ys, 500, colors=['red', 'orange', 'green'], ax=ax)
         # ax.set_xscale('log')
         plt.ylabel(ylabel_text, fontsize=fontsize + 2)
-        plt.xlabel('Lateral Needle Error (mm)', fontsize=fontsize + 2)
+        plt.xlabel('Lateral Error (mm)', fontsize=fontsize + 2)
         plt.xlim([-0.2, 6])
         plt.ylim([-0.2, 3])
 
@@ -128,8 +128,10 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=F
     ax.tick_params(axis='y', labelsize=fontsize, color='k')
     ax.tick_params(axis='x', labelsize=fontsize, color='k')
     plt.tick_params(labelsize=fontsize, color='black')
+    # plt.xlim([8, 46])
+    # plt.ylim([-0.2, 3.5])
     if flag_needle_error is True:
-        figpath = os.path.join("figures", title + "_pie_charts_lateral_error" + fig_title)
+        figpath = os.path.join("figures", title + "_pie_charts_euclidean_error" + fig_title)
     else:
         figpath = os.path.join("figures", title + "_pie_charts")
     gh.save(figpath, width=14, height=10, close=True, dpi=600, tight=True)
@@ -141,9 +143,10 @@ if __name__ == '__main__':
     df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_Acculis_MAVERRIC_22012020.xlsx")
     df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
 
-    # SELECT DEEP / SUBCAPSULAR TUMORS
-    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == True]
-    # SEPARATE THE MARGIN DISTRIBUTION
+    #%% SELECT DEEP / SUBCAPSULAR TUMORS
+    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == False]
+
+    #%% SEPARATE THE MARGIN DISTRIBUTION
     df_radiomics.dropna(subset=['safety_margin_distribution_0',
                                 'safety_margin_distribution_5',
                                 'safety_margin_distribution_10'],
@@ -171,7 +174,7 @@ if __name__ == '__main__':
     df_radiomics_acculis['needle_error'] = list_errors_needle
     df_radiomics_acculis['needle_error'] = df_radiomics_acculis['LateralError']
 
+    #%% PLOT
     # Overlap measurements: Dice score, Volume Overlap Error,  Tumour residual volume [ml]
-
-    interpolation_fct(df_acculis, df_radiomics_acculis, title='Subcapsular Tumors', flag_needle_error=True,
+    interpolation_fct(df_acculis, df_radiomics_acculis, title='Deep Tumors', flag_needle_error=True,
                       flag_overlap='Tumour residual volume [ml]')

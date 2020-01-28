@@ -4,6 +4,7 @@
 """
 
 import os
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,15 +17,14 @@ import plot_boxplots_PAV_vs_EAV
 import utils.graphing as gh
 
 
-def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, flag_hue='subcapsular'):
+def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, flag_hue=None):
     """
 
+    :param device:
+    :param flag_hue:
     :param df_ablation:
     :param df_radiomics:
-    :param title:
     :param fontsize:
-    :param flag:
-    :param flag_energy_axis:
     :return:
     """
     # perform interpolation as a function of  power and time (multivariate interpolation)
@@ -67,8 +67,9 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
     df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
     df.dropna(inplace=True)
     print('Nr Samples used:', str(len(df)))
+    ylabel = 'Energy (kJ)'
     if flag_hue == 'chemotherapy':
-        p = sns.lmplot(y="R(EAV:PAV)", x="Tumor_Vol", hue="Chemotherapy", data=df, markers=["o", "D"],
+        p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Chemotherapy", data=df, markers=["o", "D"],
                        palette=['mediumvioletred', 'darkgreen'],
                        ci=None, scatter_kws={"s": 150, "alpha": 0.5}, line_kws={'label': 'red'},
                        legend=True, legend_out=False)
@@ -80,7 +81,21 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
                                                                    chemo_true['R(EAV:PAV)'])
         label_2 = 'Chemotherapy: No'
         label_3 = 'Chemotherapy: Yes'
-        ax = p.axes[0, 0]
+
+    if flag_hue == 'Tumor_Vol':
+        ylabel = 'Tumor Volume (mL)'
+        p = sns.lmplot(y="R(EAV:PAV)", x="Tumor_Vol", hue="Chemotherapy", data=df, markers=["o", "D"],
+                       palette=['mediumvioletred', 'darkgreen'],
+                       ci=None, scatter_kws={"s": 150, "alpha": 0.5}, line_kws={'label': 'red'},
+                       legend=True, legend_out=False)
+        chemo_true = df[df['Chemotherapy'] == 'Yes']
+        chemo_false = df[df['Chemotherapy'] == 'No']
+        slope, intercept, r_1, p_value, std_err = stats.linregress(chemo_false['Tumor_Vol'],
+                                                                   chemo_false['R(EAV:PAV)'])
+        slope, intercept, r_2, p_value, std_err = stats.linregress(chemo_true['Tumor_Vol'],
+                                                                   chemo_true['R(EAV:PAV)'])
+        label_2 = 'Chemotherapy: No'
+        label_3 = 'Chemotherapy: Yes'
 
     elif flag_hue == 'subcapsular':
         p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Subcapsular", data=df, markers=["*", "s"],
@@ -94,7 +109,6 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
                                                                    subcapsular_true['R(EAV:PAV)'])
         label_2 = 'Deep Tumors'
         label_3 = 'Subcapsular'
-        ax = p.axes[0, 0]
 
     elif flag_hue == 'vessels':
         p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Proximity_to_vessels", data=df, markers=["*", "s"],
@@ -108,9 +122,8 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
                                                                    subcapsular_true['R(EAV:PAV)'])
         label_2 = 'Proximity to vessels: No'
         label_3 = 'Proximity to vessels: Yes'
-        ax = p.axes[0, 0]
 
-    else:
+    elif flag_hue == 'no_group':
         # NO GROUPING SELECTED
         # sns.set_palette(sns.cubehelix_palette(8, start=2, rot =0, dark=0, light=.95, reverse=True))
         slope, intercept, r_square, p_value, std_err = stats.linregress(df['R(EAV:PAV)'], df['Energy (kJ)'])
@@ -118,7 +131,12 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
                          line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square)},
                          scatter_kws={"s": 150, "alpha": 0.6})
 
-    if flag_hue in ['vessels', 'subcapsular', 'chemotherapy']:
+    elif flag_hue is None:
+        print('a flag must be provided, system will exit')
+        sys.exit()
+
+    if flag_hue in ['vessels', 'subcapsular', 'chemotherapy', 'Tumor_Vol']:
+        ax = p.axes[0, 0]
         ax.legend(fontsize=24, title_fontsize=24, title=device)
         leg = ax.get_legend()
         L_labels = leg.get_texts()
@@ -130,8 +148,10 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
         L_labels[3].set_text(label_3)
     else:
         ax.legend(fontsize=24, title_fontsize=24, title=device)
+    plt.xlim([8, 46])
+    plt.ylim([-0.2, 3.5])
     plt.ylabel('R(EAV:PAV)', fontsize=24)
-    plt.xlabel('Energy (kJ)', fontsize=24)
+    plt.xlabel(ylabel, fontsize=24)
     ax.tick_params(axis='y', labelsize=fontsize)
     ax.tick_params(axis='x', labelsize=fontsize)
     plt.tick_params(labelsize=fontsize, color='k', width=2, length=10)
@@ -143,13 +163,12 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
 
 if __name__ == '__main__':
     df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_Acculis_MAVERRIC_22012020.xlsx")
+    df_radiomics_acculis = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_Acculis_MAVERRIC_22012020.xlsx")
     df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
     df_acculis.reset_index(inplace=True)
     # df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == False]
-    df_radiomics = df_radiomics[(df_radiomics['Comments'].isnull())]
-    df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
-    df_radiomics_acculis.reset_index(inplace=True)
+    # df_radiomics = df_radiomics[(df_radiomics['Comments'].isnull())]
+
     # flag_hue='chemotherapy'
     # %% extract the needle error
-    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis MWA System', flag_hue='simple')
+    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis MWA System', flag_hue='chemotherapy')
