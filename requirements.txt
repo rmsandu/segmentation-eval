@@ -14,7 +14,7 @@ numpy==1.17.0
 openpyxl==2.6.3
 pandas==0.25.0
 patsy==0.5.1
-Pillow==6.1.0
+Pillow==6.2.0
 pydicom==1.2.2
 pykwalify==1.7.0
 pyparsing==2.4.2
