@@ -10,7 +10,7 @@ import pandas as pd
 import plot_ablation_margin_hist as pm
 from B_ResampleSegmentations import ResizeSegmentation
 from DistanceMetrics import DistanceMetrics, RadiomicsMetrics
-from volumemetrics import VolumeMetrics
+from VolumeMetrics import VolumeMetrics
 
 
 def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor,
