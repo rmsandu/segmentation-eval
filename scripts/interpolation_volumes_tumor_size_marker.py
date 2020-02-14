@@ -95,8 +95,8 @@ def interpolation_fct(df_ablation, df_radiomics, device_name, fontsize=24, flag=
     plt.ylabel('Effective Ablation Volume (mL)', fontsize=fontsize)
     if flag_energy_axis is False:
         plt.xlabel('Predicted Ablation Volume Brochure (mL)', fontsize=fontsize)
-    plt.ylim([0, 80])
-    plt.xlim([0, 80])
+    plt.ylim([0, 60])
+    plt.xlim([0, 60])
     if flag_lin_regr is True:
         # get the data ready for linear regression
         X = np.asarray(df.x).reshape(len(df.x), 1)
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     # select subcapsular values
     # Proximity_to_surface = False --> deep lesions
     # Proximity to surface = True --> subcapsular
-    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == True]
+    # df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == True]
     df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
     df_acculis.reset_index(inplace=True)
     df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
@@ -152,6 +152,5 @@ if __name__ == '__main__':
     df_radiomics_acculis.reset_index(inplace=True)
 
     # flag_options : 1. flag == 'No. chemo cycles' 2. flag == 'Tumour Volume [ml]'
-
-    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis (Subcapsular Tumors)', flag='Tumour Volume [ml]',
+    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis MWA System', flag='Tumour Volume [ml]',
                       flag_energy_axis=False, flag_lin_regr=False)

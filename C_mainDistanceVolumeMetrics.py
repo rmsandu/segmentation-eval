@@ -9,7 +9,7 @@ import time
 import pandas as pd
 import plot_ablation_margin_hist as pm
 from B_ResampleSegmentations import ResizeSegmentation
-from distancemetrics import DistanceMetrics, RadiomicsMetrics
+from DistanceMetrics import DistanceMetrics, RadiomicsMetrics
 from volumemetrics import VolumeMetrics
 
 

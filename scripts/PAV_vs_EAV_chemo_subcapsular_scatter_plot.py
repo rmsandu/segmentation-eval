@@ -59,7 +59,7 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
     df = pd.DataFrame()
     df['Tumor_Vol'] = df_radiomics['Tumour Volume [ml]']
     df['PAV'] = ablation_vol_interpolated_brochure
-    df['EAV'] = ablation_vol_measured
+    df['EAV'] = df_radiomics['Ablation Volume [ml] (parametrized_formula)']
     df['Subcapsular'] = df_radiomics['Proximity_to_surface']
     df['Energy (kJ)'] = df_radiomics['Energy [kj]']
     df['Chemotherapy'] = df_radiomics['no_chemo_cycle']
@@ -127,7 +127,13 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
         # NO GROUPING SELECTED
         # sns.set_palette(sns.cubehelix_palette(8, start=2, rot =0, dark=0, light=.95, reverse=True))
         slope, intercept, r_square, p_value, std_err = stats.linregress(df['R(EAV:PAV)'], df['Energy (kJ)'])
-        ax = sns.regplot(x="Energy (kJ)", y="R(EAV:PAV)", data=df, color=sns.xkcd_rgb["medium green"],
+        # ax = sns.regplot(x="PAV", y="EAV", data=df, ci=None, scatter_kws={"s": 150, "alpha": 0.6},
+        #                  color=sns.xkcd_rgb["indigo"], line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square) + ' (Ablation Volume)'})
+        # slope, intercept, r_square, p_value, std_err = stats.linregress(df['Tumor_Vol'], df['PAV'])
+        # ax = sns.regplot(x="PAV", y='Tumor_Vol', data=df, ci=None, scatter_kws={"s": 150, "alpha": 0.6},
+        #                  color=sns.xkcd_rgb["pumpkin"], line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square) + ' (Tumor Volume)'})
+
+        ax = sns.regplot(y="R(EAV:PAV)", x="Energy (kJ)", data=df, color=sns.xkcd_rgb["medium green"],
                          line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square)},
                          scatter_kws={"s": 150, "alpha": 0.6})
 
@@ -150,14 +156,16 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
         ax.legend(fontsize=24, title_fontsize=24, title=device)
     plt.xlim([8, 46])
     plt.ylim([-0.2, 3.5])
-    plt.ylabel('R(EAV:PAV)', fontsize=24)
+    # plt.xlim([1, 60])
+    # plt.ylim([-0.5, 60])
     plt.xlabel(ylabel, fontsize=24)
+    plt.ylabel('R(EAV:PAV)', fontsize=24)
     ax.tick_params(axis='y', labelsize=fontsize)
     ax.tick_params(axis='x', labelsize=fontsize)
     plt.tick_params(labelsize=fontsize, color='k', width=2, length=10)
     ax.spines['left'].set_linewidth(0.8)
     ax.spines['bottom'].set_linewidth(0.8)
-    figpath = os.path.join("figures", device + '_ratio_EAV_PAV_groups_' + flag_hue)
+    figpath = os.path.join("figures", device + '__EAV_parametrized_PAV_groups_' + flag_hue)
     gh.save(figpath, width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
 
 
@@ -171,4 +179,4 @@ if __name__ == '__main__':
 
     # flag_hue='chemotherapy'
     # %% extract the needle error
-    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis MWA System', flag_hue='chemotherapy')
+    interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis MWA System', flag_hue='no_group')

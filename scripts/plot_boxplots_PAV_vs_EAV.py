@@ -57,7 +57,6 @@ def plot_boxplots_volumes(ablation_vol_brochure, ablation_vol_measured, flag_sub
                         patch_artist=True,
                         widths=0.4
                         )
-    # ax.set_xlabel('')
     for element in ['medians', 'fliers', 'whiskers', 'caps']:
         plt.setp(bplot[element], color='black', linewidth=2.5)
     boxes = bplot['boxes']

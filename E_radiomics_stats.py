@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from utils.boxplots_maverric import plot_boxplots_chemo, plot_boxplots_volumes, plot_boxplots_subcapsular
+from utils.boxplots_maverric import plot_boxplots_chemo
 from utils.scatter_plot import scatter_plot
 
 sns.set(style="ticks")
@@ -21,13 +21,15 @@ ap.add_argument("-i", "--input_file", required=True, help="input file pooled rad
 # e.g. Radiomics_Radii_Chemo_LTP_Distances_ECALSS
 args = vars(ap.parse_args())
 subcapsular_lesions_only = None
-
+# "Proximity_to_surface"
+# FALSE: non subcapsular AKA Deep Tumors
+# TRUE: subcapsular AKA subcapsular TUmors
 df_input = pd.read_excel(args["input_file"], sheet_name="radiomics")
 
 # %% BOXPLOTS
-plot_boxplots_chemo(df_input)
-plot_boxplots_volumes(df_input)
-plot_boxplots_subcapsular(df_input)
+# plot_boxplots_chemo(df_input)
+# plot_boxplots_volumes(df_input)
+# plot_boxplots_subcapsular(df_input)
 
 #%%
 if subcapsular_lesions_only is not None:
@@ -90,8 +92,8 @@ scatter_plot(df_radiomics_amica, **kwargs)
 
 kwargs = {'x_data': 'Energy [kj]', 'y_data': 'Ablation Volume [ml]',
           'y_label': 'Effective Ablation Volume [ml] ',
-          'legend_title': 'Solero',
-          'title': "Ablation Volume [ml] for Angyiodinamics (Solero) " + flag_subcapsular_title,
+          'legend_title': 'Acculis',
+          'title': "Ablation Volume [ml] for Angyiodinamics (Acculis) " + flag_subcapsular_title,
           'x_lim': 100,
           'y_lim': 100,
           'lin_reg': 1}
