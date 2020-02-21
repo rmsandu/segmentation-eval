@@ -8,6 +8,7 @@ Created on Wed Nov 15 14:17:41 2017
 import numpy as np
 import pandas as pd
 import SimpleITK as sitk
+from scripts.ellipsoid_inner_outer import volume_inner_ellipsoid, volume_outer_ellipsoid
 
 
 class VolumeMetrics:
@@ -17,6 +18,8 @@ class VolumeMetrics:
         self.ablation_segmentation = None
         self.volume_tumor = None
         self.volume_ablation = None
+        self.volume_inner_ellipsoid = None
+        self.volume_outer_ellipsoid = None
         self.volume_residual = None
         self.coverage_ratio = None
         self.dice = None
@@ -28,6 +31,10 @@ class VolumeMetrics:
     def set_image_object(self, ablation_segmentation, tumor_segmentation):
         self.tumor_segmentation = tumor_segmentation
         self.ablation_segmentation = ablation_segmentation
+
+    def get_volume_ellipsoids(self):
+        self.volume_inner_ellipsoid = volume_inner_ellipsoid(self.ablation_segmentation)
+        self.volume_outer_ellipsoid = volume_outer_ellipsoid(self.ablation_segmentation)
 
     def get_volume_ml(self, image):
         x_spacing, y_spacing, z_spacing = image.GetSpacing()
@@ -53,7 +60,7 @@ class VolumeMetrics:
         if len(tumor_voxels_non_zero) == 0:
             self.error_flag = True
             return
-        if len(ablation_voxels_non_zero) ==0:
+        if len(ablation_voxels_non_zero) == 0:
             self.error_flag = True
             return
         # transform into tuple-set
@@ -92,6 +99,7 @@ class VolumeMetrics:
         self.jaccard = overlap_measures_filter.GetDiceCoefficient()
         self.volumetric_overlap_error = 1. - overlap_measures_filter.GetJaccardCoefficient()
         self.volume_similarity = overlap_measures_filter.GetVolumeSimilarity()
+        self.get_volume_ellipsoids()
 
     def get_volume_metrics_df(self):
         volume_metrics_dict = {
@@ -102,7 +110,9 @@ class VolumeMetrics:
             'Jaccard': self.jaccard,
             'Volume Overlap Error': self.volumetric_overlap_error,
             'Volume Similarity': self.volume_similarity,
-            'Tumour coverage ratio': self.coverage_ratio
+            'Tumour coverage ratio': self.coverage_ratio,
+            'Inner Ellipsoid Volume': self.volume_inner_ellipsoid,
+            'Outer Ellipsoid Volume' : self.volume_outer_ellipsoid
         }
 
         return pd.DataFrame(data=volume_metrics_dict, index=list(range(1)),
