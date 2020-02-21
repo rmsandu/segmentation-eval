@@ -6,9 +6,10 @@ Created on Tue Nov 14 11:43:36 2017
 """
 import os
 import time
+
 import pandas as pd
+
 import scripts.plot_ablation_margin_hist as pm
-from B_ResampleSegmentations import ResizeSegmentation
 from DistanceMetrics import DistanceMetrics, RadiomicsMetrics
 from VolumeMetrics import VolumeMetrics
 
@@ -55,19 +56,22 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
         df_volumes_1set = None
     # %% PLOT the color coded histogram of the distances
     if (df_distances_1set is not None) and (distanceMap is not None):
-        # try:
-            perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = pm.plotHistDistances(pat_name=patient_id,
-                                                                                            lesion_id=lesion_id,
-                                                                                            rootdir=dir_plots,
-                                                                                            distanceMap=distanceMap,
-                                                                                            num_voxels=num_surface_pixels,
-                                                                                            title=title,
-                                                                                            ablation_date=ablation_date)
+        try:
+            perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = pm.plot_histogram_surface_distances(
+                pat_name=patient_id,
+                lesion_id=lesion_id,
+                rootdir=dir_plots,
+                distanceMap=distanceMap,
+                num_voxels=num_surface_pixels,
+                title=title,
+                ablation_date=ablation_date,
+                flag_to_plot=True)
 
-        # except Exception:
-        #     print(patient_id, 'error plotting the distances and volumes')
+        except Exception:
+            print(patient_id, 'error plotting the distances and volumes')
+            perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = None, None, None
     else:
-        return None
+        perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = None, None, None
 
     SurfaceDistances_raw_numbers = {
         'patient_id': patient_id,

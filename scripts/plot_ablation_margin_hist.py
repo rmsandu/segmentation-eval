@@ -12,19 +12,19 @@ import numpy as np
 import matplotlib.font_manager as font_manager
 
 np.seterr(divide='ignore', invalid='ignore')
-plt.style.use('ggplot')
-
+# plt.style.use('ggplot')
 
 # %%
 
-def plotHistDistances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, title, ablation_date):
-    # PLOT THE HISTOGRAM FOR THE MAUERER EUCLIDIAN DISTANCES
+
+def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, title, ablation_date, flag_to_plot=True):
+    fontsize = 18
     lesion_id_str = str(lesion_id)
     lesion_id = lesion_id_str.split('.')[0]
     figName_hist = 'Pat_' + str(pat_name) + '_Lesion' + str(lesion_id) + '_AblationDate_' + ablation_date + '_histogram'
     min_val = int(np.floor(min(distanceMap)))
     max_val = int(np.ceil(max(distanceMap)))
-    fig, ax = plt.subplots(figsize=(18, 16))
+    fig, ax = plt.subplots(figsize=(12, 10))
 
     col_height, bins, patches = ax.hist(distanceMap, ec='darkgrey', bins=range(min_val - 1, max_val + 1))
 
@@ -50,49 +50,54 @@ def plotHistDistances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, tit
     sum_perc_insuffablated = ((voxels_insuffablated / num_voxels) * 100).sum()
     sum_perc_ablated = ((voxels_ablated / num_voxels) * 100).sum()
     # %%
-    '''iterate through the bins to change the colors of the patches bases on the range [mm]'''
-    for b, p, col_val in zip(bins, patches, col_height):
-        if b < 0:
-            plt.setp(p, label='Ablation Surface Margin ' + r'$x < 0$' + 'mm :' + " %.2f" % sum_perc_nonablated + '%')
-        elif 0 <= b <= 5:
-            plt.setp(p, 'facecolor', 'orange',
-                     label='Ablation Surface Margin ' + r'$0 \leq  x \leq 5$' + 'mm: ' + "%.2f" % sum_perc_insuffablated + '%')
-        elif b > 5:
-            plt.setp(p, 'facecolor', 'darkgreen',
-                     label='Ablation Surface Margin ' + r'$x > 5$' + 'mm: ' + " %.2f" % sum_perc_ablated + '%')
-    # %%
-    '''edit the axes limits and labels'''
-    # csfont = {'fontname': 'Times New Roman'}
-    plt.xlabel('Euclidean Distances [mm]', fontsize=35, color='black')
-    plt.tick_params(labelsize=35, color='black')
-    ax.tick_params(colors='black', labelsize=35)
-    plt.grid(True)
-    # TODO: set equal axis limits
-    ax.set_xlim([-15, 15])
+    if flag_to_plot is True:
+        '''iterate through the bins to change the colors of the patches bases on the range [mm]'''
+        for b, p, col_val in zip(bins, patches, col_height):
+            if b < 0:
+                plt.setp(p, 'facecolor', 'tab:red',
+                         label='Ablation Margin ' + r'$x < 0$' + 'mm :' + " %.2f" % sum_perc_nonablated + '%')
+            elif 0 <= b <= 5:
+                plt.setp(p, 'facecolor', 'tab:orange',
+                         label='Ablation Margin ' + r'$0 \leq  x \leq 5$' + 'mm: ' + "%.2f" % sum_perc_insuffablated + '%')
+            elif b > 5:
+                plt.setp(p, 'facecolor', 'darkgreen',
+                         label='Ablation Margin ' + r'$x > 5$' + 'mm: ' + " %.2f" % sum_perc_ablated + '%')
+        # %%
+        '''edit the axes limits and labels'''
+        # csfont = {'fontname': 'Times New Roman'}
+        plt.xlabel('Euclidean Distances (mm)', fontsize=fontsize, color='black')
+        plt.tick_params(labelsize=fontsize, color='black')
+        ax.tick_params(colors='black', labelsize=fontsize)
+        ax.set_xlim([-15, 15])
 
-    # edit the y-ticks: change to percentage of surface
-    yticks, locs = plt.yticks()
-    percent = (yticks / num_voxels) * 100
-    percentage_surface_rounded = np.round(percent)
-    yticks_percent = [str(x) + '%' for x in percentage_surface_rounded]
-    new_yticks = (percentage_surface_rounded * yticks) / percent
-    new_yticks[0] = 0
-    plt.yticks(new_yticks, yticks_percent)
+        # edit the y-ticks: change to percentage of surface
+        yticks, locs = plt.yticks()
+        percent = (yticks / num_voxels) * 100
+        percentage_surface_rounded = np.round(percent)
+        yticks_percent = [str(x) + '%' for x in percentage_surface_rounded]
+        new_yticks = (percentage_surface_rounded * yticks) / percent
+        new_yticks[0] = 0
+        plt.yticks(new_yticks, yticks_percent)
 
-    plt.ylabel('Percentage of tumor surface voxels covered', fontsize=35, color='black')
+        plt.ylabel('Tumor surface covered [%]', fontsize=fontsize, color='black')
 
-    handles, labels = plt.gca().get_legend_handles_labels()
-    by_label = OrderedDict(zip(labels, handles))
-    # font = font_manager.FontProperties(family='Times New Roman',
-    #                                    style='normal', size=30)
-    # plt.legend(by_label.values(), by_label.keys(), fontsize=30, loc='best', prop=font)
-    plt.legend(by_label.values(), by_label.keys(), fontsize=35, loc='best')
-    plt.xticks(fontsize=35)
-    ax.tick_params(axis='both', labelsize=40)
-    # ax.legend(prop=font)
-    plt.title(title + '. Patient ' + str(pat_name) + '. Lesion ' + str(lesion_id), fontsize=35)
-    figpathHist = os.path.join(rootdir, figName_hist)
-    gh.save(figpathHist, width=20, height=18, ext=['png'])
+        handles, labels = plt.gca().get_legend_handles_labels()
+        by_label = OrderedDict(zip(labels, handles))
+        # font = font_manager.FontProperties(family='Times New Roman',
+        #                                    style='normal', size=30)
+        # plt.legend(by_label.values(), by_label.keys(), fontsize=30, loc='best', prop=font)
+        # ax.legend(prop=font)
+        plt.legend(by_label.values(), by_label.keys(), fontsize=fontsize, loc='best')
+        plt.xticks(fontsize=fontsize)
+        ax.tick_params(axis='both', labelsize=fontsize)
+        ax.grid(False)
 
-    # return the percentages
-    return sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated
+        plt.title(title + '. Patient ' + str(pat_name) + '. Lesion ' + str(lesion_id), fontsize=fontsize)
+        figpathHist = os.path.join(rootdir, figName_hist + 'png')
+        plt.savefig(figpathHist, dpi=300, bbox_inches='tight')
+        plt.close()
+        return sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated
+        # gh.save(figpathHist, dpi=600, ext=['png'], tight=True)
+    else:
+        # return the percentages of tumor surface covered
+        return sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated
