@@ -28,9 +28,12 @@ The following non-standard libraries are required to use the full functionality 
     - various plots and statistics for the features that have been previously extracted
 
 ## Usage
-The scripts are noted in alphabetical order.
-The segmentation mask are resampled in the same dimensions and spacing (isotropic) before calling the `DistanceMetrics.py` and `VolumeMetrics.py`
+The scripts are called (internally) in alphabetical order using the folllowing logic:
+    * *Read Images --> Resample --> Extract Distance Metrics  --> Extract Volume Metrics  --> Plot Distance Metrics --> Output Metrics to Xlsx file in Tabular format* *
+The segmentation mask are resampled in the same dimensions and spacing (isotropic) before calling the `DistanceMetrics.py` and `VolumeMetrics.py`.
+
 `PyRadiomics` automatically checks if the source CT image and the derived mask have the same dimensions. If not, resampling is performed in the background.
+This function only operates with the path to the patient folder that can have all source CT image, segmentation masks, other files, all in one folder. It does that by creating a dictionary of paths based on the metadata information that was encoded in the [**ReferencedImageSequenceTag**](https://dicom.innolitics.com/ciods/basic-structured-display/structured-display-image-box/00720422/00081140) and [**SourceImageSequence**](https://dicom.innolitics.com/ciods/rt-beams-treatment-record/general-reference/00082112). I have previously encoded the mapping information (which is also an anonymization pipeline) in the [DICOM-Anonymization-Segmentation-Mapping](https://github.com/raluca-san/python-util-scripts/blob/master/A_fix_segmentations_dcm.py)
 ## Input
 todo
 ## Output
