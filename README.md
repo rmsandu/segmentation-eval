@@ -1,17 +1,20 @@
 # Radiomics Extraction and Evaluation based on Binary 3D Segmentation Images
 
-- segmentations include masks of liver structures such tumors, ablations, vessels and other structures
-- metrics include the Euclidean Distance between two objects (eg. Ground Truth segmentation of Tumor vs. Predicted Segmentation of Tumor, Segmentation of Ablation vs. Segmentation of Tumor)
-- Mauerer et Al. algorithm for calculating euclidean distances between two objects from binary images
-- Volume Metrics (DICE, Coverage,ETC)
+The segmentations used in this project represent a pair of the type tumor - ablation.  The ablation can be replaced with another type of segmentation, such as a predicted tumor segmentation (using a separate algorithm). 
+
+The evaluation metrics include:
+-  Euclidean Distances between two objects (eg. Ground Truth segmentation of Tumor vs. Predicted Segmentation of Tumor, Segmentation of Ablation vs. Segmentation of Tumor). The Mauerer et Al. algorithm for calculating euclidean distances between two objects from binary images from the SimpleITK Implementation.
+- Volume Metrics (Total Volume in ml, Dice, Jaccard score, Volume Similarity, Volume Overlap Error,Residual Volume)
+- Minimum Inscribed Ellipsoid and Maximum Enclosing Ellipsoid Volumes (in ml)
+- PyRadiomics Metrics : https://pyradiomics.readthedocs.io/en/latest/ and https://www.radiomics.io/pyradiomics.html 
+
 
 ## Requirements
 The following non-standard libraries are required to use the full functionality of the project.
 * SimpleITK
 * PyRadiomics
 * PyDicom
-* Untangle
-* numpy
+
 
 ## Usage
 
