@@ -15,13 +15,30 @@ The following non-standard libraries are required to use the full functionality 
 * PyRadiomics
 * PyDicom
 
+## Main Functions and Operations Performed
+1. `A_read_files_info.py` (optional)
+    - `DicomReader.py`
+2. `B_ResampleSegmentations.py`
+3. `C_mainDistanceVolumeMetrics.py`
+    - `VolumeMetrics.py`
+    - `DistanceMetrics.py`
+4. `D_compile_population_radiomics.py (optional)`
+    - if batch processing (for multiple segmentations) have been enabled this script will compile all the features from the outpt CSV files into one single file.
+5. `E_radiomics_stats.py` (optional)
+    - various plots and statistics for the features that have been previously extracted
 
 ## Usage
-
+The scripts are noted in alphabetical order.
+The segmentation mask are resampled in the same dimensions and spacing (isotropic) before calling the `DistanceMetrics.py` and `VolumeMetrics.py`
+`PyRadiomics` automatically checks if the source CT image and the derived mask have the same dimensions. If not, resampling is performed in the background.
+## Input
+todo
+## Output
+todo
 ### Data Preparation
-The data preparation step depends on the input data to be used.
+The data preparation step depends on the input data to be used. (xml-processing script) (a bit dumb, move it away from that repo)
 #### Single Dataset
-tpdo
+
 #### Batch Processing
 todo
 
@@ -48,7 +65,7 @@ The data has to be organized as follows:
 * to be completed
 * to be completed
 
-### Plot
-For experiments with synthetic data run (add optional parameters)
-### Output to CSV
-    python gp_experiments.py
+### Plots
+todo
+### Stats
+    todo
