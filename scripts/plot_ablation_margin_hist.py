@@ -5,19 +5,21 @@ Created on Wed Nov 15 16:15:51 2017
 @author: Raluca Sandu
 """
 import os
-import utils.graphing as gh
-import matplotlib.pyplot as plt
 from collections import OrderedDict
+
+import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.font_manager as font_manager
 
 np.seterr(divide='ignore', invalid='ignore')
+
+
 # plt.style.use('ggplot')
 
 # %%
 
 
-def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, title, ablation_date, flag_to_plot=True):
+def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, title, ablation_date,
+                                     flag_to_plot=True):
     fontsize = 18
     lesion_id_str = str(lesion_id)
     lesion_id = lesion_id_str.split('.')[0]
@@ -79,7 +81,7 @@ def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, 
         new_yticks[0] = 0
         plt.yticks(new_yticks, yticks_percent)
 
-        plt.ylabel('Tumor surface covered [%]', fontsize=fontsize, color='black')
+        plt.ylabel('Tumor surface covered (%)', fontsize=fontsize, color='black')
 
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = OrderedDict(zip(labels, handles))
@@ -93,7 +95,7 @@ def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, 
         ax.grid(False)
 
         plt.title(title + '. Patient ' + str(pat_name) + '. Lesion ' + str(lesion_id), fontsize=fontsize)
-        figpathHist = os.path.join(rootdir, figName_hist + 'png')
+        figpathHist = os.path.join(rootdir, figName_hist)
         plt.savefig(figpathHist, dpi=300, bbox_inches='tight')
         plt.close()
         return sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated

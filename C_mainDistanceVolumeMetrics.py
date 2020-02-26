@@ -26,6 +26,8 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
         num_surface_pixels = surface_distance_metrics.num_tumor_surface_pixels
     else:
         df_distances_1set = None
+        distanceMap = None
+        num_surface_pixels = None
     # %% Get Radiomics Metrics (shape and intensity)
     # ABLATION
     ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation)
@@ -55,7 +57,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     else:
         df_volumes_1set = None
     # %% PLOT the color coded histogram of the distances
-    if (df_distances_1set is not None) and (distanceMap is not None):
+    if (df_distances_1set is not None) and (distanceMap is not None) and (num_surface_pixels is not None):
         try:
             perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = pm.plot_histogram_surface_distances(
                 pat_name=patient_id,
@@ -68,7 +70,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
                 flag_to_plot=True)
 
         except Exception:
-            print(patient_id, 'error plotting the distances and volumes')
+            print(patient_id, ' error plotting the distances and volumes')
             perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = None, None, None
     else:
         perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = None, None, None

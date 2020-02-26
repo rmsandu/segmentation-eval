@@ -162,8 +162,8 @@ if __name__ == '__main__':
     else:
         # batch processing option
         df = pd.read_excel(args["input_batch_proc"])
-        df = df.loc[df['CT plan'] & df['Segmentation_tumor_available'] &
-                    df['Segmentation_ablation_available']]
+        # df = df.loc[df['CT plan'] & df['Segmentation_tumor_available'] &
+        #             df['Segmentation_ablation_available']]
         df.drop_duplicates(subset=['Patient_Dir_Paths'], inplace=True)
         df['Patient_Dir_Paths'].fillna("None", inplace=True)
         df['Patient_Dir_Paths'] = df['Patient_Dir_Paths'].apply(literal_eval)
@@ -174,6 +174,7 @@ if __name__ == '__main__':
             ablation_date_redcap = df.Ablation_IR_Date[idx]
             # reset index
             if patient_dir_paths is None:
+                # no patient data image folder found for this patient
                 continue
             else:
                 for rootdir in patient_dir_paths:

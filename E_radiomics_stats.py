@@ -9,8 +9,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from utils.boxplots_maverric import plot_boxplots_chemo
-from utils.scatter_plot import scatter_plot
+from scripts.scatter_plot import scatter_plot
 
 sns.set(style="ticks")
 # plt.style.use('ggplot')

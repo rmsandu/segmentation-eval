@@ -2,28 +2,25 @@
 """
 @author: Raluca Sandu
 """
+
 import os
-import sys
-import pandas as pd
+import time
 import argparse
-from ast import literal_eval
+
+import pandas as pd
 
 if __name__ == '__main__':
 
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--rootdir", required=True,
-                    help="path to the patient folder with Radiomics CSV to be processed")
-    ap.add_argument("-o", "--output_dir", required=True, help="path to the output file with radiomics")
-    ap.add_argument("-b", "--input_batch_proc_paths", required=True, help="input csv file for batch processing")
-
+                    help="path to the patient folder with Radiomics XLSX to be processed")
+    ap.add_argument("-b", "--input_batch_proc_paths", required=True, help="input XLSX file for batch processing")
     args = vars(ap.parse_args())
 
     if args["rootdir"] is not None:
         print("Path to folder with Radiomics CSVs for each patient: ", args["rootdir"])
-        print(args["output_dir"])
     if (args["input_batch_proc_paths"]) is not None:
         print("Path to CSV that has directory paths and subcapsular lesion info: ", args["input_batch_proc_paths"])
-    print("path to output directory", args["output_dir"])
 
     df_download_db_all_info = pd.read_excel(args["input_batch_proc_paths"])
     frames = []  # list to store all df per lesion.
@@ -54,13 +51,15 @@ if __name__ == '__main__':
                 # rename the columns
                 # concatenate the rest of the pandas dataframe based on the lesion id.
                 # first edit the lesion id.
-
+#
 # result = pd.concat(frames, axis=1, keys=['Patient ID', 'Lesion id', 'ablation_date'], ignore_index=True)
-print(len(frames))
+# df_final = result
+# print(len(frames))
 result = pd.concat(frames, ignore_index=True)
 df_final = pd.merge(df_download_db_all_info, result, how="outer", on=['Patient_ID', 'Lesion_ID'])
 # TODO: write treatment id as well. the unique key must be formed out of: [patient_id, treatment_id, lesion_id]
-filepath_excel = os.path.join(args["output_dir"], "Radiomics_MAVERRIC_111119.xlsx")
+timestr = time.strftime("%H%M%S-%Y%m%d")
+filepath_excel = 'Radiomics_MAVERRIC_' + timestr + '_.xlsx'
 writer = pd.ExcelWriter(filepath_excel)
 df_final.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
 writer.save()
