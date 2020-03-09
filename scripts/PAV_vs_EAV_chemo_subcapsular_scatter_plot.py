@@ -3,7 +3,8 @@
 @author: Raluca Sandu
 """
 import os
-import utils.graphing as gh
+
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -14,7 +15,7 @@ from scipy.interpolate import griddata
 import utils.graphing as gh
 
 
-def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, flag_hue=None):
+def interpolation_fct(df_ablation, df_radiomics):
     """
 
     :param device:
@@ -53,9 +54,10 @@ def interpolation_fct(df_ablation, df_radiomics, device='Acculis', fontsize=24, 
     #                                                flag_subcapsular=False)
 
 
-def edit_save_plot(ax=None, p=None, flag_hue=None, xlabel='PAV', ylabel='EAV', device='Acculis pMTA', r_1=None,
-                   r_2=None,
-                   label_2=None, label_3=None):
+def edit_save_plot(ax=None, p=None, flag_hue=None, xlabel='PAV', ylabel='EAV', device='Acculis pMTA MWA System',
+                   r_1=None, r_2=None,
+                   label_2=None, label_3=None,
+                   ratio_flag=False):
     """
 
     :param ax:
@@ -69,10 +71,10 @@ def edit_save_plot(ax=None, p=None, flag_hue=None, xlabel='PAV', ylabel='EAV', d
     :param label_3:
     :return:
     """
-    fontsize = 24
+    fontsize = 20
     if flag_hue in ['vessels', 'subcapsular', 'chemotherapy', 'Tumor_Vol']:
         ax = p.axes[0, 0]
-        ax.legend(fontsize=24, title_fontsize=24, title=device)
+        ax.legend(fontsize=fontsize, title_fontsize=fontsize, title=device, loc='upper left')
         leg = ax.get_legend()
         L_labels = leg.get_texts()
         label_line_1 = r'$R^2:{0:.2f}$'.format(r_1)
@@ -82,20 +84,20 @@ def edit_save_plot(ax=None, p=None, flag_hue=None, xlabel='PAV', ylabel='EAV', d
         L_labels[2].set_text(label_2)
         L_labels[3].set_text(label_3)
     else:
-        ax.legend(fontsize=24, title_fontsize=24, title=device)
+        ax.legend(fontsize=fontsize, title_fontsize=fontsize, title=device, loc='upper left')
 
-    plt.xlim([8, 46])
-    plt.ylim([-0.2, 3.5])
+    if ratio_flag is False:
+        plt.xlim([0, 50])
+        plt.ylim([0, 50])
+
+    # plt.xlim([8, 46])
+    # plt.ylim([-0.2, 3.5])
     # plt.xlim([1, 60])
     # plt.ylim([-0.5, 60])
-    plt.xlabel(xlabel, fontsize=24)
-    plt.ylabel(ylabel, fontsize=24)
-    ax.tick_params(axis='y', labelsize=fontsize)
-    ax.tick_params(axis='x', labelsize=fontsize)
-    plt.tick_params(labelsize=fontsize, color='k', width=2, length=10)
-    ax.spines['left'].set_linewidth(0.8)
-    ax.spines['bottom'].set_linewidth(0.8)
-    figpath = os.path.join("figures", device + '__EAV_parametrized_PAV_groups_' + flag_hue)
+    plt.xlabel(xlabel, fontsize=fontsize)
+    plt.ylabel(ylabel, fontsize=fontsize)
+
+    figpath = os.path.join("figures", device + '__EAV_parametrized_PAV_groups_' + str(flag_hue))
     gh.save(figpath, width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
 
 
@@ -112,7 +114,7 @@ def plot_scatter_group_var_chemo(df_radiomics, ablation_vol_interpolated_brochur
     # create new pandas DataFrame for easier plotting
     df = pd.DataFrame()
     df['PAV'] = ablation_vol_interpolated_brochure
-    df['EAV'] = df_radiomics['Ablation Volume [ml] (parametrized_formula)']
+    df['EAV'] = df_radiomics['Ablation Volume [ml]']
     df['Energy (kJ)'] = df_radiomics['Energy [kj]']
     df['Chemotherapy'] = df_radiomics['no_chemo_cycle']
     df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
@@ -123,9 +125,9 @@ def plot_scatter_group_var_chemo(df_radiomics, ablation_vol_interpolated_brochur
     chemo_true = df[df['Chemotherapy'] == 'Yes']
     chemo_false = df[df['Chemotherapy'] == 'No']
     if ratio_flag is True:
-        p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Chemotherapy", data=df, markers=["X", "s"],
-                       palette=['mediumvioletred'],
-                       ci=None, scatter_kws={"s": 150, "alpha": 0.5}, line_kws={'label': 'red'},
+        p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Chemotherapy", data=df, markers=["s", "s"],
+                       palette=['mediumvioletred', 'green'],
+                       ci=None, scatter_kws={"s": 150, "alpha": 0.8}, line_kws={'label': 'red'},
                        legend=True, legend_out=False)
         x1 = chemo_false['Energy (kJ)']
         y1 = chemo_false['R(EAV:PAV)']
@@ -134,11 +136,11 @@ def plot_scatter_group_var_chemo(df_radiomics, ablation_vol_interpolated_brochur
         slope, intercept, r_2, p_value, std_err = stats.linregress(x1, y1)
         slope, intercept, r_1, p_value, std_err = stats.linregress(x2, y2)
         edit_save_plot(p=p, flag_hue='chemotherapy', ylabel='R(EAV:PAV)', xlabel='Energy (kJ)', device='Acculis pMTA',
-                       r_1=r_1, r_2=r_2, label_2=label_2, label_3=label_3)
+                       r_1=r_1, r_2=r_2, label_2=label_2, label_3=label_3, ratio_flag=True)
     elif ratio_flag is False:
-        p = sns.lmplot(y="EAV", x="PAV", hue="Chemotherapy", data=df, markers=["X", "s"],
-                       palette=['mediumvioletred'],
-                       ci=None, scatter_kws={"s": 150, "alpha": 0.5}, line_kws={'label': 'red'},
+        p = sns.lmplot(y="EAV", x="PAV", hue="Chemotherapy", data=df, markers=["s", "s"],
+                       palette=['mediumvioletred', "green"],
+                       ci=None, scatter_kws={"s": 150, "alpha": 0.8}, line_kws={'label': 'red'},
                        legend=True, legend_out=False)
         x1 = chemo_false['PAV']
         y1 = chemo_false['EAV']
@@ -146,7 +148,8 @@ def plot_scatter_group_var_chemo(df_radiomics, ablation_vol_interpolated_brochur
         y2 = chemo_true['EAV']
         slope, intercept, r_2, p_value, std_err = stats.linregress(x1, y1)
         slope, intercept, r_1, p_value, std_err = stats.linregress(x2, y2)
-        edit_save_plot(p=p, flag_hue='chemotherapy', ylabel='EAV', xlabel='PAV', device='Acculis pMTA',
+        edit_save_plot(p=p, flag_hue='chemotherapy', ylabel='Effective Ablation Treatment (mL)',
+                       xlabel='Predicted Ablation Treatment (mL)', device='Acculis pMTA',
                        r_1=r_1, r_2=r_2, label_2=label_2, label_3=label_3)
 
 
@@ -182,7 +185,7 @@ def plot_scatter_group_var_tumor_vol(df_radiomics, ablation_vol_interpolated_bro
                    r_1=r_1, r_2=r_2, label_2=label_2, label_3=label_3)
 
 
-def plot_scatter_group_var_subcapsular(df_radiomics, ablation_vol_interpolated_brochure, flag_ratio=True):
+def plot_scatter_group_var_subcapsular(df_radiomics, ablation_vol_interpolated_brochure, ratio_flag=True):
     """
 
     :param df_radiomics:
@@ -191,7 +194,7 @@ def plot_scatter_group_var_subcapsular(df_radiomics, ablation_vol_interpolated_b
     """
     df = pd.DataFrame()
     df['PAV'] = ablation_vol_interpolated_brochure
-    df['EAV'] = df_radiomics['Ablation Volume [ml] (parametrized_formula)']
+    df['EAV'] = df_radiomics['Ablation Volume [ml]']
     df['Energy (kJ)'] = df_radiomics['Energy [kj]']
     df['Subcapsular'] = df_radiomics['Proximity_to_surface']
     df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
@@ -199,30 +202,31 @@ def plot_scatter_group_var_subcapsular(df_radiomics, ablation_vol_interpolated_b
     print('Nr Samples used:', str(len(df)))
     label_2 = 'Deep Tumors'
     label_3 = 'Subcapsular'
-    subcapsular_true = df[df['Subcapsular'] == False]
-    subcapsular_false = df[df['Subcapsular'] == True]
-    if flag_ratio is True:
-        p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Subcapsular", data=df, markers=["X", "s"],
-                       palette=['cornflowerblue'],
-                       ci=None, scatter_kws={"s": 150, "alpha": 0.5}, line_kws={'label': 'red'},
+    subcapsular_true = df[df['Subcapsular'] == True]
+    subcapsular_false = df[df['Subcapsular'] == False]
+    if ratio_flag is True:
+        p = sns.lmplot(y="R(EAV:PAV)", x="Energy (kJ)", hue="Subcapsular", data=df, markers=["*", "*"],
+                       palette=['cornflowerblue', 'orange'],
+                       ci=None, scatter_kws={"s": 150, "alpha": 0.8}, line_kws={'label': 'red'},
                        legend=True, legend_out=False)
         slope, intercept, r_1, p_value, std_err = stats.linregress(subcapsular_false['Energy (kJ)'],
                                                                    subcapsular_false['R(EAV:PAV)'])
         slope, intercept, r_2, p_value, std_err = stats.linregress(subcapsular_true['Energy (kJ)'],
                                                                    subcapsular_true['R(EAV:PAV)'])
-        edit_save_plot(p, flag_hue='subcapsular', ylabel='R(EAV:PAV)', xlabel='Energy (kJ)', device='Acculis pMTA',
+        edit_save_plot(p=p, flag_hue='subcapsular', ylabel='R(EAV:PAV)', xlabel='Energy (kJ)', device='Acculis pMTA',
                        r_1=r_1, r_2=r_2, label_2=label_2, label_3=label_3)
     else:
-        p = sns.lmplot(y="EAV", x="PAV", hue="Subcapsular", data=df, markers=["X", "s"],
-                       palette=['cornflowerblue'],
-                       ci=None, scatter_kws={"s": 150, "alpha": 0.5}, line_kws={'label': 'red'},
+        p = sns.lmplot(y="EAV", x="PAV", hue="Subcapsular", data=df, markers=["*", "*"],
+                       palette=['cornflowerblue', 'orange'],
+                       ci=None, scatter_kws={"s": 150, "alpha": 0.8}, line_kws={'label': 'red'},
                        legend=True, legend_out=False)
 
         slope, intercept, r_1, p_value, std_err = stats.linregress(subcapsular_false['PAV'],
                                                                    subcapsular_false['EAV'])
         slope, intercept, r_2, p_value, std_err = stats.linregress(subcapsular_true['PAV'],
                                                                    subcapsular_true['EAV'])
-        edit_save_plot(p, flag_hue='subcapsular', ylabel='EAV', xlabel='PAV', device='Acculis pMTA',
+        edit_save_plot(ax=None, p=p, flag_hue='subcapsular', ylabel='Effective Ablation Volume (mL)',
+                       xlabel='Predicted Ablation Volume (mL)', device='Acculis pMTA',
                        r_1=r_1, r_2=r_2, label_2=label_2, label_3=label_3)
 
 
@@ -267,30 +271,34 @@ def plot_scatter_pav_eav(df_radiomics,
     """
     df = pd.DataFrame()
     df['PAV'] = ablation_vol_interpolated_brochure
-    df['EAV'] = df_radiomics['Ablation Volume [ml] (parametrized_formula)']
+    df['EAV'] = df_radiomics['Ablation Volume [ml]']
     df['Energy (kJ)'] = df_radiomics['Energy [kj]']
-    df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
-    # sns.set_palette(sns.cubehelix_palette(8, start=2, rot =0, dark=0, light=.95, reverse=True))
-    slope, intercept, r_square, p_value, std_err = stats.linregress(df['R(EAV:PAV)'], df['Energy (kJ)'])
+
     if ratio_flag is False:
         if linear_regression is True:
-            ax = sns.regplot(x="PAV", y="EAV", data=df, scatter_kws={"s": 150, "alpha": 0.6},
-                             color=sns.xkcd_rgb["medium green"],
-                             line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square) + ' (Ablation Volume)'})
+            df.dropna(inplace=True)
+            slope, intercept, r_square, p_value, std_err = stats.linregress(df['EAV'], df['PAV'])
+            ax = sns.regplot(x="PAV", y="EAV", data=df, scatter_kws={"s": 150, "alpha": 0.8},
+                             color=sns.xkcd_rgb["violet"],
+                             line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square)})
         else:
-            ax = sns.scatterplot(x="PAV", y="EAV", data=df, scatter_kws={"s": 150, "alpha": 0.6},
-                                 color=sns.xkcd_rgb["medium green"])
+            ax = sns.scatterplot(x="PAV", y="EAV", data=df, s=200, alpha=0.8,
+                                 color=sns.xkcd_rgb["violet"])
 
-        edit_save_plot(ax=ax, ylabel="EAV", xlabel="PAV", device='Acculis pMTA')
+        edit_save_plot(ax=ax, ylabel="Effective Ablation Volume (mL)", xlabel="Predicted Ablation Volume (mL)")
 
     else:
+        df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
+        df.dropna(inplace=True)
+        slope, intercept, r_square, p_value, std_err = stats.linregress(df['R(EAV:PAV)'], df['Energy (kJ)'])
+
         if linear_regression is True:
-            ax = sns.regplot(y="R(EAV:PAV)", x="Energy (kJ)", data=df, color=sns.xkcd_rgb["medium green"],
-                         line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square)},
-                         scatter_kws={"s": 150, "alpha": 0.6})
+            ax = sns.regplot(y="R(EAV:PAV)", x="Energy (kJ)", data=df, color=sns.xkcd_rgb["violet"],
+                             line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square)},
+                             scatter_kws={"s": 150, "alpha": 0.8})
         else:
-            ax = sns.scatterplot(x="R(EAV:PAV)", y="Energy (kJ)", data=df, scatter_kws={"s": 150, "alpha": 0.6},
-                                 color=sns.xkcd_rgb["medium green"])
+            ax = sns.scatterplot(x="R(EAV:PAV)", y="Energy (kJ)", data=df, scatter_kws={"s": 150, "alpha": 0.8},
+                                 color=sns.xkcd_rgb["violet"])
 
         edit_save_plot(ax=ax, ylabel="R(EAV:PAV)", xlabel="Energy (kJ)", device='Acculis pMTA')
 
@@ -301,47 +309,61 @@ def connect_points(x, y, p1, p2):
     plt.plot([x, x2], [x, y2], 'k-')
 
 
-
 def connected_mev_miv(df_radiomics, ablation_vol_interpolated_brochure):
+    """
+    Plots ablation volumes.
+    :param df_radiomics: DataFrame containing tabular radiomics features
+    :param ablation_vol_interpolated_brochure:  column-like interpolated ablation volume from the brochure
+    :return: Plot, saved as a PNG image
+    """
+    font = {'family': 'DejaVu Sans',
+            'size': 16}
+
+    matplotlib.rc('font', **font)
     df = pd.DataFrame()
     df['PAV'] = ablation_vol_interpolated_brochure
     df['EAV'] = df_radiomics_acculis['Ablation Volume [ml]']
-    df['MIV'] = df_radiomics['Inner Ellipsoid Volume']
+    # MIV not ready
+    # df['MIV'] = df_radiomics['Inner Ellipsoid Volume']
     df['MEV'] = df_radiomics['Outer Ellipsoid Volume']
-    df = df[df['MEV'] < 150]
+    df = df[df['MEV'] < 100]
     df.dropna(inplace=True)
     # plot scatter plots on the same y axis then connect them with a vertical line
     fig, ax = plt.subplots()
-    MIV = np.asarray(df['MIV'])
+    # MIV = np.asarray(df['MIV'])
     MEV = np.asarray(df['MEV'])
     PAV = np.asarray(df['PAV'])
+    EAV = np.asarray(df['EAV'])
     # x = df['PAV']
-    x = np.asarray([i for i in range(1, len(MIV)+1)])
-    ax.scatter(x, MIV, marker='o', color='red', label='Minimum Inscribed Ellipsoid')
-    ax.scatter(x, MEV, marker='o', color='blue', label='Maximum Enclosing Ellipsoid')
-    # ax.scatter(x, PAV, marker='o', color='green', label='Predicted Ablation Volume')
-    plt.legend()
-    plt.ylabel('Volume (ml)')
+    x = np.asarray([i for i in range(1, len(MEV) + 1)])
+    ax.scatter(x, PAV, marker='o', color='green', label='Predicted Ablation Volume')
+    ax.scatter(x, EAV, marker='o', color='orange', label='Effective Ablation Volume')
+    ax.scatter(x, MEV, marker='o', color='blue', label='Minimum Enclosing Ellipsoid')
+    plt.legend(loc='upper left')
+    plt.ylabel('Volume (mL)')
 
     for i in np.arange(0, len(x)):
         x1, x2 = x[i], x[i]
-        y1, y2 = MIV[i], MEV[i]
+        y1, y2 = EAV[i], MEV[i]
         plt.plot([x1, x2], [y1, y2], 'k-')
-        plt.show()
 
     # plt.ylim([0, 200])
     labels = np.round(np.asarray(df['PAV']))
-    plt.xticks(x, labels, rotation=45)
-    plt.xlabel('Predicted Ablation Volume (ml)')
+    # plt.xticks(x, labels, rotation=45, fontsize=24)
+    # plt.xlabel('Predicted Ablation Volume (ml)', fontsize=20)
 
-    plt.show()
-    # gh.save(r'C:\Users\Raluca Sandu\Desktop\PAV_MEV_EAV_ellipsoids', width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
-    plt.close()
-    ax2 = sns.boxplot(data=df)
+    gh.save(r'C:\Users\Raluca Sandu\Desktop\PAV_MEV_EAV_ellipsoids_1', width=12, height=12, ext=["png"], close=True,
+            tight=True, dpi=600)
+
+    df.columns = ['Predicted Ablation', 'Effective Ablation', 'Minimum Enclosing Ellipsoid']
+    b = sns.boxplot(data=df)
+    plt.ylabel('Volume (mL)')
+    # b.set_xlabel(fontsize=20)
     # plt.ylim([])
     # plt.grid()
     # plt.show()
-    gh.save(r'C:\Users\Raluca Sandu\Desktop\boxplots_ellipsoids', width=12, height=12, ext=["png"], close=True, tight=True, dpi=600)
+    gh.save(r'C:\Users\Raluca Sandu\Desktop\boxplots_ellipsoids', width=12, height=12, ext=["png"], close=True,
+            tight=True, dpi=600)
 
 
 if __name__ == '__main__':
@@ -350,14 +372,38 @@ if __name__ == '__main__':
     df_acculis = df_ablation_brochure[df_ablation_brochure['Device_name'] == 'Angyodinamics (Acculis)']
     df_acculis.reset_index(inplace=True)
     df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
-    df_radiomics_acculis .reset_index(inplace=True)
+    df_radiomics_acculis.reset_index(inplace=True)
     # df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == False]
-    df_radiomics_acculis = df_radiomics_acculis [(df_radiomics_acculis['Comments'].isnull())]
+    df_radiomics_acculis = df_radiomics_acculis[(df_radiomics_acculis['Comments'].isnull())]
 
     # flag_hue='chemotherapy'
     # %% extract the needle error
-    ablation_vol_interpolated_brochure = interpolation_fct(df_acculis, df_radiomics_acculis, 'Acculis MWA System')
-    connected_mev_miv(df_radiomics, ablation_vol_interpolated_brochure)
-    # plot_scatter_group_var_chemo(df)
-    # fig, ax = plt.subplots()
-    # TODO call each function
+    ablation_vol_interpolated_brochure = interpolation_fct(df_acculis, df_radiomics_acculis)
+
+    df_stats = pd.DataFrame()
+    df_stats['PAV'] = ablation_vol_interpolated_brochure
+    df_stats['EAV'] = df_radiomics_acculis['Ablation Volume [ml]']
+    df_stats['Energy'] = df_radiomics_acculis['Energy [kj]']
+    df_stats['Outer_Ellipsoid_Volume'] = df_radiomics_acculis['Outer Ellipsoid Volume']
+    df_stats['Sphericity'] = df_radiomics_acculis['sphericity_ablation']
+    df_stats['major_axis'] = df_radiomics_acculis['major_axis_length_ablation']
+    df_stats_1 = df_stats.describe()
+    filepath_excel = 'Radiomics_MAVERRIC_Descriptive_Stats.xlsx'
+    writer = pd.ExcelWriter(filepath_excel)
+    df_stats_1.to_excel(writer, sheet_name='radiomics', index=True, float_format='%.2f')
+    writer.save()
+    # %% PLOTS
+    font = {'family': 'DejaVu Sans',
+            'size': 20}
+
+    matplotlib.rc('font', **font)
+    # connected_mev_miv(df_radiomics, ablation_vol_interpolated_brochure)
+    plot_scatter_pav_eav(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=False,
+                         linear_regression=False)
+    # plot_scatter_pav_eav(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=True,
+    #                      linear_regression=True)
+    plot_scatter_group_var_subcapsular(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=False)
+    # plot_scatter_group_var_subcapsular(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=True)
+
+    plot_scatter_group_var_chemo(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=False)
+    # plot_scatter_group_var_chemo(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=True)

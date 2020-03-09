@@ -31,12 +31,10 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     # %% Get Radiomics Metrics (shape and intensity)
     # ABLATION
     ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation)
-    #
     if ablation_radiomics_metrics.error_flag is False:
         df_ablation_metrics_1set = ablation_radiomics_metrics.get_axis_metrics_df()
         new_columns_name = df_ablation_metrics_1set.columns + '_ablation'
         df_ablation_metrics_1set.columns = new_columns_name
-        # df2 = df.set_axis(['V', 'W', 'X', 'Y', 'Z'], axis=1, inplace=False)
     else:
         df_ablation_metrics_1set = None
     # TUMOR

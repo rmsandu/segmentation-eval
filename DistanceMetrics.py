@@ -33,9 +33,9 @@ class RadiomicsMetrics(object):
         class AxisMetricsRadiomics(Enum):
             center_of_mass_x, center_of_mass_y, center_of_mass_z, \
             center_of_mass_index_x, center_of_mass_index_y, center_of_mass_index_z, \
-            elongation, sphericity, intensity_mean, intensity_variance, intensity_uniformity, \
+            elongation, sphericity, mesh_volume, intensity_mean, intensity_variance, intensity_uniformity, \
             diameter3D, diameter2D_slice, diameter2D_col, diameter2D_row, major_axis_length, \
-            least_axis_length, minor_axis_length, gray_lvl_nonuniformity, gray_lvl_variance = range(20)
+            least_axis_length, minor_axis_length, gray_lvl_nonuniformity, gray_lvl_variance = range(21)
 
         axis_metrics_results = np.zeros((1, len(AxisMetricsRadiomics.__members__.items())))
         # %% Extract the diameter axis
@@ -69,7 +69,11 @@ class RadiomicsMetrics(object):
             axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_index_x.value] = None
             axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_index_y.value] = None
             axis_metrics_results[0, AxisMetricsRadiomics.center_of_mass_index_z.value] = None
-
+        try:
+            axis_metrics_results[0, AxisMetricsRadiomics.mesh_volume.value] = (result['original_shape_MeshVolume'].tolist())/1000
+        except Exception:
+            axis_metrics_results[0, AxisMetricsRadiomics.mesh_volume.value] = None
+        # getMeshVolumeFeatureValue()
         try:
             axis_metrics_results[0, AxisMetricsRadiomics.elongation.value] = result['original_shape_Elongation']
         except Exception:
