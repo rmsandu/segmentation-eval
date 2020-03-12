@@ -28,9 +28,9 @@ The following non-standard libraries are required to use the full functionality 
     - various plots and statistics for the features that have been previously extracted
 
 ## Usage
-The scripts are called (internally) in alphabetical order using the folllowing logic:
-    * *Read Images --> Resample --> Extract Distance Metrics  --> Extract Volume Metrics  --> Plot Distance Metrics --> Output Metrics to Xlsx file in Tabular format* *
-The segmentation mask are resampled in the same dimensions and spacing (isotropic) before calling the `DistanceMetrics.py` and `VolumeMetrics.py`.
+The scripts are called (internally) in alphabetical order using the folllowing logic:  
+
+    Read Images --> Resample --> Extract Distance Metrics  --> Extract Volume Metrics  --> Plot Distance Metrics --> Output Metrics to Xlsx file in Tabular format
 
 `PyRadiomics` automatically checks if the source CT image and the derived mask have the same dimensions. If not, resampling is performed in the background.
 This function only operates with the path to the patient folder that can have all source CT image, segmentation masks, other files, all in one folder. It does that by creating a dictionary of paths based on the metadata information that was encoded in the [**ReferencedImageSequenceTag**](https://dicom.innolitics.com/ciods/basic-structured-display/structured-display-image-box/00720422/00081140) and [**SourceImageSequence**](https://dicom.innolitics.com/ciods/rt-beams-treatment-record/general-reference/00082112). I have previously encoded the mapping information (which is also an anonymization pipeline) in the [DICOM-Anonymization-Segmentation-Mapping](https://github.com/raluca-san/python-util-scripts/blob/master/A_fix_segmentations_dcm.py)
@@ -42,27 +42,39 @@ This function only operates with the path to the patient folder that can have al
     args = vars(ap.parse_args())
 The main function where to run the program from is `A_read_files_info.py`.
 The function can either work with a single patient image folder by calling the function like:
-`python A_read_files_info.py --i "C:\Users\MyUser\MyPatientFolderwithDicomAndSegmentationImages --o "C:\OutputFilesandImages"`
-For **Batch Processing** option the input is an Excel (.xlsx) file with the following headers:
+
+`python A_read_files_info.py --i "C:\Users\MyUser\MyPatientFolderwithDicomAndSegmentationImages --o "C:\OutputFilesandImages"`  
+
+For **Batch Processing** option the input is an Excel (.xlsx) file with the following headers:  
 | Patient_ID    | Ablation_IR_Date |   Nr_Lesions | Patient_Dir_Paths                    |
 | ------------- | ---------------- | ------------ | ------------------                   | 
 | C001          | 20160103         |    2         | ['D:\\Users\\User1\\Pats\\Pat_C001'] |    
-| C002          | 20181108         |    1         | ['D:\\Users\\User1\\Pats\\Pat_C002'] |  
+| C002          | 20181108         |    1         | ['D:\\Users\\User1\\Pats\\Pat_C002'] |    
+
 
 The algorithm starts by iterating through all the patient folders provided in the column "Patient_Dir_Paths". Of course it's not absolutely necessarry to use the data structured in the way I did. Moreover, the `A_read_files_info.py` can be skipped altogether, especially when you know the mapping between your **Source (original) CT image -> Segmentation1 -> Segmentation2**. In this specific case my Segmentation1 is called "tumor_segmentation" and Segmentation2 is called "ablation_segmentation", which are 2 separate structures/tissue within my organ of interest (that's the liver). If you already know the file mapping between your images (i.e. which image is related to which image, aka more explicit, from which CT source image comes each segmentation) you can move the next steps which are `B_ResampleSegmentations.py` and `C_mainDistanceVolumeMetrics.py`.
 
+## Resampling (Resizing)
+In my case resampling was necessary because not only my 2 segmentation masks had different sizes [x, y, z] , but they also had different spacings in-between the slices. If your images differ only in size then you can use the `SimpleITK Paste Image` function. However, if the spacing differs, resampling is necesarry otherwise we cannot compare the 2 images using the Distance and Volume metrics.  
+
+The file that does the resampling and resizing job is `B_ResampleSegmentations.py`. First the images need to be read and loaded using the `SimpleITK` Python library. My segmentations and CT images were saved in multiple DICOM slices (images) in a DICOM folder. The script `DicomReader.py` reads all the DICOM slices of an image/segmentation and returns a single variable which is an object in SimpleITK format. The segmentation masks are resampled in the same dimensions and spacing (however still anisotropic) before calling the `DistanceMetrics.py` and `VolumeMetrics.py`.  
+
+This resampling script can be called like:
+   ` import SimpleITK as sitk
+     import DicomReader as Reader
+     tumor_segmentation_sitk, tumor_sitk_reader = Reader.read_dcm_series(tumor_path, True)
+     ablation_segmentation_sitk, ablation_sitk_reader = Reader.read_dcm_series(ablation_path, True)
+     resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk) # object instantiation
+     tumor_segmentation_resampled = resizer.resample_segmentation()  # SimpleITK image object`  
+     
+The actual resampling operation is performed using the `SimpleITK ResampleImageFilter` and `NearestNeighbour Interpolation` such that no new segmentation mask labels are generated. 
+
+## Segmentation Evaluation Metrics
 
 ## Output
 todo
-### Data Preparation
-The data preparation step depends on the input data to be used. (xml-processing script) (a bit dumb, move it away from that repo)
-#### Single Dataset
 
-#### Batch Processing
-todo
 
-####
-    python package_data.py --intraop_patch intra_op_patch.ply  --preop_ct pre_op.ply --intraop_ct intra_op.ply --output_file packaged.pckl
 #### Patient Data 
 The data consists of a segmented pre-operative CT model and tracked images from a stereo-endoscope.
 The data has to be organized as follows:
@@ -76,13 +88,6 @@ The data has to be organized as follows:
     │       ├── *.jpg           # segmentation masks with same name as stereo images
     └── ...
 
-* 
-#### Compute Radiomics
-    python compute_stereo.py --input_dir path_to_data --result_dir path_to_output --segment true
-    
-* to be completed
-* to be completed
-* to be completed
 
 ### Plots
 todo
