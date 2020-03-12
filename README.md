@@ -71,26 +71,32 @@ This resampling script can be called like:
 The actual resampling operation is performed using the `SimpleITK ResampleImageFilter` and `NearestNeighbour Interpolation` such that no new segmentation mask labels are generated. 
 
 ## Segmentation Evaluation Metrics
+The segmentation Evaluation Metrics are called from the script `C_mainDistanceVolumeMetrics.py` which calls:
+* `DistanceMetrics.py`
+* `VolumeMetrics.py`
+* `RadiomicsMetrics` - features extracted using the Python library `PyRadiomics`. You can find a list of all the featuers that can be computed using this PyRadiomics [here](https://pyradiomics.readthedocs.io/en/latest/features.html). I used only the volumes, sphericity, intensity and axis values.
+The same as for **Resampling**, both these scripts take as input arguments SimpleITK image objects. They can be called for example like:  
 
+ `surface_distance_metrics = DistanceMetrics(ablation_segmentation, tumor_segmentation_resampled)`  
+ `ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation)`  
+ `evaloverlap = VolumeMetrics()`   
+ 
+  `evaloverlap.set_image_object(ablation_segmentation, tumor_segmentation_resampled)`  
+  
+ 
 ## Output
-todo
+The output is a Excel (.xlsx) file in tabular format that returns radiomics (feature values) per patient and per lesion.
+Aditionally a histogram that describes the Euclidean distances between the tumor and ablation (my 2 segmentations files) are generated. The script for plotting the histogram uses the Surface Euclidean Distances extracted using SimpleITK using [the Maurer et. al algorithm](https://itk.org/SimpleITKDoxygen/html/classitk_1_1simple_1_1SignedMaurerDistanceMapImageFilter.html) is in `scripts/plot_ablation_margin_hist.py`.
+To compute the histogram the following steps are followed for the Maurer et. al algorithm:
+1. compute the contour surface of the object (face+edge+vertex connectivity : fullyConnected=True, face connectivity only : fullyConnected=False (default mode)
+2. convert from SimpleITK format to Numpy Array Img
+3. remove the zeros from the contour of the object, NOT from the distance map
+4. compute the number of 1's pixels in the contour
+5. instantiate the Signed Mauerer Distance map for the object (negative numbers also)
+6. Multiply the binary surface segmentations with the distance maps. The resulting distance maps contain non-zero values only on the surface (they can also contain zero on the surface)
 
+![histogram_example](https://user-images.githubusercontent.com/20581812/76539679-610ca980-6481-11ea-9462-646d5620b559.png)
 
 #### Patient Data 
-The data consists of a segmented pre-operative CT model and tracked images from a stereo-endoscope.
-The data has to be organized as follows:
+The patient data consists of files and folders 
 
-    .
-    ├── ...
-    ├── path_to_data            # input data folder
-    │   ├── *.jpg               # interlaced stereo images
-    │   ├── *.xml               # CASone xml parameter file
-    │   └── mask                # mask folder (optional)
-    │       ├── *.jpg           # segmentation masks with same name as stereo images
-    └── ...
-
-
-### Plots
-todo
-### Stats
-    todo
