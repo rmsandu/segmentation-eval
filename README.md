@@ -1,6 +1,6 @@
 # Radiomics Extraction and Evaluation based on Binary 3D Segmentation Images
 
-The segmentations used in this project represent a pair of the type tumor - ablation.  The ablation can be replaced with another type of segmentation, such as a predicted tumor segmentation (using a separate algorithm). 
+The segmentations used in this project represent a pair of the type tumor - ablation for liver cancer tumors.  The ablation can be replaced with another type of segmentation, such as a predicted tumor segmentation (using a separate algorithm). 
 
 The evaluation metrics include:
 -  Euclidean Distances between two objects (eg. Ground Truth segmentation of Tumor vs. Predicted Segmentation of Tumor, Segmentation of Ablation vs. Segmentation of Tumor). The Mauerer et Al. algorithm for calculating euclidean distances between two objects from binary images from the SimpleITK Implementation.
@@ -44,7 +44,12 @@ The main function where to run the program from is `A_read_files_info.py`.
 The function can either work with a single patient image folder by calling the function like:
 `python A_read_files_info.py --i "C:\Users\MyUser\MyPatientFolderwithDicomAndSegmentationImages --o "C:\OutputFilesandImages"`
 For **Batch Processing** option the input is an Excel (.xlsx) file with the following headers:
-|Patient_ID	Date_of_Birth|	Ablation_IR_Date |	Nr_Lesions_Ablated | Patient_Dir_Paths|
+| Patient_ID    | Ablation_IR_Date |   Nr_Lesions | Patient_Dir_Paths                    |
+| ------------- | ---------------- | ------------ | ------------------                   | 
+| C001          | 20160103         |    2         | ['D:\\Users\\User1\\Pats\\Pat_C001'] |    
+| C002          | 20181108         |    1         | ['D:\\Users\\User1\\Pats\\Pat_C002'] |  
+
+The algorithm starts by iterating through all the patient folders provided in the column "Patient_Dir_Paths". Of course it's not absolutely necessarry to use the data structured in the way I did. Moreover, the `A_read_files_info.py` can be skipped altogether, especially when you know the mapping between your **Source (original) CT image -> Segmentation1 -> Segmentation2**. In this specific case my Segmentation1 is called "tumor_segmentation" and Segmentation2 is called "ablation_segmentation", which are 2 separate structures/tissue within my organ of interest (that's the liver). If you already know the file mapping between your images (i.e. which image is related to which image, aka more explicit, from which CT source image comes each segmentation) you can move the next steps which are `B_ResampleSegmentations.py` and `C_mainDistanceVolumeMetrics.py`.
 
 
 ## Output
