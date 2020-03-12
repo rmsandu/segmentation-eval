@@ -35,7 +35,18 @@ The segmentation mask are resampled in the same dimensions and spacing (isotropi
 `PyRadiomics` automatically checks if the source CT image and the derived mask have the same dimensions. If not, resampling is performed in the background.
 This function only operates with the path to the patient folder that can have all source CT image, segmentation masks, other files, all in one folder. It does that by creating a dictionary of paths based on the metadata information that was encoded in the [**ReferencedImageSequenceTag**](https://dicom.innolitics.com/ciods/basic-structured-display/structured-display-image-box/00720422/00081140) and [**SourceImageSequence**](https://dicom.innolitics.com/ciods/rt-beams-treatment-record/general-reference/00082112). I have previously encoded the mapping information (which is also an anonymization pipeline) in the [DICOM-Anonymization-Segmentation-Mapping](https://github.com/raluca-san/python-util-scripts/blob/master/A_fix_segmentations_dcm.py)
 ## Input
-todo
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--rootdir", required=False, help="path to the patient folder to be processed")
+    ap.add_argument("-o", "--plots_dir", required=True, help="path to the output images")
+    ap.add_argument("-b", "--input_batch_proc", required=False, help="input csv file for batch processing")
+    args = vars(ap.parse_args())
+The main function where to run the program from is `A_read_files_info.py`.
+The function can either work with a single patient image folder by calling the function like:
+`python A_read_files_info.py --i "C:\Users\MyUser\MyPatientFolderwithDicomAndSegmentationImages --o "C:\OutputFilesandImages"`
+For **Batch Processing** option the input is an Excel (.xlsx) file with the following headers:
+|Patient_ID	Date_of_Birth|	Ablation_IR_Date |	Nr_Lesions_Ablated | Patient_Dir_Paths|
+
+
 ## Output
 todo
 ### Data Preparation
