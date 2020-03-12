@@ -59,13 +59,14 @@ In my case resampling was necessary because not only my 2 segmentation masks had
 
 The file that does the resampling and resizing job is `B_ResampleSegmentations.py`. First the images need to be read and loaded using the `SimpleITK` Python library. My segmentations and CT images were saved in multiple DICOM slices (images) in a DICOM folder. The script `DicomReader.py` reads all the DICOM slices of an image/segmentation and returns a single variable which is an object in SimpleITK format. The segmentation masks are resampled in the same dimensions and spacing (however still anisotropic) before calling the `DistanceMetrics.py` and `VolumeMetrics.py`.  
 
-This resampling script can be called like:
-   ` import SimpleITK as sitk
-     import DicomReader as Reader
-     tumor_segmentation_sitk, tumor_sitk_reader = Reader.read_dcm_series(tumor_path, True)
-     ablation_segmentation_sitk, ablation_sitk_reader = Reader.read_dcm_series(ablation_path, True)
-     resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk) # object instantiation
-     tumor_segmentation_resampled = resizer.resample_segmentation()  # SimpleITK image object`  
+This resampling script can be called like:  
+   ` import SimpleITK as sitk`  
+   ` import DicomReader as Reader`  
+   ` tumor_segmentation_sitk, tumor_sitk_reader = Reader.read_dcm_series(tumor_path, True)`  
+   ` ablation_segmentation_sitk, ablation_sitk_reader = Reader.read_dcm_series(ablation_path, True)`  
+   ` resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk) # object instantiation`  
+   ` tumor_segmentation_resampled = resizer.resample_segmentation()  # SimpleITK image object`  
+   
      
 The actual resampling operation is performed using the `SimpleITK ResampleImageFilter` and `NearestNeighbour Interpolation` such that no new segmentation mask labels are generated. 
 
