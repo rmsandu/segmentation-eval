@@ -10,10 +10,10 @@ The evaluation metrics include:
 
 
 ## Requirements
-The following non-standard libraries are required to use the full functionality of the project.
-* SimpleITK
-* PyRadiomics
-* PyDicom
+The following non-standard libraries are required to use the full functionality of the project for DICOM image reading and processing.
+* [SimpleITK](https://github.com/SimpleITK/SimpleITK)
+* [PyRadiomics](https://github.com/Radiomics/pyradiomics)
+* [PyDicom](https://github.com/pydicom/pydicom)
 
 ## Main Functions and Operations Performed
 1. `A_read_files_info.py` (optional)
@@ -22,6 +22,8 @@ The following non-standard libraries are required to use the full functionality 
 3. `C_mainDistanceVolumeMetrics.py`
     - `VolumeMetrics.py`
     - `DistanceMetrics.py`
+    - `scripts/ellipsoid_inner_outer.py`
+    - `scripts/plot_ablation_margin_hist.py`
 4. `D_compile_population_radiomics.py ` (optional)
     - if batch processing (for multiple segmentations) have been enabled this script will compile all the features from the outpt CSV files into one single file.
 5. `E_radiomics_stats.py` (optional)
