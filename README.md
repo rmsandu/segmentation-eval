@@ -4,7 +4,7 @@ The segmentations used in this project represent a pair of the type tumor - abla
 
 The evaluation metrics include:
 -  Euclidean Distances between two objects from [A linear time algorithm for computing exact Euclidean distance transforms of binary images in arbitrary dimensions](https://ieeexplore.ieee.org/abstract/document/1177156). 
-- [Volume Metrics] (https://itk.org/SimpleITKDoxygen/html/classitk_1_1simple_1_1LabelOverlapMeasuresImageFilter.html) (Total Volume in ml, Dice, Jaccard score, Volume Similarity, Volume Overlap Error,Residual Volume)
+- [Volume Metrics](https://itk.org/SimpleITKDoxygen/html/classitk_1_1simple_1_1LabelOverlapMeasuresImageFilter.html) (Total Volume in ml, Dice, Jaccard score, Volume Similarity, Volume Overlap Error,Residual Volume)
 - Maximum Inscribed Ellipsoid and Minimum Enclosing Ellipsoid Volumes 
 - [PyRadiomics](https://pyradiomics.readthedocs.io/en/latest/) Features (Axis Lenghts, Intensity Values, Elongation, Sphericity, Mesh Volume)
 
