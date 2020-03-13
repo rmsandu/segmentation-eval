@@ -22,7 +22,7 @@ The following non-standard libraries are required to use the full functionality 
 3. `C_mainDistanceVolumeMetrics.py`
     - `VolumeMetrics.py`
     - `DistanceMetrics.py`
-4. `D_compile_population_radiomics.py (optional)`
+4. `D_compile_population_radiomics.py ` (optional)
     - if batch processing (for multiple segmentations) have been enabled this script will compile all the features from the outpt CSV files into one single file.
 5. `E_radiomics_stats.py` (optional)
     - various plots and statistics for the features that have been previously extracted
@@ -97,6 +97,23 @@ To compute the histogram the following steps are followed for the Maurer et. al 
 
 ![histogram_example](https://user-images.githubusercontent.com/20581812/76539679-610ca980-6481-11ea-9462-646d5620b559.png)
 
-#### Patient Data 
-The patient data consists of files and folders 
+#### Patient Data Structure. 
+The patient data consists of files and folder has the following folder structure and organization:  
+
+`Patient_C001  
+
+            |Series_1  
+            
+                     |CAS-Recordings (* .xml files)  
+                     
+                        | 2016-09-13_07-15-32 ...
+                                                  |Segmentations
+                                                                |0001.dcm
+                     |CT.1.2.392...dcm
+                     |CT.1.2.393...dcm
+                     |CT.1.2.3..dcm  
+            |Series_2
+            |Series_3`  
+            
+
 
