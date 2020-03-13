@@ -100,7 +100,7 @@ To compute the histogram the following steps are followed for the Maurer et. al 
 #### Patient Data Structure. 
 The patient data consists of files and folder has the following folder structure and organization:  
 
-`Patient_C001  
+    `Patient_C001  
 
             |Series_1  
             
