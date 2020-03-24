@@ -7,7 +7,7 @@ The evaluation metrics include:
 - [Volume Metrics](https://itk.org/SimpleITKDoxygen/html/classitk_1_1simple_1_1LabelOverlapMeasuresImageFilter.html) (Total Volume in ml, Dice, Jaccard score, Volume Similarity, Volume Overlap Error,Residual Volume)
 - Maximum Inscribed Ellipsoid and Minimum Enclosing Ellipsoid Volumes 
 - [PyRadiomics](https://pyradiomics.readthedocs.io/en/latest/) Features (Axis Lenghts, Intensity Values, Elongation, Sphericity, Mesh Volume)
-
+![image](https://user-images.githubusercontent.com/20581812/77424220-048a8200-6dd1-11ea-82fc-e9803232a7b5.png)
 
 ## Requirements
 The following non-standard libraries are required to use the full functionality of the project for DICOM image reading and processing.
@@ -33,6 +33,9 @@ The following non-standard libraries are required to use the full functionality 
 The scripts are called (internally) in alphabetical order using the folllowing logic:  
 
     Read Images --> Resample --> Extract Distance Metrics  --> Extract Volume Metrics  --> Plot Distance Metrics --> Output Metrics to Xlsx file in Tabular format
+ 
+ ![image](https://user-images.githubusercontent.com/20581812/77426347-99db4580-6dd4-11ea-9606-aac92efd3045.png)
+
 
 `PyRadiomics` automatically checks if the source CT image and the derived mask have the same dimensions. If not, resampling is performed in the background.
 This function only operates with the path to the patient folder that can have all source CT image, segmentation masks, other files, all in one folder. It does that by creating a dictionary of paths based on the metadata information that was encoded in the [**ReferencedImageSequenceTag**](https://dicom.innolitics.com/ciods/basic-structured-display/structured-display-image-box/00720422/00081140) and [**SourceImageSequence**](https://dicom.innolitics.com/ciods/rt-beams-treatment-record/general-reference/00082112). I have previously encoded the mapping information (which is also an anonymization pipeline) in the [DICOM-Anonymization-Segmentation-Mapping](https://github.com/raluca-san/python-util-scripts/blob/master/A_fix_segmentations_dcm.py)
@@ -82,7 +85,6 @@ The same as for **Resampling**, both these scripts take as input arguments Simpl
  `surface_distance_metrics = DistanceMetrics(ablation_segmentation, tumor_segmentation_resampled)`  
  `ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation)`  
  `evaloverlap = VolumeMetrics()`   
- 
   `evaloverlap.set_image_object(ablation_segmentation, tumor_segmentation_resampled)`  
   
  
@@ -95,9 +97,15 @@ To compute the histogram the following steps are followed for the Maurer et. al 
 3. remove the zeros from the contour of the object, NOT from the distance map
 4. compute the number of 1's pixels in the contour
 5. instantiate the Signed Mauerer Distance map for the object (negative numbers also)
-6. Multiply the binary surface segmentations with the distance maps. The resulting distance maps contain non-zero values only on the surface (they can also contain zero on the surface)
+6. Multiply the binary surface segmentations with the distance maps. The resulting distance maps contain non-zero values only on the surface (they can also contain zero on the surface)  
+
 
 ![histogram_example](https://user-images.githubusercontent.com/20581812/76539679-610ca980-6481-11ea-9462-646d5620b559.png)
+
+Inner and Outer Ellipsoids Fitted around a segmentation (orange points).  
+
+![image](https://user-images.githubusercontent.com/20581812/77424720-e1140700-6dd1-11ea-8b9b-bdc76484bd18.png)
+ 
 
 #### Patient Data Structure. 
 The patient data consists of files and folder has the following folder structure and organization:  
