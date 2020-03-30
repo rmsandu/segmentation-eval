@@ -3,19 +3,19 @@
 @author: Raluca Sandu
 """
 
+import SimpleITK as sitk
 import numpy as np
 import scipy
-import SimpleITK as sitk
 
 
 class ResizeSegmentation(object):
 
-    def __init__(self,  ablation_segmentation, tumor_segmentation):
+    def __init__(self, ablation_segmentation, tumor_segmentation):
 
         self.tumor_segmentation = tumor_segmentation
         self.ablation_segmentation = ablation_segmentation
 
-    def resample_segmentation_pydicom(self, scan, new_spacing=[1,1,1]):
+    def resample_segmentation_pydicom(self, scan, new_spacing=[1, 1, 1]):
         """
 
         :param scan:
@@ -41,6 +41,7 @@ class ResizeSegmentation(object):
         image = scipy.ndimage.interpolation.zoom(image, real_resize_factor)
 
         return image, new_spacing
+
     #
     # print("Shape before resampling\t", imgs_to_process.shape
     # imgs_after_resamp, spacing = resample(imgs_to_process, patient, [1, 1, 1])
@@ -64,7 +65,6 @@ class ResizeSegmentation(object):
         resampler.SetOutputDirection(self.ablation_segmentation.GetDirection())
         resampled_img = resampler.Execute(self.tumor_segmentation)  # the tumour mask
         return resampled_img
-
 
     def recast_pixel_val(self, image_source, image_roi):
         """

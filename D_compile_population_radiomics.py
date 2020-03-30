@@ -3,9 +3,9 @@
 @author: Raluca Sandu
 """
 
+import argparse
 import os
 import time
-import argparse
 
 import pandas as pd
 

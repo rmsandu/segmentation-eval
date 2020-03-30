@@ -5,10 +5,11 @@ Created on Wed Nov 15 14:17:41 2017
 @author: Raluca Sandu
 """
 
+import SimpleITK as sitk
 import numpy as np
 import pandas as pd
-import SimpleITK as sitk
-from scripts.ellipsoid_inner_outer import volume_inner_ellipsoid, volume_outer_ellipsoid
+
+from scripts.ellipsoid_inner_outer import get_ellipsoid_fit_volumes
 
 
 class VolumeMetrics:
@@ -33,8 +34,7 @@ class VolumeMetrics:
         self.ablation_segmentation = ablation_segmentation
 
     def get_volume_ellipsoids(self):
-        self.volume_inner_ellipsoid = volume_inner_ellipsoid(self.ablation_segmentation)
-        self.volume_outer_ellipsoid = volume_outer_ellipsoid(self.ablation_segmentation)
+        self.volume_outer_ellipsoid, self.volume_inner_ellipsoid = get_ellipsoid_fit_volumes(self.ablation_segmentation)
 
     def get_volume_ml(self, image):
         x_spacing, y_spacing, z_spacing = image.GetSpacing()
@@ -76,7 +76,7 @@ class VolumeMetrics:
         volume_intersection = (num_voxels_intersection_non_zero * x_spacing * y_spacing * z_spacing) / 1000
         volume_tumor = self.get_volume_ml(self.tumor_segmentation)
         volume_residual = volume_tumor - volume_intersection
-        coverage_ratio = 1 - volume_residual/volume_tumor
+        coverage_ratio = 1 - volume_residual / volume_tumor
         # coverage_ratio = 1- volume_intersection / volume_tumor
         return volume_residual, coverage_ratio
 
@@ -112,7 +112,7 @@ class VolumeMetrics:
             'Volume Similarity': self.volume_similarity,
             'Tumour coverage ratio': self.coverage_ratio,
             'Inner Ellipsoid Volume': self.volume_inner_ellipsoid,
-            'Outer Ellipsoid Volume' : self.volume_outer_ellipsoid
+            'Outer Ellipsoid Volume': self.volume_outer_ellipsoid
         }
 
         return pd.DataFrame(data=volume_metrics_dict, index=list(range(1)),

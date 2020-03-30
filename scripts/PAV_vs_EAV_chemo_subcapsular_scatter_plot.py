@@ -324,27 +324,27 @@ def connected_mev_miv(df_radiomics, ablation_vol_interpolated_brochure):
     df['PAV'] = ablation_vol_interpolated_brochure
     df['EAV'] = df_radiomics_acculis['Ablation Volume [ml]']
     # MIV not ready
-    # df['MIV'] = df_radiomics['Inner Ellipsoid Volume']
+    df['MIV'] = df_radiomics['Inner Ellipsoid Volume']
     df['MEV'] = df_radiomics['Outer Ellipsoid Volume']
     df = df[df['MEV'] < 100]
     df.dropna(inplace=True)
     # plot scatter plots on the same y axis then connect them with a vertical line
     fig, ax = plt.subplots()
-    # MIV = np.asarray(df['MIV'])
+    MIV = np.asarray(df['MIV'])
     MEV = np.asarray(df['MEV'])
     PAV = np.asarray(df['PAV'])
     EAV = np.asarray(df['EAV'])
     # x = df['PAV']
     x = np.asarray([i for i in range(1, len(MEV) + 1)])
-    ax.scatter(x, PAV, marker='o', color='green', label='Predicted Ablation Volume')
-    ax.scatter(x, EAV, marker='o', color='orange', label='Effective Ablation Volume')
+    ax.scatter(x, MIV, marker='o', color='green', label='Maximum Inscribed Ellipsoid')
+    # ax.scatter(x, EAV, marker='o', color='orange', label='Effective Ablation Volume')
     ax.scatter(x, MEV, marker='o', color='blue', label='Minimum Enclosing Ellipsoid')
     plt.legend(loc='upper left')
     plt.ylabel('Volume (mL)')
 
     for i in np.arange(0, len(x)):
         x1, x2 = x[i], x[i]
-        y1, y2 = EAV[i], MEV[i]
+        y1, y2 = MIV[i], MEV[i]
         plt.plot([x1, x2], [y1, y2], 'k-')
 
     # plt.ylim([0, 200])
@@ -352,23 +352,23 @@ def connected_mev_miv(df_radiomics, ablation_vol_interpolated_brochure):
     # plt.xticks(x, labels, rotation=45, fontsize=24)
     # plt.xlabel('Predicted Ablation Volume (ml)', fontsize=20)
 
-    gh.save(r'C:\Users\Raluca Sandu\Desktop\PAV_MEV_EAV_ellipsoids_1', width=12, height=12, ext=["png"], close=True,
+    gh.save(r'C:\develop\segmentation-eval\figures\MIV_MEV_ellipsoids_1', width=12, height=12, ext=["png"], close=True,
             tight=True, dpi=600)
 
-    df.columns = ['Predicted Ablation', 'Effective Ablation', 'Minimum Enclosing Ellipsoid']
+    # df.columns = ['Predicted Ablation', 'Effective Ablation', 'Maximum Inscribed Ellipsoid', 'Minimum Enclosing Ellipsoid']
     b = sns.boxplot(data=df)
     plt.ylabel('Volume (mL)')
     # b.set_xlabel(fontsize=20)
     # plt.ylim([])
     # plt.grid()
     # plt.show()
-    gh.save(r'C:\Users\Raluca Sandu\Desktop\boxplots_ellipsoids', width=12, height=12, ext=["png"], close=True,
+    gh.save(r'C:\develop\segmentation-eval\figures\boxplots_ellipsoids', width=12, height=12, ext=["png"], close=True,
             tight=True, dpi=600)
 
 
 if __name__ == '__main__':
     df_ablation_brochure = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_145634-20200226_.xlsx")
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_153011-20200313_.xlsx")
     df_acculis = df_ablation_brochure[df_ablation_brochure['Device_name'] == 'Angyodinamics (Acculis)']
     df_acculis.reset_index(inplace=True)
     df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
@@ -397,13 +397,13 @@ if __name__ == '__main__':
             'size': 20}
 
     matplotlib.rc('font', **font)
-    # connected_mev_miv(df_radiomics, ablation_vol_interpolated_brochure)
-    plot_scatter_pav_eav(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=False,
-                         linear_regression=False)
+    connected_mev_miv(df_radiomics, ablation_vol_interpolated_brochure)
+    # plot_scatter_pav_eav(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=False,
+    #                      linear_regression=False)
     # plot_scatter_pav_eav(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=True,
     #                      linear_regression=True)
-    plot_scatter_group_var_subcapsular(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=False)
+    # plot_scatter_group_var_subcapsular(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=False)
     # plot_scatter_group_var_subcapsular(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=True)
 
-    plot_scatter_group_var_chemo(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=False)
+    # plot_scatter_group_var_chemo(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=False)
     # plot_scatter_group_var_chemo(df_radiomics_acculis, ablation_vol_interpolated_brochure, ratio_flag=True)

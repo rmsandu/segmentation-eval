@@ -84,28 +84,18 @@ def volume_ellipsoid_spacing(a, b, c, spacing):
     return volume_object_ml
 
 
-def get_surface_points(img_file):
+def get_surface_points(dcm_img):
     """
-
     :param img_file: DICOM like image in SimpleITK format
     :return: surface points of a 3d volume
     """
-    if isinstance(img_file, str) is True:
-        img = DicomReader.read_dcm_series(img_file, False)
-    else:
-        img = img_file
-    try:
-        spacing = img.GetSpacing()
-    except Exception:
-        print('not a DICOM Image. Please provide a Dicom IMG in SimpleITK format')
-
-    contour = sitk.LabelContour(img, fullyConnected=False)
+    contour = sitk.LabelContour(dcm_img, fullyConnected=False)
     contours = sitk.GetArrayFromImage(contour)
     vertices_locations = contours.nonzero()
     vertices_unravel = list(zip(vertices_locations[0], vertices_locations[1], vertices_locations[2]))
     vertices_list = [list(vertices_unravel[i]) for i in range(0, len(vertices_unravel))]
     surface_points = np.array(vertices_list)
-    return surface_points, spacing
+    return surface_points
 
 
 def plot_ellipsoid(A, centroid, color):
@@ -130,6 +120,24 @@ def plot_ellipsoid(A, centroid, color):
     ax.set_zlabel('Z-Axis')
     ax.set_ylabel('Y-Axis')
     ax.set_xlabel('X-Axis')
+
+
+def get_ellipsoid_fit_volumes(img_file):
+    if isinstance(img_file, str) is True:
+        img = DicomReader.read_dcm_series(img_file, False)
+    else:
+        img = img_file
+    try:
+        spacing = img.GetSpacing()
+    except Exception:
+        print('not a DICOM Image. Please provide a Dicom IMG in SimpleITK format')
+        return
+    points = get_surface_points(dcm_img=img)
+    rx_outer, ry_outer, rz_outer = mvee(points, flag_outer_ellipsoid=True)
+    rx_inner, ry_inner, rz_inner = mvee(points, flag_outer_ellipsoid=False)
+    volume_outer_ellipsoid = volume_ellipsoid(rx_outer, ry_outer, rz_outer)
+    volume_inner_ellipsoid = volume_ellipsoid(rx_inner, ry_inner, rz_inner)
+    return volume_outer_ellipsoid, volume_inner_ellipsoid
 
 
 if __name__ == '__main__':

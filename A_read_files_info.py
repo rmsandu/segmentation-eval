@@ -125,7 +125,7 @@ def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
                 # so that we can extract metrics from the two combined
                 resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk)
                 tumor_segmentation_resampled = resizer.resample_segmentation()  # sitk image object
-                #%% EXTRACT DISTANCE AND VOLUME METRICS
+                # %% EXTRACT DISTANCE AND VOLUME METRICS
                 main_distance_volume_metrics(patient_id,
                                              source_ct_ablation_sitk, source_ct_tumor_sitk,
                                              ablation_segmentation_sitk, tumor_segmentation_resampled,
@@ -135,6 +135,7 @@ def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
 
 
 # %%
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--rootdir", required=False, help="path to the patient folder to be processed")
