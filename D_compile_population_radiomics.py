@@ -18,9 +18,9 @@ if __name__ == '__main__':
     args = vars(ap.parse_args())
 
     if args["rootdir"] is not None:
-        print("Path to folder with Radiomics CSVs for each patient: ", args["rootdir"])
+        print("Path to folder with Radiomics Files for each patient and each lesion: ", args["rootdir"])
     if (args["input_batch_proc_paths"]) is not None:
-        print("Path to CSV that has directory paths and subcapsular lesion info: ", args["input_batch_proc_paths"])
+        print("Path to Excel file that has (RedCap) lesion info: ", args["input_batch_proc_paths"])
 
     df_download_db_all_info = pd.read_excel(args["input_batch_proc_paths"])
     frames = []  # list to store all df per lesion.
@@ -56,10 +56,11 @@ if __name__ == '__main__':
 # df_final = result
 # print(len(frames))
 result = pd.concat(frames, ignore_index=True)
-df_final = pd.merge(df_download_db_all_info, result, how="outer", on=['Patient_ID', 'Lesion_ID'])
+# df_final = pd.concat([df_download_db_all_info, result], join='inner', verify_integrity=True, keys=['Patient_ID', 'Lesion_ID'])
+df_final = pd.merge(df_download_db_all_info, result, how="left", on=['Patient_ID', 'Lesion_ID'], indicator=True)
 # TODO: write treatment id as well. the unique key must be formed out of: [patient_id, treatment_id, lesion_id]
 timestr = time.strftime("%H%M%S-%Y%m%d")
-filepath_excel = 'Radiomics_MAVERRIC_' + timestr + '_.xlsx'
+filepath_excel = 'Radiomics_MAVERRIC----' + timestr + '_.xlsx'
 writer = pd.ExcelWriter(filepath_excel)
 df_final.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
 writer.save()
