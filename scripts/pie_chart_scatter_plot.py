@@ -8,7 +8,6 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import griddata
 
 import utils.graphing as gh
 
@@ -38,29 +37,19 @@ def draw_pie(dist,
     return ax
 
 
-def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=False, flag_overlap='Dice'):
+def call_plot_pies(df_radiomics, title=None, flag_needle_error=False, flag_overlap=None):
     """
-    Interpolate the missing ablation volumes using the power and time from the brochure
-    :param df_ablation:
+
+    PREDICTED VS MEASURED SCATTER PIE CHART with distances represented
+    :param flag_overlap:
+    :param flag_needle_error:
     :param df_radiomics:
     :param title:
     :return:
     """
     fontsize = 20
-    # perform interpolation as a function of  power and time (multivariate interpolation)
-    # EXTRACT VALUES FROM THE MWA BROCHURE
-    points_power = np.asarray(df_ablation['Power']).reshape((len(df_ablation), 1))
-    points_time = np.asarray(df_ablation['Time_Duration_Applied']).reshape((len(df_ablation), 1))
-    points = np.hstack((points_power, points_time))
-    values = np.asarray(df_ablation['Predicted Ablation Volume (ml)']).reshape((len(df_ablation), 1))
-    # EXTRACT VALUES FROM RADIOMICS (Effective measured values)
-    df_radiomics.dropna(subset=['Power', 'Time_Duration_Applied'], inplace=True)
-    grid_x = np.asarray(df_radiomics['Power']).reshape((len(df_radiomics), 1))
-    grid_y = np.asarray(df_radiomics['Time_Duration_Applied']).reshape((len(df_radiomics), 1))
-    xi = np.hstack((grid_x, grid_y))
-    ablation_vol_interpolated_brochure = griddata(points, values, xi, method='linear')
-
-    # PREDICTED VS MEASURED SCATTER PIE CHART
+    ablation_vol_interpolated_brochure = np.asanyarray(df_radiomics['Predicted_Ablation_Volume']).reshape(
+        len(df_radiomics), 1)
     ablation_vol_measured = np.asarray(df_radiomics['Ablation Volume [ml]']).reshape(len(df_radiomics), 1)
     ratios_0 = df_radiomics.safety_margin_distribution_0.tolist()
     ratios_5 = df_radiomics.safety_margin_distribution_5.tolist()
@@ -81,7 +70,8 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=F
         plt.xlabel('Predicted Ablation Volume Brochure (mL)', fontsize=fontsize)
         plt.xlim([0, 80])
         plt.ylim([0, 80])
-    else:
+
+    else:  # other x and y labels
         y = ablation_vol_measured / ablation_vol_interpolated_brochure  # ratio EAV/PAV
         fig_title = '_ratio_EAV_PAV'
         ylabel_text = 'R(EAV:PAV)'
@@ -116,7 +106,7 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=F
         plt.xlabel('Lateral Error (mm)', fontsize=fontsize + 2)
         plt.xlim([-0.2, 6])
         plt.ylim([-0.2, 3])
-
+    # %% EDIT THE PLOTS with colors
     red_patch = mpatches.Patch(color='red', label='Ablation Margin ' + r'$x < 0$' + 'mm')
     orange_patch = mpatches.Patch(color='orange', label='Ablation Margin ' + r'$0 \leq  x \leq 5$' + 'mm')
     green_patch = mpatches.Patch(color='darkgreen', label='Ablation Margin ' + r'$x > 5$' + 'mm')
@@ -128,8 +118,7 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=F
     ax.tick_params(axis='y', labelsize=fontsize, color='k')
     ax.tick_params(axis='x', labelsize=fontsize, color='k')
     plt.tick_params(labelsize=fontsize, color='black')
-    # plt.xlim([8, 46])
-    # plt.ylim([-0.2, 3.5])
+
     if flag_needle_error is True:
         figpath = os.path.join("figures", title + "_pie_charts_euclidean_error" + fig_title)
     else:
@@ -139,42 +128,39 @@ def interpolation_fct(df_ablation, df_radiomics, title=None, flag_needle_error=F
 
 
 if __name__ == '__main__':
-    df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_Acculis_MAVERRIC_22012020.xlsx")
-    df_acculis = df_ablation[df_ablation['Device_name'] == 'Angyodinamics (Acculis)']
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC----210415-20200430_.xlsx")
+    df_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
+    df_radiomics_acculis = df_acculis[df_acculis['Inclusion_Margin_Analysis'] == 1]
 
-    #%% SELECT DEEP / SUBCAPSULAR TUMORS
-    df_radiomics = df_radiomics[df_radiomics['Proximity_to_surface'] == False]
+    # %% SELECT DEEP (aka  non-SUBCAPSULAR TUMORS) because we are only interested in plotting those for the moment
+    df_radiomics_acculis = df_radiomics_acculis[df_radiomics_acculis['Proximity_to_surface'] == False]
 
-    #%% SEPARATE THE MARGIN DISTRIBUTION
-    df_radiomics.dropna(subset=['safety_margin_distribution_0',
-                                'safety_margin_distribution_5',
-                                'safety_margin_distribution_10'],
-                        inplace=True)
-    df_radiomics = df_radiomics[(df_radiomics['Energy [kj]'] > 0) & (df_radiomics['Energy [kj]'] <= 100)]
-    df_radiomics = df_radiomics[(df_radiomics['Comments'].isnull())]
-    df_radiomics_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
+    # %% SEPARATE THE MARGIN DISTRIBUTION
+    df_radiomics_acculis.dropna(subset=['safety_margin_distribution_0',
+                                        'safety_margin_distribution_5',
+                                        'safety_margin_distribution_10'],
+                                inplace=True)
 
-    df_radiomics_acculis.dropna(subset=['ValidationTargetPoint'], inplace=True)
-
-    df_radiomics_acculis['center_tumor'] = df_radiomics_acculis[
-        ['center_of_mass_x_tumor', 'center_of_mass_y_tumor', 'center_of_mass_z_tumor']].values.tolist()
-
-    df_radiomics_acculis['TP_needle_1'] = df_radiomics_acculis['ValidationTargetPoint'].map(lambda x: x[1:len(x) - 1])
-    df_radiomics_acculis['TP_needle'] = df_radiomics_acculis['TP_needle_1'].map(
-        lambda x: np.array([float(i) for i in x.split()]))
-    list_errors_needle = []
-    for row in df_radiomics_acculis.itertuples():
-        try:
-            needle_error = np.linalg.norm(row.center_tumor - row.TP_needle)
-        except Exception:
-            needle_error = np.nan
-        list_errors_needle.append(needle_error)
-    print(len(list_errors_needle))
-    df_radiomics_acculis['needle_error'] = list_errors_needle
-    df_radiomics_acculis['needle_error'] = df_radiomics_acculis['LateralError']
-
-    #%% PLOT
+    # %% PLOT
     # Overlap measurements: Dice score, Volume Overlap Error,  Tumour residual volume [ml]
-    interpolation_fct(df_acculis, df_radiomics_acculis, title='Deep Tumors', flag_needle_error=True,
-                      flag_overlap='Tumour residual volume [ml]')
+    call_plot_pies(df_radiomics_acculis, title='Deep Tumors')
+
+    # %% LATERAL ERROR Needle Plotting
+    # df_radiomics_acculis.dropna(subset=['ValidationTargetPoint'], inplace=True)
+    #
+    # df_radiomics_acculis['center_tumor'] = df_radiomics_acculis[
+    #     ['center_of_mass_x_tumor', 'center_of_mass_y_tumor', 'center_of_mass_z_tumor']].values.tolist()
+    #
+    # df_radiomics_acculis['TP_needle_1'] = df_radiomics_acculis['ValidationTargetPoint'].map(lambda x: x[1:len(x) - 1])
+    # df_radiomics_acculis['TP_needle'] = df_radiomics_acculis['TP_needle_1'].map(
+    #     lambda x: np.array([float(i) for i in x.split()]))
+    # list_errors_needle = []
+    # for row in df_radiomics_acculis.itertuples():
+    #     try:
+    #         needle_error = np.linalg.norm(row.center_tumor - row.TP_needle)
+    #     except Exception:
+    #         needle_error = np.nan
+    #     list_errors_needle.append(needle_error)
+    # print(len(list_errors_needle))
+    # df_radiomics_acculis['needle_error'] = list_errors_needle
+    # df_radiomics_acculis['needle_error'] = df_radiomics_acculis['LateralError']

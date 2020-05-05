@@ -2,6 +2,8 @@
 """
 @author: Raluca Sandu
 """
+from mpl_toolkits.mplot3d import Axes3D
+
 import matplotlib.pyplot as plt
 import numpy.linalg as la
 from matplotlib.patches import Ellipse
@@ -30,19 +32,21 @@ def ellipse_angle_of_rotation(a):
 n = 2
 px = [0, .5, 2, 3, 1]
 py = [0, 1, 1.5, .5, -.5]
-# pz = [0, 2, 2.5, 1, 3]
+# pz = [0, 2, -3.5, 2.8, 3.2]
 
 m = np.size(px)
 pxint = sum(px) / m
 pyint = sum(py) / m
+# pzint = sum(pz) / m
 #TODO
 # px = [px; px(0)];
 # py = [py; py(0)];
-px = [0, .5, 2, 3, 1,  0]
+px = [0, .5, 2, 3, 1, 0]
 py = [0, 1, 1.5, .5, -.5, 0]
+# pz = [0, 2, -3.5, 2.8, -3.2, 0]
 px = np.asarray(px)
 py = np.asarray(py)
-
+# pz = np.asarray(pz)
 #%%
 # generate A, b
 A = np.zeros((m, n))
@@ -78,11 +82,21 @@ result = prob.solve(verbose=True)
 fig, ax = plt.subplots()
 U, D, V = la.svd(np.asarray(B.value))
 rx, ry = 1. / np.sqrt(D)
+U, D, V = la.svd(np.asarray(B.value) / 2)
+rx_outer, ry_outer = 1. / np.sqrt(D)
 xcenter = d.value[0]
 ycenter = d.value[1]
-plt.plot(px, py, 'r-')
+plt.plot(px, py, 'b--')
 angle = ellipse_angle_of_rotation(B.value)
-ellipse = Ellipse((xcenter, ycenter), rx*2, ry*2, angle=degrees(angle), fill=False)
-
+ellipse = Ellipse((xcenter, ycenter), rx*2, ry*2, angle=degrees(angle), fill=False, color='red')
+ellipse_outer = Ellipse((xcenter, ycenter), rx_outer*2, ry_outer*2, angle=degrees(angle), fill=False, color='green')
 ax.add_patch(ellipse)
+ax.add_patch(ellipse_outer)
+plt.ylim([-1, 4])
+plt.xlim([-1, 4])
 plt.show()
+# %% 3D plot
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+# ax.scatter(px, py, pz, c='orange', label='Ablation Segmentation')
+# plt.show()
