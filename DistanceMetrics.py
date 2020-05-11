@@ -166,7 +166,7 @@ class DistanceMetrics(object):
 
         surface_distance_results = np.zeros((1, len(SurfaceDistanceMeasuresITK.__members__.items())))
         # %%
-        # tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=True)
+
         tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=False)
 
         tumor_surface_array = sitk.GetArrayFromImage(tumor_surface)
@@ -196,7 +196,7 @@ class DistanceMetrics(object):
 
         # %%
         ''' Mauerer Distance Map for the Ablation Object '''
-        ablation_surface = sitk.LabelContour(ablation_segmentation)
+        ablation_surface = sitk.LabelContour(ablation_segmentation, fullyConnected=False)
         ablation_surface_mask_array = sitk.GetArrayFromImage(ablation_surface)
         ablation_mask_array_NonZero = ablation_surface_mask_array.nonzero()
 
@@ -217,10 +217,10 @@ class DistanceMetrics(object):
         ablation_distance_map_array = sitk.GetArrayFromImage(self.ablation_distance_map)
 
         # compute the contours multiplied with the euclidean distances 
-        self.ablation2tumor_distance_map = ablation_distance_map_array * tumor_surface_array
+        self.tumor2ablation_distance_map = ablation_distance_map_array * tumor_surface_array
 
         # remove the zeros from the surface contour(indexes) from the distance maps '''
-        self.surface_distances = list(self.ablation2tumor_distance_map[tumor_surface_array_NonZero] / -255)
+        self.surface_distances = list(self.tumor2ablation_distance_map[tumor_surface_array_NonZero] / -255)
 
         # %%
         ''' Compute the surface distances max, min, mean, median, std '''
@@ -247,7 +247,7 @@ class DistanceMetrics(object):
         return self.surface_distance_results_df
 
     def get_ablation_dist_map(self):
-        return self.ablation2tumor_distance_map
+        return self.tumor2ablation_distance_map
 
     def get_surface_distances(self):
         return self.surface_distances
