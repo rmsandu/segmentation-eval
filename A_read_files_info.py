@@ -123,12 +123,12 @@ def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
                 patient_id = df_paths_mapping.iloc[idx_tumor_path].PatientID
                 # %% RESAMPLE THE TUMOR MASK TO THE SIZE OF THE ABLATION MASK
                 # so that we can extract metrics from the two combined
-                resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk)
-                tumor_segmentation_resampled = resizer.resample_segmentation()  # sitk image object
+                resizer = ResizeSegmentation(ablation_segmentation_sitk, tumor_segmentation_sitk, source_ct_ablation_sitk)
+                tumor_segmentation_resampled, ablation_segmentation_resampled = resizer.resample_segmentation()  # sitk image object
                 # %% EXTRACT DISTANCE AND VOLUME METRICS
                 main_distance_volume_metrics(patient_id,
                                              source_ct_ablation_sitk, source_ct_tumor_sitk,
-                                             ablation_segmentation_sitk, tumor_segmentation_resampled,
+                                             ablation_segmentation_resampled, tumor_segmentation_resampled,
                                              lesion_number,
                                              ablation_date,
                                              plots_dir)
