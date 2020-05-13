@@ -129,3 +129,6 @@ db.sqlite3
 
 # Figures
 /figures
+
+# Ubelix
+slurm-*
