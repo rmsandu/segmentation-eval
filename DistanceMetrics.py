@@ -21,6 +21,7 @@ import SimpleITK as sitk
 import numpy as np
 import pandas as pd
 import radiomics
+from scipy import ndimage
 
 
 class RadiomicsMetrics(object):
@@ -167,9 +168,13 @@ class DistanceMetrics(object):
         surface_distance_results = np.zeros((1, len(SurfaceDistanceMeasuresITK.__members__.items())))
         # %%
         # tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=True)
-        tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=False)
+        # tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=False)
+        # tumor_surface_array = sitk.GetArrayFromImage(tumor_surface)
 
-        tumor_surface_array = sitk.GetArrayFromImage(tumor_surface)
+        tumor_array = sitk.GetArrayFromImage(tumor_segmentation)
+        border_inside = ndimage.binary_erosion(tumor_array, structure=ndimage.generate_binary_structure(3, 1))
+        tumor_surface_array = tumor_array ^ border_inside
+
         tumor_surface_array_NonZero = tumor_surface_array.nonzero()
 
         self.num_tumor_surface_pixels = len(list(zip(tumor_surface_array_NonZero[0],

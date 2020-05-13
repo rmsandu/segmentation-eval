@@ -8,11 +8,11 @@ import os
 import time
 
 import pandas as pd
-
+import SimpleITK as sitk
 import scripts.plot_ablation_margin_hist as pm
 from DistanceMetrics import DistanceMetrics, RadiomicsMetrics
 from VolumeMetrics import VolumeMetrics
-
+from surface_distance.metrics import compute_surface_distances
 
 def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor,
                                  ablation_segmentation, tumor_segmentation_resampled,
@@ -21,6 +21,8 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
                                  calculate_volume_metrics=False, calculate_radiomics=False):
     # %% Get Surface Distances between tumor and ablation segmentations
     surface_distance_metrics = DistanceMetrics(ablation_segmentation, tumor_segmentation_resampled)
+
+    print(surface_distance_metrics)
     if surface_distance_metrics.num_tumor_surface_pixels > 0:
         df_distances_1set = surface_distance_metrics.get_SitkDistances()
         distanceMap = surface_distance_metrics.get_surface_distances()
