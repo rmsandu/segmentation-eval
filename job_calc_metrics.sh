@@ -10,8 +10,8 @@
 #SBATCH --job-name="Calculate metrics"
 
 # Runtime and memory
-#SBATCH --time=02:00:00
-#SBATCH --mem-per-cpu=4G
+#SBATCH --time=04:00:00
+#SBATCH --mem-per-cpu=16G
 
 # Partition
 #SBATCH --partition=all
@@ -23,5 +23,5 @@ source ~/envs/maverric/bin/activate
 
 cd ~/src/segmentation-eval
 
-python A_read_files_info.py  -o output -b /storage/research/artorg_igt/Projects/MAVERRIC/batch.xlsx
+python A_read_files_info.py  -o /storage/research/artorg_igt/Projects/MAVERRIC/output -b /storage/research/artorg_igt/Projects/MAVERRIC/batch.xlsx
 

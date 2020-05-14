@@ -132,6 +132,7 @@ def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
                                              lesion_number,
                                              ablation_date,
                                              plots_dir)
+                sys.stdout.flush()
 
 
 # %%
