@@ -63,7 +63,7 @@ def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, 
                          label='Ablation Margin ' + r'$0 > x < 5$' + 'mm: ' + "%.2f" % sum_perc_insuffablated + '%')
             elif b >= 5:
                 plt.setp(p, 'facecolor', 'darkgreen',
-                         label='Ablation Margin ' + r'$x \geqslant 5$' + 'mm: ' + " %.2f" % sum_perc_ablated + '%')
+                         label='Ablation Margin ' + r'$x \geq 5$' + 'mm: ' + " %.2f" % sum_perc_ablated + '%')
         # %%
         '''edit the axes limits and labels'''
         # csfont = {'fontname': 'Times New Roman'}

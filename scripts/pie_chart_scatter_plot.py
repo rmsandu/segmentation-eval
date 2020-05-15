@@ -19,7 +19,7 @@ def draw_pie(dist,
              ax=None,
              colors=None):
     if ax is None:
-        fig, ax = plt.subplots(figsize=(10, 8))
+        fig, ax = plt.subplots(figsize=(12, 12))
 
     # for incremental pie slices
     cumsum = np.cumsum(dist)
@@ -107,9 +107,9 @@ def call_plot_pies(df_radiomics, title=None, flag_needle_error=False, flag_overl
         plt.xlim([-0.2, 6])
         plt.ylim([-0.2, 3])
     # %% EDIT THE PLOTS with colors
-    red_patch = mpatches.Patch(color='red', label='Ablation Margin ' + r'$x < 0$' + 'mm')
-    orange_patch = mpatches.Patch(color='orange', label='Ablation Margin ' + r'$0 \leq  x \leq 5$' + 'mm')
-    green_patch = mpatches.Patch(color='darkgreen', label='Ablation Margin ' + r'$x > 5$' + 'mm')
+    red_patch = mpatches.Patch(color='red', label='Ablation Margin ' + r'$x \leq 0$' + 'mm')
+    orange_patch = mpatches.Patch(color='orange', label='Ablation Margin ' + r'$0 < x < 5$' + 'mm')
+    green_patch = mpatches.Patch(color='darkgreen', label='Ablation Margin ' + r'$x \geq 5$' + 'mm')
     plt.legend(handles=[red_patch, orange_patch, green_patch], fontsize=fontsize, loc='best',
                title=title, title_fontsize=21)
     props = dict(boxstyle='round', facecolor='white', edgecolor='gray')
@@ -123,14 +123,17 @@ def call_plot_pies(df_radiomics, title=None, flag_needle_error=False, flag_overl
         figpath = os.path.join("figures", title + "_pie_charts_euclidean_error" + fig_title)
     else:
         figpath = os.path.join("figures", title + "_pie_charts")
-    gh.save(figpath, width=14, height=10, close=True, dpi=600, tight=True)
+    gh.save(figpath, width=14, height=14, close=True, tight=True, dpi=300)
     plt.show()
 
 
 if __name__ == '__main__':
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC----210415-20200430_.xlsx")
-    df_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
-    df_radiomics_acculis = df_acculis[df_acculis['Inclusion_Margin_Analysis'] == 1]
+    # df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC----210415-20200430_.xlsx")
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_May132020.xlsx")
+    df_acculis = df_radiomics.copy()
+    # df_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
+    # df_radiomics_acculis = df_acculis[df_acculis['Inclusion_Margin_Analysis'] == 1]
+    df_radiomics_acculis = df_radiomics[df_radiomics['Inclusion_Energy_PAV_EAV'] == True]
 
     # %% SELECT DEEP (aka  non-SUBCAPSULAR TUMORS) because we are only interested in plotting those for the moment
     df_radiomics_acculis = df_radiomics_acculis[df_radiomics_acculis['Proximity_to_surface'] == False]
