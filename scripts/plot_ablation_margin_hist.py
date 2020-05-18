@@ -37,7 +37,11 @@ def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, 
     for b, p, col_val in zip(bins, patches, col_height):
         if b <= 0:
             voxels_nonablated.append(col_val)
-        elif 0 < b < 5:
+# <<<<<<< HEAD
+#         elif 0 < b < 5:
+# =======
+        elif 0 <= b < 5:
+# fixed color in histogram
             voxels_insuffablated.append(col_val)
         elif b >= 5:
             voxels_ablated.append(col_val)
@@ -59,11 +63,10 @@ def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, 
                 plt.setp(p, 'facecolor', 'tab:red',
                          label='Ablation Margin ' + r'$x \leq 0$' + 'mm :' + " %.2f" % sum_perc_nonablated + '%')
             elif 0 < b < 5:
-                plt.setp(p, 'facecolor', 'tab:orange',
-                         label='Ablation Margin ' + r'$0 > x < 5$' + 'mm: ' + "%.2f" % sum_perc_insuffablated + '%')
-            elif b >= 5:
+                plt.setp(p, 'facecolor', 'tab:orange', label='Ablation Margin ' + r'$0 > x < 5$' + 'mm: ' + "%.2f" % sum_perc_insuffablated + '%')
+            elif b > 5:  # fixed color in histogram
                 plt.setp(p, 'facecolor', 'darkgreen',
-                         label='Ablation Margin ' + r'$x \geq 5$' + 'mm: ' + " %.2f" % sum_perc_ablated + '%')
+                     label='Ablation Margin ' + r'$x \geq 5$' + 'mm: ' + " %.2f" % sum_perc_ablated + '%')
         # %%
         '''edit the axes limits and labels'''
         # csfont = {'fontname': 'Times New Roman'}
