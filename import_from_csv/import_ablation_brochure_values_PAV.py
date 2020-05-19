@@ -19,7 +19,7 @@ df['least_axis_ablation_brochure'].replace(0, np.nan, inplace=True)
 df['major_axis_ablation_brochure'].replace(0, np.nan, inplace=True)
 df['Energy_brochure(kJ)'] = df['Power'] * df['Time_Duration_Applied'] / 1000
 
-df['Predicted_Ablation_Volume(ml)'] = 4 * pi * (df['major_axis_ablation_brochure'] *
+df['Predicted_Ablation_Volume'] = 4 * pi * (df['major_axis_ablation_brochure'] *
                                                 df['minor_axis_ablation_brochure'] *
                                                 df['least_axis_ablation_brochure']) / 3000
 
