@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy import stats
-
+import scripts.subplots_pav_eav as subplots_pav_eav
+import scripts.mev_miv_scatter as mev_miv_scatter
 import utils.graphing as gh
 
 
@@ -20,7 +21,7 @@ import utils.graphing as gh
 #                                                flag_subcapsular=False)
 
 
-def edit_save_plot(ax=None, p=None, flag_hue=None, xlabel='PAV', ylabel='EAV', device='3 MWA Systems',
+def edit_save_plot(ax=None, p=None, flag_hue=None, xlabel='PAV', ylabel='EAV', device='3 MWA Devices',
                    r_1=None, r_2=None,
                    label_1=None, label_2=None,
                    ratio_flag=False):
@@ -33,8 +34,8 @@ def edit_save_plot(ax=None, p=None, flag_hue=None, xlabel='PAV', ylabel='EAV', d
     :param device:
     :param r_1:
     :param r_2:
+    :param label_1:
     :param label_2:
-    :param label_3:
     :return:
     """
     fontsize = 20
@@ -246,7 +247,7 @@ def plot_scatter_pav_eav(df_radiomics,
         df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
         df.dropna(inplace=True)
         slope, intercept, r_square, p_value, std_err = stats.linregress(df['R(EAV:PAV)'], df['Energy (kJ)'])
-
+        print('p-value R(EAV:PAV) vs Energy (kj):', p_value)
         if linear_regression is True:
             ax = sns.regplot(y="R(EAV:PAV)", x="Energy (kJ)", data=df, color=sns.xkcd_rgb["green"],
                              line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square)},
@@ -268,10 +269,12 @@ def connected_mev_miv(df_radiomics):
 
     df = pd.DataFrame()
     df['PAV'] = df_radiomics['Predicted_Ablation_Volume']
-    df['EAV'] = df_radiomics_acculis['Ablation Volume [ml]']
-    df['MIV'] = df_radiomics['Outer Ellipsoid Volume']
+    df['EAV'] = df_radiomics['Ablation Volume [ml]']
+    # df['MIV'] = df_radiomics['Inner Ellipsoid Volume']
+    df['MIV'] = df_radiomics['Outer Ellipsoid Volume'] / 3
     df['MEV'] = df_radiomics['Outer Ellipsoid Volume']
-    df = df[df['MEV'] < 100]
+    df = df[df['MEV'] < 150]
+    # discard
     df.dropna(inplace=True)
     # plot scatter plots on the same y axis then connect them with a vertical line
     fig, ax = plt.subplots()
@@ -293,64 +296,69 @@ def connected_mev_miv(df_radiomics):
         y1, y2 = MIV[i], MEV[i]
         plt.plot([x1, x2], [y1, y2], 'k-')
 
-    plt.ylim([-1, 150])
-    labels = np.round(np.asarray(df['PAV']))
-    plt.xticks(x, labels, rotation=45, fontsize=24, color='white')
+    # plt.ylim([-1, 150])
+    # labels = np.round(np.asarray(df['PAV']))
+    # plt.xticks(x, labels, rotation=45, fontsize=24, color='white')
     timestr = time.strftime("%H%M%S-%Y%m%d")
-    fig_path = r"C:\develop\segmentation-eval\figures\MIV_MEV_ellipsoids"
+    folder_path = r"C:\develop\segmentation-eval\figures\MIV_MEV_ellipsoids"
+    fig_path = os.path.join(folder_path, timestr)
     gh.save(fig_path, width=12, height=12, ext=["png"],
             close=True,
             tight=True, dpi=600)
 
     # df.columns = ['Predicted Ablation', 'Effective Ablation', 'Maximum Inscribed Ellipsoid', 'Minimum Enclosing Ellipsoid']
-    b = sns.boxplot(data=df)
-    plt.ylabel('Volume (mL)')
+    #b = sns.boxplot(data=df)
+    #plt.ylabel('Volume (mL)')
     # b.set_xlabel(fontsize=20)
     # plt.ylim([])
     # plt.grid()
     # plt.show()
-    timestr = time.strftime("%H%M%S-%Y%m%d")
-    gh.save(r'C:\develop\segmentation-eval\figures\boxplots_ellipsoids', width=12, height=12, ext=["png"],
-            close=True,
-            tight=True, dpi=600)
+    #timestr = time.strftime("%H%M%S-%Y%m%d")
+    #gh.save(r'C:\develop\segmentation-eval\figures\boxplots_ellipsoids', width=12, height=12, ext=["png"],close=True,tight=True, dpi=300)
 
 
 if __name__ == '__main__':
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC----210415-20200430_.xlsx")
-    df_radiomics_acculis = df_radiomics[df_radiomics['Inclusion_Energy_PAV_EAV'] == True]
-    # df_radiomics_acculis = df_radiomics_acculis[df_radiomics_acculis['Device_name'] == 'Angyodinamics (Acculis)']
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_May132020.xlsx")
+    # change the name of the device
+    df_radiomics.loc[df_radiomics.Device_name == 'Angyodinamics (Acculis)', 'Device_name'] = 'Acculis'
+    df_radiomics.loc[df_radiomics.Device_name == 'Covidien (Covidien MWA)', 'Device_name'] = 'Covidien'
+    df_radiomics.loc[df_radiomics.Device_name == 'Amica (Probe)', 'Device_name'] = 'Amica'
+    # select only those rows included in the PAV vs EAV Energy Manuscript
+    df_radiomics_PAV_EAV = df_radiomics[df_radiomics['Inclusion_Energy_PAV_EAV'] == True]
 
-    # %% PLOTS
-    #%% change the name of the device
-    df_radiomics_acculis.loc[
-        df_radiomics_acculis.Device_name == 'Angyodinamics (Acculis)', 'Device_name'] = 'Acculis'
-    df_radiomics_acculis.loc[
-        df_radiomics_acculis.Device_name == 'Covidien (Covidien MWA)', 'Device_name'] = 'Covidien'
-    df_radiomics_acculis.loc[
-        df_radiomics_acculis.Device_name == 'Amica (Probe)', 'Device_name'] = 'Amica'
+    # plot ellipsoid approximations
+    # connected_mev_miv(df_radiomics_PAV_EAV)
 
+    #%%  SCATTER PLOTS
     # set font
     font = {'family': 'DejaVu Sans',
             'size': 18}
     matplotlib.rc('font', **font)
-    # connected_mev_miv(df_radiomics_acculis)
-    plot_scatter_pav_eav(df_radiomics_acculis, ratio_flag=False, linear_regression=False)
-    plot_scatter_pav_eav(df_radiomics_acculis, ratio_flag=False, linear_regression=True)
-    plot_scatter_pav_eav(df_radiomics_acculis, ratio_flag=True, linear_regression=True)
-    plot_scatter_group_var_subcapsular(df_radiomics_acculis, ratio_flag=False)
-    plot_scatter_group_var_chemo(df_radiomics_acculis, ratio_flag=False)
-    plot_scatter_group_var_vessels(df_radiomics_acculis)
+
+    # subplots_pav_eav.plot_subplots(df_radiomics_PAV_EAV)
+    mev_miv_scatter.plot_mev_miv(df_radiomics_PAV_EAV)
+
+    # plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=False, linear_regression=False)
+    # plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=False, linear_regression=True)
+    # plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=True, linear_regression=True)
+    # plot_scatter_group_var_subcapsular(df_radiomics_PAV_EAV, ratio_flag=False)
+    # plot_scatter_group_var_chemo(df_radiomics_PAV_EAV, ratio_flag=False)
+    # plot_scatter_group_var_vessels(df_radiomics_PAV_EAV)
 
     #%% Descriptive statistics
-    df_radiomics_acculis['Inner Ellipsoid Volume'] = df_radiomics_acculis['Outer Ellipsoid Volume'] / 3
+    # TODO: do a table and an excel file per device (Amica, Acculis, Covidien)
     df_stats = pd.DataFrame()
-    df_stats['PAV'] = df_radiomics_acculis['Predicted_Ablation_Volume']
-    df_stats['EAV'] = df_radiomics_acculis['Ablation Volume [ml]']
-    df_stats['Energy'] = df_radiomics_acculis['Energy [kj]']
-    df_stats['Inner Ellipsoid Volume'] = df_radiomics_acculis['Outer Ellipsoid Volume'] / 3
-    df_stats['Outer_Ellipsoid_Volume'] = df_radiomics_acculis['Outer Ellipsoid Volume']
-    df_stats['Sphericity'] = df_radiomics_acculis['sphericity_ablation']
-    df_stats['major_axis'] = df_radiomics_acculis['major_axis_length_ablation']
+    df_stats['PAV'] = df_radiomics_PAV_EAV['Predicted_Ablation_Volume']
+    df_stats['EAV'] = df_radiomics_PAV_EAV['Ablation Volume [ml]']
+    df_stats['Tumor_Volume'] = df_radiomics_PAV_EAV['Tumour Volume [ml]']
+    df_stats['Energy'] = df_radiomics_PAV_EAV['Energy [kj]']
+    df_stats['Inner_Ellipsoid_Volume'] = df_radiomics_PAV_EAV['Inner Ellipsoid Volume']
+    df_stats['Outer_Ellipsoid_Volume'] = df_radiomics_PAV_EAV['Outer Ellipsoid Volume']
+    df_stats['Elongation'] = df_radiomics_PAV_EAV['elongation_ablation']
+    df_stats['Sphericity'] = df_radiomics_PAV_EAV['sphericity_ablation']
+    df_stats['major_axis_tumor'] = df_radiomics_PAV_EAV['major_axis_length_ablation']
+    df_stats['major_axis_tumor'] = df_radiomics_PAV_EAV['major_axis_length_tumor']
+    df_stats_1 = df_stats.describe()
     df_stats_1 = df_stats.describe()
     filepath_excel = 'Radiomics_MAVERRIC_Descriptive_Stats.xlsx'
     writer = pd.ExcelWriter(filepath_excel)
