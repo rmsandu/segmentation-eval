@@ -124,8 +124,6 @@ db.sqlite3
 *.jpg
 *.png
 
-# Archive
-/archive
 
 # Figures
 /figures
