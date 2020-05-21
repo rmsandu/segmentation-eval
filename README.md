@@ -104,7 +104,8 @@ To compute the histogram the following steps are followed for the Maurer et. al 
 
 Inner and Outer Ellipsoids Fitted around a segmentation (orange points).  
 
-![image](https://user-images.githubusercontent.com/20581812/77424720-e1140700-6dd1-11ea-8b9b-bdc76484bd18.png)
+![inner outer ellipsoid 2](https://user-images.githubusercontent.com/20581812/82572967-712dbd00-9b85-11ea-8397-7ef00c3220bd.png)
+
  
 
 #### Patient Data Structure. 
