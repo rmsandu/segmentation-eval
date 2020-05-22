@@ -14,6 +14,7 @@ The following non-standard libraries are required to use the full functionality 
 * [SimpleITK](https://github.com/SimpleITK/SimpleITK)
 * [PyRadiomics](https://github.com/Radiomics/pyradiomics)
 * [PyDicom](https://github.com/pydicom/pydicom)
+* [CVXPY](https://www.cvxpy.org/)
 
 ## Main Functions and Operations Performed
 1. `A_read_files_info.py` (optional)
@@ -108,21 +109,21 @@ Inner and Outer Ellipsoids Fitted around a segmentation (orange points).
 
  
 
-#### Patient Data Structure. 
+#### Patient Data Structure for my case
 The patient data consists of files and folder has the following folder structure and organization:  
 
     `Patient_C001  
-
             |Series_1  
-            
-                     |CAS-Recordings (* .xml files)  
-                     
-                        | 2016-09-13_07-15-32 ...
-                                                  |Segmentations
-                                                                |0001.dcm
-                     |CT.1.2.392...dcm
-                     |CT.1.2.393...dcm
-                     |CT.1.2.3..dcm  
+              |CAS-Recordings (* .xml files)   
+              | 2016-09-13_07-15-32 ...
+                                              |Segmentations
+                                                |Segmentation_No3
+                                                            |0001.dcm
+                                                            |0002.dcm
+                                                            |003.dcm
+              |CT.1.2.392...dcm
+              |CT.1.2.393...dcm
+              |CT.1.2.3..dcm  
             |Series_2
             |Series_3`  
             
