@@ -87,7 +87,12 @@ The same as for **Resampling**, both these scripts take as input arguments Simpl
  `ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation)`  
  `evaloverlap = VolumeMetrics()`   
   `evaloverlap.set_image_object(ablation_segmentation, tumor_segmentation_resampled)`  
-  
+
+## Inner and Outer Ellipsoidal Approximations
+![image](https://user-images.githubusercontent.com/20581812/82670129-dd1f2c80-9c3c-11ea-8fcb-f37ce93d959f.png)  
+
+The inner (green) and outer (orange) ellipsoidal approximations of a segmented object (blue) are calculated using convex optimization according to "S. P. Boyd and L. Vandenberghe, Convex optimization. Cambridge, UK ; New York: Cambridge University Press, 2004." Their implementation in [CVXPY](https://www.cvxpy.org/) was employed to compute the ellipsoids. The outer volume was computed using SVD and the inner volume was computed as the `sqrt(det(B)) * Ball(0,1)`.
+
  
 ## Output
 The output is a Excel (.xlsx) file in tabular format that returns radiomics (feature values) per patient and per lesion.
