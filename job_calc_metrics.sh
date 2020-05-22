@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # You must specify a valid email address!
-#SBATCH --mail-user=iwan.paolucci@artorg.unibe.ch
+#SBATCH --mail-user=!!!ADD MAIL ADRESS!!!
 
 # Mail on NONE, BEGIN, END, FAIL, REQUEUE, ALL
 #SBATCH --mail-type=none
