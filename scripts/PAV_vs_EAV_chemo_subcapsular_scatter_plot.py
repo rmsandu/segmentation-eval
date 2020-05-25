@@ -4,14 +4,14 @@
 """
 import os
 import time
-
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy import stats
-import scripts.subplots_pav_eav as subplots_pav_eav
+from scipy.stats import iqr
+import scripts.subplots_pav_eav_scatter as subplots_pav_eav
 import scripts.mev_miv_scatter as mev_miv_scatter
 import utils.graphing as gh
 
@@ -317,8 +317,48 @@ def connected_mev_miv(df_radiomics):
     #gh.save(r'C:\develop\segmentation-eval\figures\boxplots_ellipsoids', width=12, height=12, ext=["png"],close=True,tight=True, dpi=300)
 
 
+def write_descriptive_stats(df_radiomics_PAV_EAV, device_name):
+    """
+
+    :param df_radiomics_PAV_EAV:
+    :return: Excel file with descriptive statistics
+    """
+    df = pd.DataFrame()
+    df['PAV'] = df_radiomics_PAV_EAV['Predicted_Ablation_Volume']
+    df['EAV'] = df_radiomics_PAV_EAV['Ablation Volume [ml]']
+    df['Tumor_Volume'] = df_radiomics_PAV_EAV['Tumour Volume [ml]']
+    df['Energy'] = df_radiomics_PAV_EAV['Energy [kj]']
+
+    df['Inner_Ellipsoid_Volume'] = df_radiomics_PAV_EAV['Inner Ellipsoid Volume']
+    df['Outer_Ellipsoid_Volume'] = df_radiomics_PAV_EAV['Outer Ellipsoid Volume']
+    # # drop outer volumes larger than 150 because they are probably erroneous
+    df.loc[df['Outer_Ellipsoid_Volume'] > 150, 'Outer_Ellipsoid_Volume'] = np.nan
+    df['MEV-MIV'] = df['Outer_Ellipsoid_Volume'] - df['Inner_Ellipsoid_Volume']
+    # # drop the rows where MIV > MEV
+    # # since the minimum inscribed ellipsoid (MIV) should always be smaller than the maximum enclosing ellipsoid (MEV)
+    # df.loc[df['MEV-MIV'] < 0, 'Inner_Ellpsoid_Volume'] = np.nan
+    df.loc[df['MEV-MIV'] < 0, 'MEV-MIV'] = np.nan
+    df['Elongation'] = df_radiomics_PAV_EAV['elongation_ablation']
+    df['Sphericity'] = df_radiomics_PAV_EAV['sphericity_ablation']
+    df['major_axis_ablation'] = df_radiomics_PAV_EAV['major_axis_length_ablation']
+    df['major_axis_tumor'] = df_radiomics_PAV_EAV['major_axis_length_tumor']
+    df_stats = df.describe()
+
+    iqr = df_stats.loc['75%', :] - df_stats.loc['25%', :]
+    iqr.name = 'IQR'
+    medd = df.median().to_frame().T
+    medd.rename({0: 'median'})
+    # median.index.name = 'median'
+    df_stats = df_stats.append(medd, ignore_index=False)
+    df_stats.rename({0: 'median'})
+    df_stats = df_stats.append(iqr)
+    filepath_excel = device_name + '_Radiomics_MAVERRIC_Descriptive_Stats.xlsx'
+    writer = pd.ExcelWriter(filepath_excel)
+    df_stats.to_excel(writer, sheet_name='radiomics', index=True, float_format='%.2f')
+    writer.save()
+
 if __name__ == '__main__':
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_May132020.xlsx")
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC----003328-20200523_.xlsx")
     # change the name of the device
     df_radiomics.loc[df_radiomics.Device_name == 'Angyodinamics (Acculis)', 'Device_name'] = 'Acculis'
     df_radiomics.loc[df_radiomics.Device_name == 'Covidien (Covidien MWA)', 'Device_name'] = 'Covidien'
@@ -331,36 +371,23 @@ if __name__ == '__main__':
 
     #%%  SCATTER PLOTS
     # set font
-    font = {'family': 'DejaVu Sans',
-            'size': 18}
-    matplotlib.rc('font', **font)
+    # font = {'family': 'DejaVu Sans',
+    #         'size': 18}
+    # matplotlib.rc('font', **font)
 
-    # subplots_pav_eav.plot_subplots(df_radiomics_PAV_EAV)
+    subplots_pav_eav.plot_subplots(df_radiomics_PAV_EAV)
     mev_miv_scatter.plot_mev_miv(df_radiomics_PAV_EAV)
 
     # plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=False, linear_regression=False)
     # plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=False, linear_regression=True)
-    # plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=True, linear_regression=True)
+    plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=True, linear_regression=True)
     # plot_scatter_group_var_subcapsular(df_radiomics_PAV_EAV, ratio_flag=False)
     # plot_scatter_group_var_chemo(df_radiomics_PAV_EAV, ratio_flag=False)
     # plot_scatter_group_var_vessels(df_radiomics_PAV_EAV)
 
     #%% Descriptive statistics
-    # TODO: do a table and an excel file per device (Amica, Acculis, Covidien)
-    df_stats = pd.DataFrame()
-    df_stats['PAV'] = df_radiomics_PAV_EAV['Predicted_Ablation_Volume']
-    df_stats['EAV'] = df_radiomics_PAV_EAV['Ablation Volume [ml]']
-    df_stats['Tumor_Volume'] = df_radiomics_PAV_EAV['Tumour Volume [ml]']
-    df_stats['Energy'] = df_radiomics_PAV_EAV['Energy [kj]']
-    df_stats['Inner_Ellipsoid_Volume'] = df_radiomics_PAV_EAV['Inner Ellipsoid Volume']
-    df_stats['Outer_Ellipsoid_Volume'] = df_radiomics_PAV_EAV['Outer Ellipsoid Volume']
-    df_stats['Elongation'] = df_radiomics_PAV_EAV['elongation_ablation']
-    df_stats['Sphericity'] = df_radiomics_PAV_EAV['sphericity_ablation']
-    df_stats['major_axis_tumor'] = df_radiomics_PAV_EAV['major_axis_length_ablation']
-    df_stats['major_axis_tumor'] = df_radiomics_PAV_EAV['major_axis_length_tumor']
-    df_stats_1 = df_stats.describe()
-    df_stats_1 = df_stats.describe()
-    filepath_excel = 'Radiomics_MAVERRIC_Descriptive_Stats.xlsx'
-    writer = pd.ExcelWriter(filepath_excel)
-    df_stats_1.to_excel(writer, sheet_name='radiomics', index=True, float_format='%.2f')
-    writer.save()
+    df_acculis = df_radiomics_PAV_EAV[df_radiomics_PAV_EAV['Device_name'] == 'Acculis']
+    df_amica = df_radiomics_PAV_EAV[df_radiomics_PAV_EAV['Device_name'] == 'Amica']
+    write_descriptive_stats(df_radiomics_PAV_EAV, device_name='All')
+    write_descriptive_stats(df_acculis, device_name='Acculis')
+    write_descriptive_stats(df_amica, device_name='Amica')
