@@ -21,7 +21,7 @@ import utils.graphing as gh
 #                                                flag_subcapsular=False)
 
 
-def edit_save_plot(ax=None, p=None, flag_hue=None, xlabel='PAV', ylabel='EAV', device='3 MWA Devices',
+def edit_save_plot(ax=None, p=None, flag_hue=None, xlabel='PAV', ylabel='EAV', device='',
                    r_1=None, r_2=None,
                    label_1=None, label_2=None,
                    ratio_flag=False):
@@ -228,6 +228,7 @@ def plot_scatter_pav_eav(df_radiomics,
     df['EAV'] = df_radiomics['Ablation Volume [ml]']
     df['Energy (kJ)'] = df_radiomics['Energy [kj]']
     df['MWA Systems'] = df_radiomics['Device_name']
+    df['major_axis_length_ablation'] = df_radiomics['major_axis_length_ablation']
     df.dropna(inplace=True)
     print('Nr Samples used for PAV vs EAV scatter plot:', str(len(df)))
     if ratio_flag is False:
@@ -236,7 +237,7 @@ def plot_scatter_pav_eav(df_radiomics,
             slope, intercept, r_square, p_value, std_err = stats.linregress(df['EAV'], df['PAV'])
             ax = sns.regplot(x="PAV", y="EAV", data=df, scatter_kws={"s": 150, "alpha": 0.8},
                              color=sns.xkcd_rgb["violet"],
-                             line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square)})
+                             line_kws={'label': r'$r={0:.4f}$'.format(r_square)})
         else:
             ax = sns.scatterplot(x="PAV", y="EAV", data=df, s=200, alpha=0.8,
                                  color=sns.xkcd_rgb["violet"],  hue='MWA Systems')
@@ -246,17 +247,17 @@ def plot_scatter_pav_eav(df_radiomics,
     else:
         df['R(EAV:PAV)'] = df['EAV'] / df['PAV']
         df.dropna(inplace=True)
-        slope, intercept, r_square, p_value, std_err = stats.linregress(df['R(EAV:PAV)'], df['Energy (kJ)'])
+        slope, intercept, r_square, p_value, std_err = stats.linregress(df['major_axis_length_ablation'], df['Energy (kJ)'])
         print('p-value R(EAV:PAV) vs Energy (kj):', p_value)
         if linear_regression is True:
-            ax = sns.regplot(y="R(EAV:PAV)", x="Energy (kJ)", data=df, color=sns.xkcd_rgb["green"],
-                             line_kws={'label': r'$R^2:{0:.4f}$'.format(r_square)},
+            ax = sns.regplot(y="major_axis_length_ablation", x="Energy (kJ)", data=df, color=sns.xkcd_rgb["cobalt"],
+                             line_kws={'label': r'$ r = {0:.2f}$'.format(r_square)},
                              scatter_kws={"s": 150, "alpha": 0.8})
         else:
             ax = sns.scatterplot(x="R(EAV:PAV)", y="Energy (kJ)", data=df, scatter_kws={"s": 150, "alpha": 0.8},
                                  color=sns.xkcd_rgb["violet"], hue='MWA Systems')
 
-        edit_save_plot(ax=ax, ylabel="R(EAV:PAV)", xlabel="Energy (kJ)", ratio_flag=True)
+        edit_save_plot(ax=ax, ylabel="Maximum ablation diameter (mm)", xlabel="Energy (kJ)", ratio_flag=True)
 
 
 def connected_mev_miv(df_radiomics):
@@ -342,6 +343,9 @@ def write_descriptive_stats(df_radiomics_PAV_EAV, device_name):
     df['Sphericity'] = df_radiomics_PAV_EAV['sphericity_ablation']
     df['major_axis_ablation'] = df_radiomics_PAV_EAV['major_axis_length_ablation']
     df['major_axis_tumor'] = df_radiomics_PAV_EAV['major_axis_length_tumor']
+    df['safety_margin_distribution_0'] = df_radiomics_PAV_EAV['safety_margin_distribution_0']
+    df['safety_margin_distribution_5'] = df_radiomics_PAV_EAV['safety_margin_distribution_5']
+    df['safety_margin_distribution_10'] = df_radiomics_PAV_EAV['safety_margin_distribution_10']
     df_stats = df.describe()
 
     iqr = df_stats.loc['75%', :] - df_stats.loc['25%', :]
@@ -366,6 +370,9 @@ if __name__ == '__main__':
     # select only those rows included in the PAV vs EAV Energy Manuscript
     df_radiomics_PAV_EAV = df_radiomics[df_radiomics['Inclusion_Energy_PAV_EAV'] == True]
 
+    # df_radiomics_PAV_EAV = df_radiomics_PAV_EAV[df_radiomics_PAV_EAV['Inclusion_Margin_Analysis'] == 1]
+    # df_radiomics_PAV_EAV = df_radiomics_PAV_EAV[df_radiomics_PAV_EAV['Proximity_to_surface'] == False]
+
     # plot ellipsoid approximations
     # connected_mev_miv(df_radiomics_PAV_EAV)
 
@@ -374,13 +381,13 @@ if __name__ == '__main__':
     # font = {'family': 'DejaVu Sans',
     #         'size': 18}
     # matplotlib.rc('font', **font)
-
-    subplots_pav_eav.plot_subplots(df_radiomics_PAV_EAV)
-    mev_miv_scatter.plot_mev_miv(df_radiomics_PAV_EAV)
+    #
+    # subplots_pav_eav.plot_subplots(df_radiomics_PAV_EAV)
+    # mev_miv_scatter.plot_mev_miv(df_radiomics_PAV_EAV)
 
     # plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=False, linear_regression=False)
     # plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=False, linear_regression=True)
-    plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=True, linear_regression=True)
+    # plot_scatter_pav_eav(df_radiomics_PAV_EAV, ratio_flag=True, linear_regression=True)
     # plot_scatter_group_var_subcapsular(df_radiomics_PAV_EAV, ratio_flag=False)
     # plot_scatter_group_var_chemo(df_radiomics_PAV_EAV, ratio_flag=False)
     # plot_scatter_group_var_vessels(df_radiomics_PAV_EAV)
@@ -388,6 +395,8 @@ if __name__ == '__main__':
     #%% Descriptive statistics
     df_acculis = df_radiomics_PAV_EAV[df_radiomics_PAV_EAV['Device_name'] == 'Acculis']
     df_amica = df_radiomics_PAV_EAV[df_radiomics_PAV_EAV['Device_name'] == 'Amica']
+    df_covidien = df_radiomics_PAV_EAV[df_radiomics_PAV_EAV['Device_name'] == 'Covidien']
     write_descriptive_stats(df_radiomics_PAV_EAV, device_name='All')
     write_descriptive_stats(df_acculis, device_name='Acculis')
     write_descriptive_stats(df_amica, device_name='Amica')
+    write_descriptive_stats(df_covidien, device_name='Covidien')

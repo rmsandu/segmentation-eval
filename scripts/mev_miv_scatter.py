@@ -34,7 +34,7 @@ def plot_mev_miv(df_radiomics):
 
 
     fig, ax = plt.subplots(figsize=(12, 12))
-    sns.distplot(df['Energy (kJ)'],  hist_kws={"ec": 'black'},
+    sns.distplot(df['Energy (kJ)'],  hist_kws={"ec": 'black', "align": "mid"},
                  axlabel='Energy', ax=ax)
     timestr = time.strftime("%H%M%S-%Y%m%d")
     figpath = os.path.join("figures", 'Energy_distribution_' + timestr + '.png')
@@ -45,15 +45,15 @@ def plot_mev_miv(df_radiomics):
     # drop the rows where MIV > MEV
     # since the minimum inscribed ellipsoid (MIV) should always be smaller than the maximum enclosing ellipsoid (MEV)
     df = df[df['MEV-MIV'] >= 0]
-
-    # Set up the matplotlib figure
-    # f, axes = plt.subplots(1, 2, figsize=(20, 20))
-
-
+    min_val = int(min(df['MEV-MIV']))
+    max_val = int(max(df['MEV-MIV']))
+    print('Min Val Mev-Miv:', min_val)
+    print('Max Val Mev-Miv:', max_val)
+    print('nr of samples for mev-miv:', len(df))
 
     # %% histogram MEV-MIV
     fig, ax = plt.subplots(figsize=(12, 12))
-    sns.distplot(df['MEV-MIV'], color=sns.xkcd_rgb["reddish"], hist_kws={"ec": 'black'},
+    sns.distplot(df['MEV-MIV'], color=sns.xkcd_rgb["reddish"], hist_kws={"ec": 'black',  "align": "mid"},
                  axlabel='Distribution of Ablation Volume Irregularity (MEV-MIV) (mL)', ax=ax)
 
     timestr = time.strftime("%H%M%S-%Y%m%d")
@@ -97,9 +97,10 @@ def plot_mev_miv(df_radiomics):
     fig1, ax5 = plt.subplots(figsize=(12, 12))
     slope, intercept, r_square, p_value, std_err = stats.linregress(df['R(EAV:PAV)'], df['MEV-MIV'])
     print('p-val mev miv energy:', p_value )
+    print()
     p = sns.regplot(y="R(EAV:PAV)", x="MEV-MIV", data=df, scatter_kws={"s": 100, "alpha": 0.5},
                     color=sns.xkcd_rgb["reddish"],
-                    line_kws={'label': r'$R^2:{0:.2f}$'.format(r_square)}, ax=ax5)
+                    line_kws={'label': r'$r = {0:.2f}$'.format(r_square)}, ax=ax5)
     plt.xlabel('MEV-MIV (mL)')
     plt.legend()
 

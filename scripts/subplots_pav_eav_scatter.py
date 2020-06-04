@@ -22,7 +22,8 @@ def plot_subplots(df_radiomics):
     """
     # Set up the matplotlib figure
     f, axes = plt.subplots(1, 3, figsize=(20, 20))
-
+    fontsize = 10
+    fontsize_legend = 9
     df = pd.DataFrame()
     df['PAV'] = df_radiomics['Predicted_Ablation_Volume']
     df['EAV'] = df_radiomics['Ablation Volume [ml]']
@@ -49,30 +50,35 @@ def plot_subplots(df_radiomics):
     print('p-value PAV vs EAV:', p_value)
     sns.regplot(x="PAV", y="EAV", data=df, scatter_kws={"s": 11, "alpha": 0.6},
                 color=sns.xkcd_rgb["violet"],
-                line_kws={'label': r'$R^2:{0:.2f}$'.format(r_square)}, ax=axes[0])
-    axes[0].legend(fontsize=8, loc='best')
-    axes[0].set_ylabel('EAV (mL)', fontsize=8)
-    axes[0].set_xlabel('PAV (mL)', fontsize=8)
+                line_kws={'label': r'$r:{0:.2f}$'.format(r_square)}, ax=axes[0])
+    axes[0].legend(fontsize=fontsize_legend, loc='upper left')
+    axes[0].set_ylabel('EAV (mL)', fontsize=fontsize)
+    axes[0].set_xlabel('PAV (mL)', fontsize=fontsize)
     # Subcapsular 2nd plot
     subcapsular_false = df[df['Proximity_to_surface'] == False]
     subcapsular_true = df[df['Proximity_to_surface'] == True]
     slope, intercept, r_1, p_value, std_err = stats.linregress(subcapsular_false['PAV'],
                                                                subcapsular_false['EAV'])
-    print('p-value subcapsular False:', p_value)
     slope, intercept, r_2, p_value, std_err = stats.linregress(subcapsular_true['PAV'],
                                                                subcapsular_true['EAV'])
-    print('p-value subcapsular True:', p_value)
+
+    # Wilcoxon paired signed rank test
+    w, p = stats.wilcoxon(subcapsular_true['PAV'], subcapsular_true['EAV'])
+    print('p-val wilcoxon subcapsular true:', p)
+    w, p = stats.wilcoxon(subcapsular_false['PAV'], subcapsular_false['EAV'])
+    print('p-val wilcoxon subcapsular false:', p)
+
     sns.regplot(y="Non-Subcapsular", x="PAV", data=df, scatter_kws={"s": 11, "alpha": 0.6},
-                line_kws={'label': r'Non-subcapsular: $R^2={0:.2f}$'.format(r_1)},
+                line_kws={'label': r'No: $r = {0:.2f}$'.format(r_1)},
                 ax=axes[1])
     sns.regplot(y="Subcapsular", x="PAV", data=df, scatter_kws={"s": 11, "alpha": 0.6},
-                color=sns.xkcd_rgb["orange"], line_kws={'label': r'Subcapsular: $R^2={0:.2f}$'.format(r_2)},
+                color=sns.xkcd_rgb["orange"], line_kws={'label': r'Yes: $r = {0:.2f}$'.format(r_2)},
                 ax=axes[1])
-    axes[1].legend(fontsize=8, loc='best')
+    axes[1].legend(fontsize=fontsize_legend, loc='best', title='Subcapsular', title_fontsize=fontsize_legend)
     axes[1].set_yticklabels([])
     axes[1].set_ylabel('')
-    axes[1].set_xlabel('PAV (mL)', fontsize=8)
-    axes[1].set_title('Predicted (PAV) vs Effective Ablation Volume (EAV) for 3 MWA Devices', fontsize=10)
+    axes[1].set_xlabel('PAV (mL)', fontsize=fontsize)
+    axes[1].set_title('Predicted (PAV) vs Effective Ablation Volume (EAV) for 3 MWA Devices', fontsize=fontsize, pad=20)
 
     # Chemo 3rd plot
     chemo_false = df[df['Chemotherapy'] == 'No']
@@ -82,17 +88,19 @@ def plot_subplots(df_radiomics):
     x2 = chemo_true['PAV']
     y2 = chemo_true['EAV']
     slope, intercept, r_1, p_value, std_err = stats.linregress(x1, y1)
-    print('p-value Chemotherapy NO:', p_value)
     slope, intercept, r_2, p_value, std_err = stats.linregress(x2, y2)
-    print('p-value Chemotherapy TRUE:', p_value)
+    w, p = stats.wilcoxon(chemo_true['PAV'], chemo_true['EAV'])
+    print('p-val chemotherapy yes:', p)
+    w, p = stats.wilcoxon(chemo_false['PAV'], chemo_false['EAV'])
+    print('p-val chemotherapy no:', p)
     sns.regplot(y='Chemo_yes', x="PAV", data=df, scatter_kws={"s": 11, "alpha": 0.6}, color=sns.xkcd_rgb["teal green"],
-                ax=axes[2], line_kws={'label': r'Chemotherapy:yes $R^2={0:.2f}$'.format(r_2)})
+                ax=axes[2], line_kws={'label': r'Yes: $r = {0:.2f}$'.format(r_2)})
     sns.regplot(y='Chemo_no', x="PAV", data=df, scatter_kws={"s": 11, "alpha": 0.6}, color=sns.xkcd_rgb["slate grey"],
-                ax=axes[2], line_kws={'label': r'Chemotherapy:no $R^2={0:.2f}$'.format(r_1)})
-    axes[2].legend(fontsize=8, loc='best')
+                ax=axes[2], line_kws={'label': r'No: $r = {0:.2f}$'.format(r_1)})
+    axes[2].legend(fontsize=fontsize_legend, loc='best', title='Chemotherapy', title_fontsize=fontsize_legend)
     axes[2].set_yticklabels([])
     axes[2].set_ylabel('')
-    axes[2].set_xlabel('PAV (mL)', fontsize=8)
+    axes[2].set_xlabel('PAV (mL)', fontsize=fontsize)
 
     # add major title to subplot
     # f.suptitle('Predicted (PAV) vs Effective Ablation Volume (EAV) for 3 MWA Devices', fontsize=10)
@@ -115,10 +123,9 @@ def plot_subplots(df_radiomics):
     # set the fontsize of the ticks of the subplots
     for ax in axes:
         ax.set(adjustable='box', aspect='equal')
-        # ax = plt.gca()
-        ax.tick_params(axis='both', which='major', labelsize=8)
+        ax.tick_params(axis='both', which='major', labelsize=fontsize)
 
     # save the figure
     timestr = time.strftime("%H%M%S-%Y%m%d")
     figpath = os.path.join("figures", 'All_3MWA_SUbcapsular_Chemo_' + timestr)
-    gh.save(figpath, ext=["png"], width=12, height=12, close=True, tight=True, dpi=300)
+    gh.save(figpath, ext=["png"], width=12, height=12, close=True, tight=True, dpi=600)
