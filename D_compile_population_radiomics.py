@@ -56,9 +56,11 @@ if __name__ == '__main__':
 # df_final = result
 # print(len(frames))
 result = pd.concat(frames, ignore_index=True)
-# df_final = pd.concat([df_download_db_all_info, result], join='inner', verify_integrity=True, keys=['Patient_ID', 'Lesion_ID'])
-df_final = pd.merge(df_download_db_all_info, result, how="left", on=['Patient_ID', 'Lesion_ID'], indicator=True)
-# TODO: write treatment id as well. the unique key must be formed out of: [patient_id, treatment_id, lesion_id]
+result_inner_ellipsoid = pd.DataFrame()
+result_inner_ellipsoid['Patient_ID'] = result['Patient_ID']
+result_inner_ellipsoid['Lesion_ID'] = result['Lesion_ID']
+result_inner_ellipsoid['Inner Ellipsoid Volume'] = result['Inner Ellipsoid Volume']
+df_final = pd.merge(df_download_db_all_info, result_inner_ellipsoid, how="left", on=['Patient_ID', 'Lesion_ID'])
 timestr = time.strftime("%H%M%S-%Y%m%d")
 filepath_excel = 'Radiomics_MAVERRIC----' + timestr + '_.xlsx'
 writer = pd.ExcelWriter(filepath_excel)

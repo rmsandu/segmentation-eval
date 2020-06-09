@@ -29,11 +29,11 @@ class VolumeMetrics:
         self.volume_similarity = None
         self.error_flag = False
 
-    def set_image_object(self, ablation_segmentation, tumor_segmentation):
+    def set_image_object(self, ablation_segmentation=None, tumor_segmentation=None):
         self.tumor_segmentation = tumor_segmentation
         self.ablation_segmentation = ablation_segmentation
 
-    def get_volume_ellipsoids(self):
+    def get_inner_outer_ellipsoids_volume(self):
         self.volume_outer_ellipsoid, self.volume_inner_ellipsoid = get_ellipsoid_fit_volumes(self.ablation_segmentation)
 
     def get_volume_ml(self, image):
@@ -99,7 +99,7 @@ class VolumeMetrics:
         self.jaccard = overlap_measures_filter.GetDiceCoefficient()
         self.volumetric_overlap_error = 1. - overlap_measures_filter.GetJaccardCoefficient()
         self.volume_similarity = overlap_measures_filter.GetVolumeSimilarity()
-        self.get_volume_ellipsoids()
+        self.get_inner_outer_ellipsoids_volume()
 
     def get_volume_metrics_df(self):
         volume_metrics_dict = {

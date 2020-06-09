@@ -5,12 +5,13 @@
 import os
 import time
 
+import matplotlib
+
+matplotlib.use('Agg')
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-import utils.graphing as gh
 
 
 def draw_pie(dist,
@@ -60,7 +61,7 @@ def call_plot_pies(df_radiomics, title=None, flag_plot_type=None, flag_overlap=N
     ratios_10 = df_radiomics.safety_margin_distribution_10.tolist()
 
     # %% ACTUALLY PLOT STUFF
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 12))
     if flag_plot_type == 'PAV_EAV':
         for idx, val in enumerate(ablation_vol_interpolated_brochure):
             xs = ablation_vol_interpolated_brochure[idx]
@@ -77,7 +78,6 @@ def call_plot_pies(df_radiomics, title=None, flag_plot_type=None, flag_overlap=N
 
     elif flag_plot_type == 'MEV_MIV':
         # drop the rows where MIV > MEV
-        # since the minimum inscribed ellipsoid (MIV) should always be smaller than the maximum enclosing ellipsoid (MEV)
         df_radiomics = df_radiomics[df_radiomics['Outer Ellipsoid Volume'] < 150]
         print('Nr Samples used for Outer Ellipsoid Volume < 150 ml:', len(df_radiomics))
         df_radiomics = df_radiomics[df_radiomics['MEV-MIV'] >= 0]
@@ -94,15 +94,13 @@ def call_plot_pies(df_radiomics, title=None, flag_plot_type=None, flag_overlap=N
                 draw_pie([ratio_0, ratio_5, ratio_10], xs, ys, 500, colors=['red', 'orange', 'green'], ax=ax)
         plt.xlabel('Ablation Volume Irregularity (MEV-MIV) (mL)', fontsize=fontsize)
         plt.ylabel('R(EAV:PAV)', fontsize=fontsize)
-        # plt.xlim([0, 80])
-        # plt.ylim([0, 80])
-        # ax.set_xscale('log')
+
     # %% EDIT THE PLOTS with colors
     red_patch = mpatches.Patch(color='red', label='Ablation Margin ' + r'$x < 0$' + 'mm')
     orange_patch = mpatches.Patch(color='orange', label='Ablation Margin ' + r'$0 \leq x < 5$' + 'mm')
     green_patch = mpatches.Patch(color='darkgreen', label='Ablation Margin ' + r'$x \geq 5$' + 'mm')
     plt.legend(handles=[red_patch, orange_patch, green_patch], fontsize=fontsize, loc='best',
-               title=title, title_fontsize=fontsize+1)
+               title=title, title_fontsize=fontsize + 1)
     props = dict(boxstyle='round', facecolor='white', edgecolor='gray')
     # textstr = title
     # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=20, verticalalignment='top', bbox=props)
@@ -111,27 +109,27 @@ def call_plot_pies(df_radiomics, title=None, flag_plot_type=None, flag_overlap=N
     plt.tick_params(labelsize=fontsize, color='black')
 
     timestr = time.strftime("%H%M%S-%Y%m%d")
-    figpath = os.path.join("figures", 'pie_charts_' + flag_plot_type + timestr)
-    gh.save(figpath, ext=["png"], width=12, height=12, close=True, tight=True, dpi=300)
+    figpath = os.path.join("figures", 'pie_charts_' + flag_plot_type + timestr + '.png')
+    plt.savefig(figpath, dpi=300, bbox_inches='tight')
 
 
 if __name__ == '__main__':
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_May192020.xlsx")
+    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC----003328-20200523_.xlsx")
     # df_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
-    # df_radiomics_acculis = df_acculis[df_acculis['Inclusion_Margin_Analysis'] == 1]
-    df_radiomics_all = df_radiomics[df_radiomics['Inclusion_Energy_PAV_EAV'] == True]
 
-    # %% SELECT DEEP (aka  non-SUBCAPSULAR TUMORS) because we are only interested in plotting those for the moment
+    df_radiomics_all = df_radiomics[
+        df_radiomics['Inclusion_Energy_PAV_EAV'] == True]
+    df_radiomics_all = df_radiomics_all[df_radiomics_all['Inclusion_Margin_Analysis'] == 1]
+    # # %% SELECT DEEP (aka  non-SUBCAPSULAR TUMORS) because we are only interested in plotting those for the moment
     df_radiomics_all = df_radiomics_all[df_radiomics_all['Proximity_to_surface'] == False]
-
+    print('Nr Samples used for margin distribution available initally:', len(df_radiomics_all))
     # %% SEPARATE THE MARGIN DISTRIBUTION
     df_radiomics_all.dropna(subset=['safety_margin_distribution_0',
                                     'safety_margin_distribution_5',
                                     'safety_margin_distribution_10'],
                             inplace=True)
-    print('Nr Samples used for margin distribution available initally:', len(df_radiomics_all))
+    print('Nr Samples used for margin distribution available initally drop nans surfaces:', len(df_radiomics_all))
     # %% PLOT
-    # Overlap measurements: Dice score, Volume Overlap Error,  Tumour residual volume [ml]
     call_plot_pies(df_radiomics_all, title='Non-Subcapsular Tumors', flag_plot_type='MEV_MIV')
     call_plot_pies(df_radiomics_all, title='Non-Subcapsular Tumors', flag_plot_type='PAV_EAV')
 

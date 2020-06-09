@@ -19,6 +19,7 @@
 #    [1] "Lectures on Modern Optimization", Ben-Tal and Nemirovski, 2000.
 #    [2] "MOSEK modeling manual", 2018
 ##
+import scripts.inner_ellipsoid as inner_ell
 from scipy.spatial import ConvexHull
 import polytope as pc
 import DicomReader as Reader
@@ -182,27 +183,16 @@ if __name__ == '__main__':
 
     # Vertices of a pentagon in 2D
     # p = [[0., 0.], [1., 3.], [5.5, 4.5], [7., 4.], [7., 1.], [3., -2.]]
-    file_path_ablation = r"C:\tmp_patients\Pat_G12\Study_20200506\Series_003\CAS-One Recordings\2020-05-09_16-17-12\Segmentations\SeriesNo_27\SegmentationNo_0"
+    file_path_ablation =  r"C:\tmp_patients\Pat_MAV_BE_B02_\Study_0\Series_7\CAS-One Recordings\2020-04-22_18-45-29\Segmentations\SeriesNo_28\SegmentationNo_0"
     dcm_img, reader = Reader.read_dcm_series(file_path_ablation)
     p = ell.get_surface_points(dcm_img)
-    hull = ConvexHull(p)
-    min_points = hull.min_bound
-    max_points = hull.max_bound
-    pts = np.zeros((len(min_points), 2))
-    for i, el in enumerate(min_points):
-        pts[i, 0] = min_points[i]
-        pts[i, 1] = max_points[i]
-    nVerts = len(p)
-    polytope_Ab = pc.box2poly(pts)
-    A = polytope_Ab.A
-    b = polytope_Ab.b
 
   #%%
     # The hyperplane representation of the same polytope
     # A = [[-p[i][1] + p[i - 1][1], p[i][0] - p[i - 1][0]]
     #      for i in range(len(p))]
     # b = [A[i][0] * p[i][0] + A[i][1] * p[i][1] for i in range(len(p))]
-
+    A, b, hull = inner_ell.GetHull(p)
     Po, co = lownerjohn_outer(p)
     Ci, di = lownerjohn_inner(A, b)
 
@@ -233,7 +223,7 @@ if __name__ == '__main__':
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
         # plt.show()
-        fig.savefig('ellipsoid.png')
+        fig.savefig('ellipsoid3D.png')
 #%%
     except:
             print("Inner:")

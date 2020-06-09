@@ -29,7 +29,7 @@ df = pd.read_excel(input_excel_filename)
 
 df["Patient Name"] = df['Lesion_ID']
 df["Patient Name"] = df["Patient Name"].map(lambda x: x.partition("-L")[0])
-df["Date_of_Birth"] = df["Date_of_Birth"].map(lambda x: str(x) + "0101")
+# df["Date_of_Birth"] = df["Date_of_Birth"].map(lambda x: x[0:9])
 # df["Ablation_IR_Date"] = df["Ablation_IR_Date"].map(lambda x: x.split(":")[2])
 # df["Ablation_IR_Date"] = df["Ablation_IR_Date"].map(lambda x: x.replace("-", ""))
 # df["Ablation_IR_Date"] = df["Ablation_IR_Date"].map(lambda x: x.replace(" ", ""))
