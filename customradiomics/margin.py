@@ -45,7 +45,7 @@ def crop_mask(mask, bbox_min, bbox_max):
     return cropmask
 
 
-def compute_distances(mask_gt, mask_pred, exclusion_zone, spacing_mm, connectivity=1, crop=True):
+def compute_distances(mask_gt, mask_pred, exclusion_zone, spacing_mm, connectivity=1, crop=True, exclusion_distance=5):
     if crop:
         if exclusion_zone is not None:
             bbox_min, bbox_max = compute_bounding_box(mask_gt, mask_pred, exclusion_zone)
@@ -93,8 +93,8 @@ def compute_distances(mask_gt, mask_pred, exclusion_zone, spacing_mm, connectivi
         distmask_exclusion[distmask_exclusion == 0] = -1
         distmap_exclusion *= distmask_exclusion
 
-        borders_pred[distmap_exclusion < 5] = 0
-        borders_gt[distmap_exclusion < 5] = 0
+        borders_pred[distmap_exclusion < exclusion_distance] = 0
+        borders_gt[distmap_exclusion < exclusion_distance] = 0
 
     # create a list of all surface elements with distance and area
     distances_gt_to_pred = distmap_pred[borders_gt > 0]
