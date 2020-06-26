@@ -10,10 +10,11 @@ import scipy
 
 class ResizeSegmentation(object):
 
-    def __init__(self, ablation_segmentation, tumor_segmentation):
+    def __init__(self, ablation_segmentation, tumor_segmentation, ablation_source_ct):
 
         self.tumor_segmentation = tumor_segmentation
         self.ablation_segmentation = ablation_segmentation
+        self.ablation_source_ct = ablation_source_ct
 
     def resample_segmentation_pydicom(self, scan, new_spacing=[1, 1, 1]):
         """
@@ -56,15 +57,16 @@ class ResizeSegmentation(object):
         :return: new_segmentation of the image_roi
         """
         resampler = sitk.ResampleImageFilter()
-        resampler.SetReferenceImage(self.ablation_segmentation)  # the ablation mask
+        resampler.SetReferenceImage(self.ablation_source_ct)  # the ablation mask
         resampler.SetDefaultPixelValue(0)
         # use NearestNeighbor interpolation for the ablation&tumor segmentations so no new labels are generated
         resampler.SetInterpolator(sitk.sitkNearestNeighbor)
-        resampler.SetSize(self.ablation_segmentation.GetSize())
-        resampler.SetOutputSpacing(self.ablation_segmentation.GetSpacing())
-        resampler.SetOutputDirection(self.ablation_segmentation.GetDirection())
-        resampled_img = resampler.Execute(self.tumor_segmentation)  # the tumour mask
-        return resampled_img
+        resampler.SetSize(self.ablation_source_ct.GetSize())
+        resampler.SetOutputSpacing(self.ablation_source_ct.GetSpacing())
+        resampler.SetOutputDirection(self.ablation_source_ct.GetDirection())
+        resampled_tumor = resampler.Execute(self.tumor_segmentation)  # the tumour mask
+        resampled_ablation = resampler.Execute(self.ablation_segmentation) # the ablation mask
+        return resampled_tumor, resampled_ablation
 
     def recast_pixel_val(self, image_source, image_roi):
         """
