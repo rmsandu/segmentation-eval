@@ -75,7 +75,7 @@ def create_paths(rootdir):
     return list_all_ct_series
 
 
-def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
+def get_paths_from_metatags(df_paths_mapping):
     """
 
     :param df_paths_mapping:
@@ -111,31 +111,51 @@ def preprocess_call_main_metrics(df_paths_mapping, plots_dir):
                 tumor_path, file = os.path.split(df_paths_mapping.iloc[idx_tumor_path].PathSeries)
                 source_ct_ablation_path, file = os.path.split(df_paths_mapping.iloc[idx_source_ablation].PathSeries)
                 source_ct_tumor_path, file = os.path.split(df_paths_mapping.iloc[idx_source_tumor].PathSeries)
-                # READ THE SEGMENTATION MASKS AS SIMPLEITK OBJ
-                tumor_segmentation_sitk, tumor_sitk_reader = Reader.read_dcm_series(tumor_path, True)
-                ablation_segmentation_sitk, ablation_sitk_reader = Reader.read_dcm_series(ablation_path, True)
-                # READ THE CT SOURCE IMAGES AS SIMPLEITK DICOM IMGS
-                source_ct_tumor_sitk, reader = Reader.read_dcm_series(source_ct_tumor_path, True)
-                source_ct_ablation_sitk, reader = Reader.read_dcm_series(source_ct_ablation_path, True)
-                # GET THE GENERAL INFO FROM THE METATAGS
                 lesion_number = df_paths_mapping.iloc[idx_tumor_path].LesionNumber
                 ablation_date = df_paths_mapping.iloc[idx_tumor_path].AblationDate
                 patient_id = df_paths_mapping.iloc[idx_tumor_path].PatientID
-                # %% RESAMPLE THE TUMOR MASK TO THE SIZE OF THE ABLATION MASK
-                # so that we can extract metrics from the two combined
-                resizer = ResizeSegmentation(ablation_segmentation_sitk,
-                                             tumor_segmentation_sitk,
-                                             source_ct_ablation_sitk)
+                return tumor_path, source_ct_tumor_path, ablation_path, source_ct_ablation_path, \
+                       lesion_number, ablation_date, patient_id
+            else:
+                print("No metatags mapping found in ReferencedSequence for Tumor and Ablation!!!!")
 
-                tumor_segmentation_resampled, ablation_segmentation_resampled = resizer.resample_segmentation()
-                # %% EXTRACT DISTANCE AND VOLUME METRICS
-                main_distance_volume_metrics(patient_id,
-                                             source_ct_ablation_sitk, source_ct_tumor_sitk,
-                                             ablation_segmentation_resampled, tumor_segmentation_resampled,
-                                             lesion_number,
-                                             ablation_date,
-                                             plots_dir)
-                sys.stdout.flush()
+
+def read_dcm_imgs(tumor_path, source_ct_tumor_path, ablation_path, source_ct_ablation_path):
+    """
+    reads DICOM images as SimpeleITK objects given their file paths as input
+    :param tumor_path:
+    :param source_ct_tumor_path:
+    :param ablation_path:
+    :param source_ct_ablation_path:
+    :return: all DICOM files as SimpleITK objects
+    """
+
+    # READ THE SEGMENTATION MASKS AS SIMPLEITK OBJ
+    tumor_segmentation_sitk, tumor_sitk_reader = Reader.read_dcm_series(tumor_path, True)
+    ablation_segmentation_sitk, ablation_sitk_reader = Reader.read_dcm_series(ablation_path, True)
+    # READ THE CT SOURCE IMAGES AS SIMPLEITK DICOM IMGS
+    source_ct_tumor_sitk, reader = Reader.read_dcm_series(source_ct_tumor_path, True)
+    source_ct_ablation_sitk, reader = Reader.read_dcm_series(source_ct_ablation_path, True)
+    return tumor_segmentation_sitk, source_ct_tumor_sitk, ablation_segmentation_sitk, source_ct_ablation_sitk
+
+
+def resample_tumor_ablation(tumor_segmentation_sitk, ablation_segmentation_sitk, source_ct_ablation_sitk):
+    """
+
+    :param tumor_segmentation_sitk:
+    :param ablation_segmentation_sitk:
+    :param source_ct_ablation_sitk:
+    :return: resampled tumor and ablation segmentations to the same dimensions
+    """
+
+    # RESAMPLE THE TUMOR MASK AND ABLATION MASK TO MATCH THE SOURCE CT ABLATION VALIDATION
+    # so that we can extract metrics from the two combined
+    resizer = ResizeSegmentation(ablation_segmentation_sitk,
+                                 tumor_segmentation_sitk,
+                                 source_ct_ablation_sitk)
+
+    tumor_segmentation_resampled, ablation_segmentation_resampled = resizer.resample_segmentation()
+    return tumor_segmentation_resampled, ablation_segmentation_resampled
 
 
 # %%
@@ -145,6 +165,14 @@ if __name__ == '__main__':
     ap.add_argument("-i", "--rootdir", required=False, help="path to the patient folder to be processed")
     ap.add_argument("-o", "--plots_dir", required=True, help="path to the output images")
     ap.add_argument("-b", "--input_batch_proc", required=False, help="input csv file for batch processing")
+    ap.add_argument("-m", "--metatags_mapping", required=False,
+                    help="Flag to specify whether the ablation tumor mapping was previously embedded in metatags")
+    ap.add_argument("-t", "--tumor_path", required=False, help="path to tumor image files")
+    ap.add_argument("-a", "--ablation_path", required=False, help="path to ablation image files")
+    ap.add_argument("-c", "--source_ct_tumor", required=False, help="path to tumor source CT")
+    ap.add_argument("-d", "--source_ct_ablation", required=False, help="path to ablation source CT")
+    ap.add_argument("-p", "--patient_id", required=False, help="subject id")
+    ap.add_argument("-l", "--lesion_id", required=False, help="lesion id")
 
     args = vars(ap.parse_args())
 
@@ -152,18 +180,48 @@ if __name__ == '__main__':
         print("Single patient folder processing, path to folder: ", args["rootdir"])
         print(args["plots_dir"])
     elif (args["input_batch_proc"]) is not None and (args["rootdir"] is None):
-        print("Batch Processing Enabled, path to csv: ", args["input_batch_proc"])
+        print("Batch Processing Enabled, path to Excel: ", args["input_batch_proc"])
     else:
         print("no input values provided either for single patient processing or batch processing. System Exiting")
         sys.exit()
 
+    # one patient one lesion folder
     if args["input_batch_proc"] is None and args["rootdir"] is not None:
-        # single patient folder
-        list_all_ct_series = create_paths(args["rootdir"])
-        df_paths_mapping = pd.DataFrame(list_all_ct_series)
-        preprocess_call_main_metrics(df_paths_mapping, args["plots_dir"])
+        if args["metatags_mapping"] is True:
+            list_all_ct_series = create_paths(args["rootdir"])
+            df_paths_mapping = pd.DataFrame(list_all_ct_series)
+            tumor_path, source_ct_tumor_path, ablation_path, source_ct_ablation_path, \
+            lesion_number, ablation_date, patient_id = get_paths_from_metatags(df_paths_mapping)
+        else:
+            tumor_path = args["tumor_path"]
+            ablation_path = args["ablation_path"]
+            source_ct_tumor_path = args["source_ct_tumor"]
+            source_ct_ablation_path = args["source_ct_ablation"]
+            patient_id = args["patient_id"]
+            lesion_id = args["lesion_id"]
+            ablation_date = None
+
+        tumor_segmentation_sitk, source_ct_tumor_sitk, ablation_segmentation_sitk, source_ct_ablation_sitk \
+            = read_dcm_imgs(tumor_path, source_ct_tumor_path, ablation_path, source_ct_ablation_path)
+        tumor_segmentation_resampled, ablation_segmentation_resampled = \
+            resample_tumor_ablation(tumor_segmentation_sitk, ablation_segmentation_sitk, source_ct_ablation_sitk)
+        # plot the histogram of distances and extract radiomics
+        main_distance_volume_metrics(patient_id,
+                                     source_ct_ablation_sitk, source_ct_tumor_sitk,
+                                     ablation_segmentation_resampled, tumor_segmentation_resampled,
+                                     lesion_number,
+                                     ablation_date,
+                                     args["plots_dir"],
+                                     FLAG_SAVE_TO_EXCEL=True, title='Ablation to Tumor Euclidean Distances',
+                                     calculate_volume_metrics=True, calculate_radiomics=True
+                                     )
+
         print('Extracted metrics from the patient dir: ', args["rootdir"])
+
+        # UBELIX
+        sys.stdout.flush()
         sys.exit()
+
     else:
         # batch processing option
         df = pd.read_excel(args["input_batch_proc"])
@@ -189,5 +247,5 @@ if __name__ == '__main__':
                         continue
                     else:
                         # call function to resample images and output csv for main metrics.
-                        preprocess_call_main_metrics(df_paths_mapping, args["plots_dir"])
+                        get_paths_from_metatags(df_paths_mapping, args["plots_dir"])
                         print('Extracted metrics from the patient dir: ', rootdir)
