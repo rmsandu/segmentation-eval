@@ -104,7 +104,6 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
                 title=title,
                 ablation_date=ablation_date,
                 flag_to_plot=True)
-
         except Exception:
             print(patient_id, ' error plotting the distances and volumes')
             perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = None, None, None
