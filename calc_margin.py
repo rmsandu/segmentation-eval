@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import pandas as pd
 
+
 from customradiomics.margin import compute_distances
 from utils.niftireader import load_image
 
@@ -30,12 +31,12 @@ def get_args():
         }
     else:
         ap = argparse.ArgumentParser()
-        ap.add_argument("--tumor", required=True, help="path to the tumor segmentation")
-        ap.add_argument("--ablation", required=True, help="path to the ablation segmentation")
-        ap.add_argument("--liver", required=True, help="path to the liver segmentation")
-        ap.add_argument("--lesion-id", required=True, help="lesion id")
-        ap.add_argument("--patient-id", required=True, help="patient id from study")
-        ap.add_argument("OUTPUT", help="output file (csv)")
+        ap.add_argument("-t", "--tumor", required=True, help="path to the tumor segmentation")
+        ap.add_argument("-a", "--ablation", required=True, help="path to the ablation segmentation")
+        ap.add_argument("-l", "--liver", required=True, help="path to the liver segmentation")
+        ap.add_argument("-i", "--lesion-id", required=True, help="lesion id")
+        ap.add_argument("-p", "--patient-id", required=True, help="patient id from study")
+        ap.add_argument("-o", "--OUTPUT",  required=True, help="output file (csv)")
         args = vars(ap.parse_args())
     return args
 
