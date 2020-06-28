@@ -174,11 +174,11 @@ class DistanceMetrics(object):
         # tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=True)
         # tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=False)
         # tumor_surface_array = sitk.GetArrayFromImage(tumor_surface)
-
+        # >>>>>>> fixed border extraction Iwan
         tumor_array = sitk.GetArrayFromImage(tumor_segmentation)
         border_inside = ndimage.binary_erosion(tumor_array, structure=ndimage.generate_binary_structure(3, 1))
         tumor_surface_array = tumor_array ^ border_inside
-# >>>>>>> fixed border extraction
+
 
         tumor_surface_array_NonZero = tumor_surface_array.nonzero()
 

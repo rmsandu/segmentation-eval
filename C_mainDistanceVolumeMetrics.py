@@ -8,47 +8,20 @@ import os
 import time
 
 import pandas as pd
-import SimpleITK as sitk
+
 import scripts.plot_ablation_margin_hist as pm
 from DistanceMetrics import DistanceMetrics, RadiomicsMetrics
 from VolumeMetrics import VolumeMetrics
 from surface_distance.metrics import compute_surface_distances
 
+
 def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor,
-                                 ablation_segmentation, tumor_segmentation_resampled,
+                                 ablation_segmentation_resampled, tumor_segmentation_resampled,
                                  lesion_id, ablation_date, dir_plots,
                                  FLAG_SAVE_TO_EXCEL=True, title='Ablation to Tumor Euclidean Distances',
                                  calculate_volume_metrics=False, calculate_radiomics=False):
     # %% Get Surface Distances between tumor and ablation segmentations
-
-    surface_distance_metrics = DistanceMetrics(ablation_segmentation, tumor_segmentation_resampled)
-    if surface_distance_metrics.num_tumor_surface_pixels > 0:
-        df_distances_1set = surface_distance_metrics.get_SitkDistances()
-        distanceMap = surface_distance_metrics.get_surface_distances()
-        num_surface_pixels = surface_distance_metrics.num_tumor_surface_pixels
-    else:
-        df_distances_1set = None
-        distanceMap = None
-        num_surface_pixels = None
-    # %% Get Radiomics Metrics (shape and intensity)
-    # ABLATION
-    ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation)
-    if ablation_radiomics_metrics.error_flag is False:
-        df_ablation_metrics_1set = ablation_radiomics_metrics.get_axis_metrics_df()
-        new_columns_name = df_ablation_metrics_1set.columns + '_ablation'
-        df_ablation_metrics_1set.columns = new_columns_name
-    else:
-        df_ablation_metrics_1set = None
-    # TUMOR
-    tumor_radiomics_metrics = RadiomicsMetrics(source_ct_tumor, tumor_segmentation_resampled)
-    if tumor_radiomics_metrics.error_flag is False:
-        df_tumor_metrics_1set = tumor_radiomics_metrics.get_axis_metrics_df()
-        new_columns_name = df_tumor_metrics_1set.columns + '_tumor'
-        df_tumor_metrics_1set.columns = new_columns_name
-    else:
-        df_tumor_metrics_1set = None
-    surface_distance_metrics = DistanceMetrics(ablation_segmentation, tumor_segmentation_resampled)
-
+    surface_distance_metrics = DistanceMetrics(ablation_segmentation_resampled, tumor_segmentation_resampled)
     if surface_distance_metrics.num_tumor_surface_pixels > 0:
         df_distances_1set = surface_distance_metrics.get_SitkDistances()
         distanceMap = surface_distance_metrics.get_surface_distances()
@@ -60,7 +33,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     # %% Get Radiomics Metrics (shape and intensity)
     if calculate_radiomics:
         # ABLATION
-        ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation)
+        ablation_radiomics_metrics = RadiomicsMetrics(source_ct_ablation, ablation_segmentation_resampled)
         if ablation_radiomics_metrics.error_flag is False:
             df_ablation_metrics_1set = ablation_radiomics_metrics.get_axis_metrics_df()
             new_columns_name = df_ablation_metrics_1set.columns + '_ablation'
@@ -76,15 +49,12 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
         else:
             df_tumor_metrics_1set = None
     else:
-        df_ablation_metrics_1set = None
         df_tumor_metrics_1set = None
-#added surface_distance library, fixed bug in resampling
-
-
+        df_ablation_metrics_1set = None
     # %% call function to compute volume metrics
     if calculate_volume_metrics:
         evaloverlap = VolumeMetrics()
-        evaloverlap.set_image_object(ablation_segmentation, tumor_segmentation_resampled)
+        evaloverlap.set_image_object(ablation_segmentation_resampled, tumor_segmentation_resampled)
         evaloverlap.set_volume_metrics()
         if evaloverlap.error_flag is False:
             df_volumes_1set = evaloverlap.get_volume_metrics_df()
@@ -141,8 +111,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     df_metrics = pd.concat(
         [patient_df, df_volumes_1set, df_distances_1set, df_ablation_metrics_1set, df_tumor_metrics_1set,
          df_SurfaceDistances_percentages], axis=1)
-    # todo delete the next lien
-    # df_metrics = pd.concat([patient_df, df_volumes_1set], axis=1)
+
     # %%  save to excel the average of the distance metrics '''
     if FLAG_SAVE_TO_EXCEL:
         timestr = time.strftime("%H%M%S-%Y%m%d")
