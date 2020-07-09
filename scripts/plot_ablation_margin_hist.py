@@ -7,28 +7,34 @@ Created on Wed Nov 15 16:15:51 2017
 import os
 from collections import OrderedDict
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+matplotlib.use('Agg')
 
 np.seterr(divide='ignore', invalid='ignore')
 
 
-# plt.style.use('ggplot')
-
 # %%
 
 
-def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, num_voxels, title, ablation_date,
+def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distance_map, num_voxels, title, ablation_date,
                                      flag_to_plot=True):
-    fontsize = 18
-    lesion_id_str = str(lesion_id)
-    lesion_id = lesion_id_str.split('.')[0]
-    figName_hist = 'Pat_' + str(pat_name) + '_Lesion' + str(lesion_id) + '_AblationDate_' + ablation_date + '_histogram'
-    min_val = int(np.floor(min(distanceMap)))
-    max_val = int(np.ceil(max(distanceMap)))
+
+    cmap = sns.color_palette("colorblind")  # colorblind friendly palette
+    fontsize = 20
+    try:
+            lesion_id_str = str(lesion_id)
+            lesion_id = lesion_id_str.split('.')[0]
+    except Exception:
+        pass
+        # lesion id is either not a string, nor it contains numerical characters. do nothing
+    min_val = int(np.floor(min(distance_map)))
+    max_val = int(np.ceil(max(distance_map)))
     fig, ax = plt.subplots(figsize=(12, 10))
 
-    col_height, bins, patches = ax.hist(distanceMap, ec='darkgrey', bins=range(min_val - 1, max_val + 1))
+    col_height, bins, patches = ax.hist(distance_map, ec='black', bins=range(min_val - 1, max_val + 1))
 
     voxels_nonablated = []
     voxels_insuffablated = []
@@ -52,21 +58,23 @@ def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, 
     sum_perc_insuffablated = ((voxels_insuffablated / num_voxels) * 100).sum()
     sum_perc_ablated = ((voxels_ablated / num_voxels) * 100).sum()
     # %%
+
     if flag_to_plot is True:
         '''iterate through the bins to change the colors of the patches bases on the range [mm]'''
         for b, p, col_val in zip(bins, patches, col_height):
             if b < 0:
-                plt.setp(p, 'facecolor', 'tab:red',
+                plt.setp(p, 'facecolor', cmap[3],
                          label='Ablation Margin ' + r'$x < 0$' + 'mm :' + " %.2f" % sum_perc_nonablated + '%')
             elif 0 <= b < 5:
-                plt.setp(p, 'facecolor', 'tab:orange', label='Ablation Margin ' + r'$0 \leq x < 5$' + 'mm: ' + "%.2f" % sum_perc_insuffablated + '%')
+                plt.setp(p, 'facecolor', cmap[8],
+                         label='Ablation Margin ' + r'$0 \leq x < 5$' + 'mm: ' + "%.2f" % sum_perc_insuffablated + '%')
             elif b >= 5:  # fixed color in histogram
-                plt.setp(p, 'facecolor', 'darkgreen',
-                     label='Ablation Margin ' + r'$x \geq 5$' + 'mm: ' + " %.2f" % sum_perc_ablated + '%')
+                plt.setp(p, 'facecolor', cmap[2],
+                         label='Ablation Margin ' + r'$x \geq 5$' + 'mm: ' + " %.2f" % sum_perc_ablated + '%')
         # %%
         '''edit the axes limits and labels'''
         # csfont = {'fontname': 'Times New Roman'}
-        plt.xlabel('Euclidean Distances (mm)', fontsize=fontsize, color='black')
+        plt.xlabel('Surface-to-Surface Euclidean Distances (mm)', fontsize=fontsize, color='black')
         plt.tick_params(labelsize=fontsize, color='black')
         ax.tick_params(colors='black', labelsize=fontsize)
         ax.set_xlim([-15, 15])
@@ -92,10 +100,18 @@ def plot_histogram_surface_distances(pat_name, lesion_id, rootdir, distanceMap, 
         plt.xticks(fontsize=fontsize)
         ax.tick_params(axis='both', labelsize=fontsize)
         ax.grid(False)
-
+        #%% save the fig to disk as png and eps
+        figName_hist = 'Pat_' + str(pat_name) + '_Lesion' + str(
+            lesion_id) + '_AblationDate_' + ablation_date + '_histogram'
         plt.title(title + '. Patient ' + str(pat_name) + '. Lesion ' + str(lesion_id), fontsize=fontsize)
         figpathHist = os.path.join(rootdir, figName_hist)
-        plt.savefig(figpathHist, dpi=300, bbox_inches='tight')
+        ax.set_rasterized(True)
+
+        plt.savefig(figpathHist, dpi=600, bbox_inches='tight')
+        plt.savefig(figpathHist + '.eps', dpi=600)
+        plt.savefig(figpathHist + '.svg', dpi=600)
+        plt.savefig(figpathHist + '.pdf', dpi=600)
+
         plt.close()
         return sum_perc_nonablated, sum_perc_insuffablated, sum_perc_ablated
     else:
