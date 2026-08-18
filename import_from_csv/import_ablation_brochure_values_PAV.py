@@ -10,7 +10,7 @@ import pandas as pd
 
 # %%
 
-file_ablation_devices = r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx"
+file_ablation_devices = "/path/to/data/Ellipsoid_Brochure_Info.xlsx"
 df = pd.read_excel(file_ablation_devices)
 
 

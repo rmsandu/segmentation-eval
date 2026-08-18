@@ -32,7 +32,7 @@ def plot_ellipsoid_3d(ell, ax):
 
 
 
-dir_name = r"C:\tmp_patients\Pat_MAV_BE_B02_\Study_0\Series_7\CAS-One Recordings\2019-07-28_19-33-55\Segmentations\SeriesNo_28\SegmentationNo_0"
+dir_name = "/path/to/patient_data/Study_0/Series_7/Segmentations/SeriesNo_28/SegmentationNo_0"
 A, spacing = get_surface_points(dir_name)
 
 npoints = 4000

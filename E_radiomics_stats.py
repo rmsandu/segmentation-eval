@@ -3,13 +3,16 @@
 @author: Raluca Sandu
 """
 import argparse
+import os
 import sys
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from scripts.scatter_plot import scatter_plot
+import utils.graphing as gh
+from scripts.scatter_plot import scatter_plot, scatter_plot_groups
 
 sns.set(style="ticks")
 # plt.style.use('ggplot')

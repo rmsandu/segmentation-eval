@@ -1,7 +1,7 @@
+import nibabel as nib
 import numpy as np
 from scipy import ndimage
-import matplotlib.pyplot as plt
-import nibabel as nib
+
 
 def compute_bounding_box(mask_gt, mask_pred, exclusion_zone):
     mask_all = mask_gt | mask_pred

@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-@author: Raluca Sandu
-"""
-# -*- coding: utf-8 -*-
-"""
 Created on Thu May  3 15:40:46 2018
 
 @author: Raluca Sandu
-# Read the original series. First obtain the series file names using the
-# image series reader. Then read each image using an image reader that is
-# set to load all DICOM tags (public+private). The resulting images contain
-# their DICOM meta-data dictionaries.
-Reading the DICOM series is a three step process: first obtain the series ID, then obtain the file names associated
-with the series ID, and finally use the series reader to read the images.
-By default the DICOM meta-data dicitonary for each of the slices is not read.
-In this example we configure the series reader to load the meta-data dictionary including all of the private tags.
+
+Writes a SimpleITK image out as a DICOM series, one file per slice.
 """
 import os
+
 import SimpleITK as sitk
 
 

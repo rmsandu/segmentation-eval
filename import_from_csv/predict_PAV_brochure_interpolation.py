@@ -3,9 +3,9 @@
 @author: Raluca Sandu
 """
 
-import numpy as np
 import pandas as pd
-from scipy.interpolate import griddata
+
+from utils.interpolation import predict_ablation_volume_griddata
 
 
 def interpolation_fct(df_ablation, df_radiomics):
@@ -15,29 +15,13 @@ def interpolation_fct(df_ablation, df_radiomics):
     :param df_radiomics:
     :return: Predicted Ablation Volume (ablation_vol_interpolated)
     """
-    # perform interpolation as a function of  power and time (multivariate interpolation)
-    points_power = np.asarray(df_ablation['Power']).reshape((len(df_ablation), 1))
-    points_time = np.asarray(df_ablation['Time_Duration_Applied']).reshape((len(df_ablation), 1))
-    power_and_time_brochure = np.hstack((points_power, points_time))
-    ablation_vol_brochure = np.asarray(df_ablation['Predicted_Ablation_Volume']).reshape((len(df_ablation), 1))
-    grid_x = df_radiomics['Power'].to_numpy()
-    grid_y = df_radiomics['Time_Duration_Applied'].to_numpy()
-    grid_x = np.array(pd.to_numeric(grid_x, errors='coerce'))
-    grid_y = np.array(pd.to_numeric(grid_y, errors='coerce'))
-    grid_x = grid_x.reshape(len(grid_x), 1)
-    grid_y = grid_y.reshape(len(grid_y), 1)
-    power_and_time_effective = np.asarray(np.hstack((grid_x, grid_y)))
-    # do the actual interpolation here
-    ablation_vol_interpolated_brochure = griddata(power_and_time_brochure, ablation_vol_brochure,
-                                                  power_and_time_effective, method='linear')
-    ablation_vol_interpolated_brochure = ablation_vol_interpolated_brochure.reshape(len(df_radiomics), )
-
-    return ablation_vol_interpolated_brochure
+    return predict_ablation_volume_griddata(df_ablation, df_radiomics,
+                                            ablation_volume_col='Predicted_Ablation_Volume')
 
 
 if __name__ == '__main__':
-    df_ablation_brochure = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_May10.xlsx")
+    df_ablation_brochure = pd.read_excel("/path/to/data/Ellipsoid_Brochure_Info.xlsx")
+    df_radiomics = pd.read_excel("/path/to/data/radiomics_population.xlsx")
 
     # %% ACCULIS
     df_acculis = df_ablation_brochure[df_ablation_brochure['Device_name'] == 'Angyodinamics (Acculis)']
@@ -64,8 +48,7 @@ if __name__ == '__main__':
         df_radiomics.Device_name == 'Amica (Probe)', 'Predicted_Ablation_Volume'] = \
         ablation_vol_interpolated_brochure_amica
 
-    filepath_excel = 'Radiomics_MAVERRIC_May10.xlsx'
-    writer = pd.ExcelWriter(filepath_excel)
-    df_radiomics.to_excel(writer, sheet_name='radiomics', index=False)
-    writer.save()
+    filepath_excel = 'radiomics_predicted_ablation_volume.xlsx'
+    with pd.ExcelWriter(filepath_excel) as writer:
+        df_radiomics.to_excel(writer, sheet_name='radiomics', index=False)
     print('Computed Predicted_Ablation_Volume for each MWA device (covidien, amica, angiodynamics)')

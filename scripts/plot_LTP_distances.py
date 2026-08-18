@@ -22,7 +22,7 @@ def flatten(a):
 # %%
 
 
-input_file = r"C:\develop\segmentation-eval\Radiomics_Radii_Chemo_LTP_Distances_ECALSS.xlsx"
+input_file = "/path/to/data/radiomics_radii_chemo_ltp_distances.xlsx"
 flag_to_plot_subcapsular = False  # default value: false, only plot non-subcapsular lesions
 
 df_final = pd.read_excel(input_file)

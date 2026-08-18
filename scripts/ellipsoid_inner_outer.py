@@ -2,19 +2,15 @@
 """
 @author: Raluca Sandu
 """
-import os
-import time
-import VolumeMetrics
-from mpl_toolkits.mplot3d import Axes3D
-import SimpleITK as sitk
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.linalg as la
+import SimpleITK as sitk
 from skimage.draw import ellipsoid
 
 import DicomReader
 import scripts.inner_ellipsoid as inner_ellipsoid
-import utils.graphing as gh
+import VolumeMetrics
 
 
 def mvee(points, tol=0.001):
@@ -130,7 +126,7 @@ def get_ellipsoid_fit_volumes(img_file):
     else:
         img = img_file
     try:
-        spacing = img.GetSpacing()
+        img.GetSpacing()  # validates img is a proper SimpleITK image
     except Exception:
         print('not a DICOM Image. Please provide a DICOM IMG in SimpleITK format')
         return
@@ -158,8 +154,12 @@ def get_radii_from_matrix(A):
 
 
 if __name__ == '__main__':
+    import argparse
 
-    dir_name_ablation = r"D:\MAVERRIC\MAVERRIC_segmented_validated\Pat_B02_\Study_0\Series_7\CAS-One Recordings\2019-04-17_14-13-14\Segmentations\SeriesNo_28\SegmentationNo_0"
+    ap = argparse.ArgumentParser(description="Fit inner/outer ellipsoids to a DICOM segmentation series.")
+    ap.add_argument("dir_name_ablation", help="path to the ablation segmentation DICOM series folder")
+    dir_name_ablation = ap.parse_args().dir_name_ablation
+
     dcm_img, reader = DicomReader.read_dcm_series(dir_name_ablation)
     points = get_surface_points(dcm_img)
     B_inner, centroid_inner, ax = inner_ellipsoid.FindMaximumVolumeInscribedEllipsoid(points)
@@ -193,8 +193,4 @@ if __name__ == '__main__':
 
     plt.legend(loc='best')
     plt.show()
-    # timestr = time.strftime("%H%M%S-%Y%m%d")
-    # file_dir = r"C:\develop\segmentation-eval\figures"
-    # filepath = os.path.join(file_dir, 'ellipsoid_' + timestr)
-    # gh.save(filepath, width=12, height=12, tight=True)
 

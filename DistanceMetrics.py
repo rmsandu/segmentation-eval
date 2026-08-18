@@ -17,16 +17,23 @@ Algorithm Pipeline :
 """
 from enum import Enum
 
-import SimpleITK as sitk
 import numpy as np
 import pandas as pd
-import radiomics
+import SimpleITK as sitk
 from scipy import ndimage
 
 
 class RadiomicsMetrics(object):
 
     def __init__(self, input_image, mask_image):
+        try:
+            import radiomics
+        except ImportError as e:
+            raise ImportError(
+                "PyRadiomics is required for RadiomicsMetrics but is not installed. "
+                "It only ships wheels for Python 3.7-3.9 (see requirements-radiomics.txt) "
+                "and is not part of the default requirements.txt install."
+            ) from e
         self.input_image = input_image
         self.mask_image = mask_image
         self.error_flag = False
@@ -166,15 +173,6 @@ class DistanceMetrics(object):
             median_surface_distance, std_surface_distance = range(6)
 
         surface_distance_results = np.zeros((1, len(SurfaceDistanceMeasuresITK.__members__.items())))
-        # %%
-# <<<<<<< HEAD
-#
-#         tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=False)
-# =======
-        # tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=True)
-        # tumor_surface = sitk.LabelContour(tumor_segmentation, fullyConnected=False)
-        # tumor_surface_array = sitk.GetArrayFromImage(tumor_surface)
-        # >>>>>>> fixed border extraction Iwan
         tumor_array = sitk.GetArrayFromImage(tumor_segmentation)
         border_inside = ndimage.binary_erosion(tumor_array, structure=ndimage.generate_binary_structure(3, 1))
         tumor_surface_array = tumor_array ^ border_inside
@@ -226,11 +224,13 @@ class DistanceMetrics(object):
 
         ablation_distance_map_array = sitk.GetArrayFromImage(self.ablation_distance_map)
 
-        # compute the contours multiplied with the euclidean distances 
+        # compute the contours multiplied with the euclidean distances
         self.tumor2ablation_distance_map = ablation_distance_map_array * tumor_surface_array
 
-        # remove the zeros from the surface contour(indexes) from the distance maps '''
-        self.surface_distances = list(self.tumor2ablation_distance_map[tumor_surface_array_NonZero] / -255)
+        # remove the zeros from the surface contour(indexes) from the distance maps.
+        # Sign is flipped so a positive distance means the ablation safely covers the
+        # tumor surface point (SignedMaurerDistanceMap is negative inside the ablation).
+        self.surface_distances = list(self.tumor2ablation_distance_map[tumor_surface_array_NonZero] / -1)
 
         # %%
         ''' Compute the surface distances max, min, mean, median, std '''

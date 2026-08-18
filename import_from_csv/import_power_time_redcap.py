@@ -6,8 +6,8 @@
 # TODO: implement power & time reading lesion by lesion
 import pandas as pd
 
-file_redcap = r"C:\develop\segmentation-eval\SurveyOfAblationsFor_DATA_LABELS_2020-04-16_1421.xlsx"
-file_radiomics = r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_153011-20200313.xlsx"
+file_redcap = "/path/to/data/redcap_export.xlsx"
+file_radiomics = "/path/to/data/radiomics_population.xlsx"
 
 df_redcap = pd.read_excel(file_redcap)
 df_radiomics = pd.read_excel(file_radiomics)

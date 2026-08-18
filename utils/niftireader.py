@@ -1,5 +1,5 @@
-import numpy as np
 import nibabel as nib
+import numpy as np
 
 
 def image_to_np(image):

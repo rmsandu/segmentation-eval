@@ -6,15 +6,70 @@ The evaluation metrics include:
 -  Euclidean Distances between two objects from [A linear time algorithm for computing exact Euclidean distance transforms of binary images in arbitrary dimensions](https://ieeexplore.ieee.org/abstract/document/1177156). 
 - [Volume Metrics](https://itk.org/SimpleITKDoxygen/html/classitk_1_1simple_1_1LabelOverlapMeasuresImageFilter.html) (Total Volume in ml, Dice, Jaccard score, Volume Similarity, Volume Overlap Error,Residual Volume)
 - Maximum Inscribed Ellipsoid and Minimum Enclosing Ellipsoid Volumes 
-- [PyRadiomics](https://pyradiomics.readthedocs.io/en/latest/) Features (Axis Lenghts, Intensity Values, Elongation, Sphericity, Mesh Volume)
+- [PyRadiomics](https://pyradiomics.readthedocs.io/en/latest/) Features (Axis Lenghts, Intensity Values, Elongation, Sphericity, Mesh Volume) -- optional, see [Requirements](#requirements)
 ![image](https://user-images.githubusercontent.com/20581812/77424220-048a8200-6dd1-11ea-82fc-e9803232a7b5.png)
 
 ## Requirements
-The following non-standard libraries are required to use the full functionality of the project for DICOM image reading and processing.
-* [SimpleITK](https://github.com/SimpleITK/SimpleITK)
-* [PyRadiomics](https://github.com/Radiomics/pyradiomics)
-* [PyDicom](https://github.com/pydicom/pydicom)
-* [CVXPY](https://www.cvxpy.org/)
+
+Python 3.11+.
+
+```
+pip install -r requirements.txt
+```
+
+installs everything needed for resampling, distance metrics, and volume metrics
+(the default pipeline path, `calculate_radiomics=False`).
+
+[PyRadiomics](https://github.com/Radiomics/pyradiomics) shape/intensity feature
+extraction (`RadiomicsMetrics`, `calculate_radiomics=True`,
+`D_compile_population_radiomics.py`, `E_radiomics_stats.py`) is a **separate,
+optional** dependency -- see `requirements-radiomics.txt` for why, and how to
+install it into its own environment.
+
+Other libraries used directly: [SimpleITK](https://github.com/SimpleITK/SimpleITK),
+[PyDicom](https://github.com/pydicom/pydicom), [CVXPY](https://www.cvxpy.org/)
+(inner/outer ellipsoid fitting).
+
+## Quickstart
+
+Try the pipeline end-to-end on synthetic data, no real DICOM/patient data needed:
+
+```
+pip install -r requirements-dev.txt
+python scripts/create_test_cases.py           # writes synthetic tumor/ablation NIfTI volumes to data/
+```
+
+then, in Python:
+
+```python
+import nibabel as nib
+import SimpleITK as sitk
+from C_mainDistanceVolumeMetrics import main_distance_volume_metrics
+
+def load_as_sitk(path):
+    arr = nib.load(path).get_fdata()
+    return sitk.GetImageFromArray(arr.transpose(2, 1, 0).astype("uint8"))
+
+tumor = load_as_sitk("data/T01/perfect_overlap/T01_Lperfect_overlap_Tumor.nii.gz")
+ablation = load_as_sitk("data/T01/perfect_overlap/T01_Lperfect_overlap_Ablation.nii.gz")
+
+main_distance_volume_metrics(
+    patient_id="T01", source_ct_ablation=None, source_ct_tumor=None,
+    ablation_segmentation_resampled=ablation, tumor_segmentation_resampled=tumor,
+    lesion_id="perfect_overlap", ablation_date="20260101", dir_plots=".",
+    calculate_volume_metrics=True, calculate_radiomics=False,
+)
+```
+
+This writes an Excel file with Dice=1.0 for the `perfect_overlap` case,
+confirming the install works.
+
+## Testing and linting
+
+```
+pytest            # unit tests against synthetic segmentations with known-correct answers
+ruff check .      # linting
+```
 
 ## Main Functions and Operations Performed
 1. `A_read_files_info.py` (optional)
@@ -33,7 +88,7 @@ The following non-standard libraries are required to use the full functionality 
 ## Usage
 The scripts are called (internally) in alphabetical order using the folllowing logic:  
 
-    Read Images --> Resample --> Extract Distance Metrics  --> Extract Volume Metrics  --> Plot Distance Metrics --> Output Metrics to Xlsx file in Tabular format
+    Read Images --> Resample --> Extract Distance Metrics  --> Extract Volume Metrics --> Plot Distance Metrics --> Output Metrics to Xlsx file in Tabular format
  
  ![image](https://user-images.githubusercontent.com/20581812/77426347-99db4580-6dd4-11ea-9606-aac92efd3045.png)
 
@@ -49,13 +104,13 @@ This function only operates with the path to the patient folder that can have al
 The main function where to run the program from is `A_read_files_info.py`.
 The function can either work with a single patient image folder by calling the function like:
 
-`python A_read_files_info.py --i "C:\Users\MyUser\MyPatientFolderwithDicomAndSegmentationImages --o "C:\OutputFilesandImages"`  
+`python A_read_files_info.py --i "/path/to/patient_folder" --o "/path/to/output"`  
 
 For **Batch Processing** option the input is an Excel (.xlsx) file with the following headers:  
-| Patient_ID    | Ablation_IR_Date |   Nr_Lesions | Patient_Dir_Paths                    |
-| ------------- | ---------------- | ------------ | ------------------                   | 
-| C001          | 20160103         |    2         | ['D:\\Users\\User1\\Pats\\Pat_C001'] |    
-| C002          | 20181108         |    1         | ['D:\\Users\\User1\\Pats\\Pat_C002'] |    
+| Patient_ID    | Ablation_IR_Date |   Nr_Lesions | Patient_Dir_Paths        |
+| ------------- | ---------------- | ------------ | ------------------------ | 
+| C001          | 20160103         |    2         | ['/path/to/Pat_C001']    |    
+| C002          | 20181108         |    1         | ['/path/to/Pat_C002']    |    
 
 
 The algorithm starts by iterating through all the patient folders provided in the column "Patient_Dir_Paths". Of course it's not absolutely necessarry to use the data structured in the way I did. Moreover, the `A_read_files_info.py` can be skipped altogether, especially when you know the mapping between your **Source (original) CT image -> Segmentation1 -> Segmentation2**. In this specific case my Segmentation1 is called "tumor_segmentation" and Segmentation2 is called "ablation_segmentation", which are 2 separate structures/tissue within my organ of interest (that's the liver). If you already know the file mapping between your images (i.e. which image is related to which image, aka more explicit, from which CT source image comes each segmentation) you can move the next steps which are `B_ResampleSegmentations.py` and `C_mainDistanceVolumeMetrics.py`.
@@ -91,7 +146,7 @@ The same as for **Resampling**, both these scripts take as input arguments Simpl
 ## Inner and Outer Ellipsoidal Approximations
 ![image](https://user-images.githubusercontent.com/20581812/82670129-dd1f2c80-9c3c-11ea-8fcb-f37ce93d959f.png)  
 
-The inner (green) and outer (orange) ellipsoidal approximations of a segmented object (blue) are calculated using convex optimization according to "S. P. Boyd and L. Vandenberghe, Convex optimization. Cambridge, UK ; New York: Cambridge University Press, 2004." Their implementation in [CVXPY](https://www.cvxpy.org/) was employed to compute the ellipsoids. The outer volume was computed using SVD and the inner volume was computed as the `sqrt(det(B)) * Ball(0,1)`.
+The inner (green) and outer (orange) ellipsoidal approximations of a segmented object (blue) are calculated using convex optimization according to "S. P. Boyd and L. Vandenberghe, Convex optimization. Cambridge, UK ; New York: Cambridge University Press, 2004." Their implementation in [CVXPY](https://www.cvxpy.org/) was employed to compute the ellipsoids. The outer volume was computed using SVD and the inner volume was computed as the `sqrt(det(B)) * Ball(0,1)`.
 
  
 ## Output
@@ -131,6 +186,21 @@ The patient data consists of files and folder has the following folder structure
               |CT.1.2.3..dcm  
             |Series_2
             |Series_3`  
-            
 
+## Repo layout
 
+See [`CLAUDE.md`](CLAUDE.md) for the full architecture writeup (pipeline flow,
+module responsibilities, conventions). Briefly:
+
+- Root `A_`-`E_` scripts + `DicomReader.py`, `DicomWriter.py`,
+  `DistanceMetrics.py`, `VolumeMetrics.py`, `customradiomics/`,
+  `surface_distance/` -- the maintained, tested pipeline.
+- `scripts/`, `utils/` -- a mix of modules the pipeline imports and
+  standalone analysis/plotting scripts meant to be run directly by hand.
+- `import_from_csv/`, `Random_Forest/` -- one-off data-import/analysis
+  scripts, not part of the pipeline; edit the placeholder paths at the top
+  before running.
+- `archive/` -- retired/superseded code, not linted or tested; see
+  `archive/README.md` for per-file status.
+- `scratch/` -- exploratory/demo scripts kept for reference, not tests.
+- `tests/` -- pytest suite for the maintained pipeline.

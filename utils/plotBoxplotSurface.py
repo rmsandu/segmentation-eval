@@ -67,8 +67,8 @@ def plotBinsSurfacePercentage(data, rootdir, flag_all_ranges=False):
 if __name__ == '__main__':
 
     flag_to_plot_subcapsular = False
-    df = pd.read_excel("C:\develop\segmentation-eval\Radiomics_Radii_Chemo_LTP_Distances_ECALSS.xlsx")
-    outdir = r"C:\develop\segmentation-eval\results"
+    df = pd.read_excel("/path/to/data/radiomics_radii_chemo_ltp_distances.xlsx")
+    outdir = "/path/to/output/results"
     df.dropna(subset=['SurfaceDistances_Tumor2Ablation'], inplace=True)
     df['vals'] = df['SurfaceDistances_Tumor2Ablation'].apply(lambda x: x.replace('[', ''))
     df['vals'] = df['vals'].apply(lambda x: x.replace(']', ''))

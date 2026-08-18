@@ -159,8 +159,8 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag=None,
 
 
 if __name__ == '__main__':
-    df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated.xlsx")
+    df_ablation = pd.read_excel("/path/to/data/Ellipsoid_Brochure_Info.xlsx")
+    df_radiomics = pd.read_excel("/path/to/data/radiomics_ablation_curated.xlsx")
     # select subcapsular values
     # Proximity_to_surface = False --> deep lesions
     # Proximity to surface = True --> subcapsular
@@ -342,8 +342,8 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag=None,
 
 
 if __name__ == '__main__':
-    df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated.xlsx")
+    df_ablation = pd.read_excel("/path/to/data/Ellipsoid_Brochure_Info.xlsx")
+    df_radiomics = pd.read_excel("/path/to/data/radiomics_ablation_curated.xlsx")
     # select subcapsular values
     # Proximity_to_surface = False --> deep lesions
     # Proximity to surface = True --> subcapsular

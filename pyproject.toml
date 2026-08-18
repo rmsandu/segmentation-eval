@@ -1,0 +1,22 @@
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+exclude = ["archive", "scratch", "Jupyter_Notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",  # long lines are common in this codebase's data-dict/plotting code; length is still capped above
+]
+
+[tool.ruff.lint.per-file-ignores]
+# `snakemake` is an ambient global injected by the Snakemake framework when this
+# script runs as a Snakemake rule; `calc_margin.py` guards its use with a
+# try/except NameError so it also works standalone via argparse.
+"calc_margin.py" = ["F821"]
+# vendored third-party library (https://github.com/deepmind/surface-distance)
+"surface_distance/__init__.py" = ["F403"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

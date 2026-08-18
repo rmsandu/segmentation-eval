@@ -12,7 +12,6 @@ import pandas as pd
 import scripts.plot_ablation_margin_hist as pm
 from DistanceMetrics import DistanceMetrics, RadiomicsMetrics
 from VolumeMetrics import VolumeMetrics
-from surface_distance.metrics import compute_surface_distances
 
 
 def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor,
@@ -69,7 +68,7 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
                 pat_name=patient_id,
                 lesion_id=lesion_id,
                 rootdir=dir_plots,
-                distanceMap=distanceMap,
+                distance_map=distanceMap,
                 num_voxels=num_surface_pixels,
                 title=title,
                 ablation_date=ablation_date,
@@ -80,14 +79,6 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     else:
         perc_smaller_equal_than_0, perc_0_5, perc_greater_than_5 = None, None, None
 
-    SurfaceDistances_raw_numbers = {
-        'patient_id': patient_id,
-        'lesion_id': lesion_id,
-        'ablation_date': ablation_date,
-        'number_nonzero_surface_pixels': num_surface_pixels,
-        'SurfaceDistances_Tumor2Ablation': distanceMap
-    }
-
     SurfaceDistances_percentages = {
         'safety_margin_distribution_0': perc_smaller_equal_than_0,
         'safety_margin_distribution_5': perc_0_5,
@@ -95,10 +86,6 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
     }
 
     # %% Set UP the Final DataFrame by concatenating all the features extracted
-    SurfaceDistances_dict_list = []
-    SurfaceDistances_dict_list.append(SurfaceDistances_raw_numbers)
-    df_SurfaceDistances = pd.DataFrame(SurfaceDistances_dict_list)
-
     patient_data = {'patient_id': patient_id,
                     'lesion_id': lesion_id,
                     'ablation_date': ablation_date}
@@ -120,8 +107,6 @@ def main_distance_volume_metrics(patient_id, source_ct_ablation, source_ct_tumor
         filename = str(patient_id) + '_' + str(lesion_id) + '_' + 'AblationDate_' + str(
             ablation_date) + '_DistanceVolumeMetrics' + timestr + '.xlsx'
         filepath_excel = os.path.join(dir_plots, filename)
-        writer = pd.ExcelWriter(filepath_excel)
-        df_metrics.to_excel(writer, sheet_name='AT_metrics', index=False, float_format='%.4f')
-        # df_SurfaceDistances.to_excel(writer, sheet_name="SurfaceDistances", index=False, float_format="%.4f")
-        writer.save()
+        with pd.ExcelWriter(filepath_excel) as writer:
+            df_metrics.to_excel(writer, sheet_name='AT_metrics', index=False, float_format='%.4f')
         print('writing to Excel....', dir_plots)

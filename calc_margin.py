@@ -27,7 +27,8 @@ def get_args():
             'liver': snakemake.input['liver'],
             'patient_id': snakemake.params['patient_id'],
             'lesion_id': snakemake.params['lesion_id'],
-            'OUTPUT': snakemake.output[0]
+            'OUTPUT': snakemake.output[0],
+            'plots_dir': snakemake.params.get('plots_dir', 'figures'),
         }
     else:
         ap = argparse.ArgumentParser()
@@ -37,26 +38,24 @@ def get_args():
         ap.add_argument("-i", "--lesion-id", required=True, help="lesion id")
         ap.add_argument("-p", "--patient-id", required=True, help="patient id from study")
         ap.add_argument("-o", "--OUTPUT", required=True, help="output file (csv)")
+        ap.add_argument("--plots-dir", default="figures", help="directory to write the margin histogram plot to")
         args = vars(ap.parse_args())
     return args
 
 
 if __name__ == '__main__':
     args = get_args()
-    # -t
-    # "data\B04\01\B04_L01_Tumor.nii.gz" - a
-    # "data\B04\01\B04_L01_Ablation.nii.gz" - l
-    # "data\B04\01\B04_L01_Liver.nii.gz" - i
-    # 1 - p
-    # "B04" - o
-    # "output111.csv"
+    # example usage:
+    #   python calc_margin.py -t data/B04/01/B04_L01_Tumor.nii.gz \
+    #       -a data/B04/01/B04_L01_Ablation.nii.gz -l data/B04/01/B04_L01_Liver.nii.gz \
+    #       -p B04 -i 1 -o output.csv
     tumor_file = args['tumor']
     ablation_file = args['ablation']
     liver_file = args['liver']
     patient_id = args['patient_id']
     lesion_id = args['lesion_id']
     output_file = args['OUTPUT']
-    rootdir = r"C:\develop\segmentation-eval\figures"
+    rootdir = args['plots_dir']
     tumor, tumor_np = load_image(tumor_file)
     ablation, ablation_np = load_image(ablation_file)
     liver, liver_np = load_image(liver_file)
