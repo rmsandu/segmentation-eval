@@ -22,8 +22,8 @@ global tumor_mask_nda
 global ablation_mask_nda
 
 df_final = pd.read_excel(
-    r"C:\PatientDatasets_GroundTruth_Database\Stockholm\resized\FilepathsResizedGTSegmentations.xlsx")
-rootdir_plots = r"C:\PatientDatasets_GroundTruth_Database\Stockholm\plots"
+    "/path/to/data/filepaths_resized_gt_segmentations.xlsx")
+rootdir_plots = "/path/to/output/plots"
 # ablations = df_final['AblationPath']
 # tumors = df_final['TumorPath']
 ablations = df_final["Ablation Segmentation Path Resized"].tolist()

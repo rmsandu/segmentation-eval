@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     # Vertices of a pentagon in 2D
     # p = [[0., 0.], [1., 3.], [5.5, 4.5], [7., 4.], [7., 1.], [3., -2.]]
-    file_path_ablation =  r"C:\tmp_patients\Pat_MAV_BE_B02_\Study_0\Series_7\CAS-One Recordings\2020-04-22_18-45-29\Segmentations\SeriesNo_28\SegmentationNo_0"
+    file_path_ablation =  "/path/to/patient_data/Study_0/Series_7/Segmentations/SeriesNo_28/SegmentationNo_0"
     dcm_img, reader = Reader.read_dcm_series(file_path_ablation)
     p = ell.get_surface_points(dcm_img)
 
@@ -241,7 +241,7 @@ if __name__ == '__main__':
 # plt.show()
 # fig.savefig('ellipsoid_dcm_3d.png')
 # timestr = time.strftime("%H%M%S-%Y%m%d")
-# file_dir = r"C:\develop\segmentation-eval\figures"
+# file_dir = "/path/to/output/figures"
 # filepath = os.path.join(file_dir, 'ellipsoid_' + timestr)
 # gh.save(filepath, width=12, height=12, tight=True)
 

@@ -3,20 +3,18 @@
 Created on Mon Nov  6 16:26:10 2017
 
 @author: Raluca Sandu
-"""
 
-"""graphing.py -- helper functions for graphing with matplotlib/pyplot
+graphing.py -- helper functions for graphing with matplotlib/pyplot
 This software is licensed under the terms of the MIT License as
 follows:
 Copyright (c) 2013 Jessica B. Hamrick
-
 """
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import numpy as np
 import os
 import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def save(path, fignum=None, close=True, width=None, height=None,

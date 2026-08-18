@@ -122,11 +122,11 @@ def contour_list(dirList):
 if __name__ == '__main__':
 
     # onlyfiles = [f for f in listdir(dir_name) if isfile(join(dir_name, f))]
-    dirList = r"C:\develop\Alblation-SSM-master\Alblation-SSM-master\ablation_segmentations\SeriesNo_3\SegmentationNo_2"
+    dirList = "/path/to/ablation_segmentations/SeriesNo_3/SegmentationNo_2"
     pi = np.pi
     sin = np.sin
     cos = np.cos
-    dir_name = r"C:\develop\Alblation-SSM-master\Alblation-SSM-master\ablation_segmentations"
+    dir_name = "/path/to/ablation_segmentations"
     file_idx = 0
     vertices, spacing = contour_list(dirList)
     vertices_locations = vertices.nonzero()
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     ax.scatter(points[:, 0], points[:, 1], points[:, 2], c='g')
     plot_3D_ellipsoid(A_outer, centroid_outer, 'blue')
     plot_3D_ellipsoid(A_inner, centroid_inner, 'red')
-    # dir_save = 'C:\develop\Alblation-SSM-master'
+    # dir_save = '/path/to/output'
     # plt.savefig(os.path.join(dir_save, 'ablation_ellipsoids') + str(file_idx) + '.png', dpi=300)
     # plt.show()
     # file_idx +=1

@@ -19,8 +19,8 @@ sns.set(style="ticks")
 plt.style.use('ggplot')
 
 # %%
-df_rf = pd.read_excel(r"C:\develop\segmentation-eval\Random_Forest\Radiomics_Radii_Chemo_LTP_RF.xlsx", sheet_name='rf')
-df_centers = pd.read_excel(r"C:\develop\segmentation-eval\Random_Forest\Radiomics_MAVERRIC_random_forest_input.xlsx")
+df_rf = pd.read_excel("/path/to/data/radiomics_radii_chemo_ltp.xlsx", sheet_name='rf')
+df_centers = pd.read_excel("/path/to/data/random_forest_input.xlsx")
 loocv_flag = True
 
 x_label = 'Measured Ablation Volume [ml]'

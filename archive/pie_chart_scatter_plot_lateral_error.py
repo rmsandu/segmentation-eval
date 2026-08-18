@@ -150,7 +150,7 @@ def call_plot_pies(df_radiomics, title=None, flag_plot_type=None, flag_overlap=N
 
 
 if __name__ == '__main__':
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_May192020.xlsx")
+    df_radiomics = pd.read_excel("/path/to/data/radiomics_population.xlsx")
     # df_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
     # df_radiomics_acculis = df_acculis[df_acculis['Inclusion_Margin_Analysis'] == 1]
     df_radiomics_all = df_radiomics[df_radiomics['Inclusion_Energy_PAV_EAV'] == True]

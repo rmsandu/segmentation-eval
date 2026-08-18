@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # You must specify a valid email address!
-#SBATCH --mail-user=!!!ADD MAIL ADRESS!!!
+#SBATCH --mail-user=<you@example.org>
 
 # Mail on NONE, BEGIN, END, FAIL, REQUEUE, ALL
 #SBATCH --mail-type=none
@@ -17,11 +17,10 @@
 #SBATCH --partition=all
 
 #### Your shell commands below this line ####
-module load Python/3.6.4-foss-2018a
+# Fill in these environment variables (or export them before submitting the job)
+# before running: SEGEVAL_ENV_DIR, SEGEVAL_SRC_DIR, SEGEVAL_OUTPUT_DIR, SEGEVAL_BATCH_XLSX
+source "${SEGEVAL_ENV_DIR:?set SEGEVAL_ENV_DIR to your virtualenv path}/bin/activate"
 
-source ~/envs/maverric/bin/activate
+cd "${SEGEVAL_SRC_DIR:?set SEGEVAL_SRC_DIR to the segmentation-eval checkout path}"
 
-cd ~/src/segmentation-eval
-
-python A_read_files_info.py  -o /storage/research/artorg_igt/Projects/MAVERRIC/output -b /storage/research/artorg_igt/Projects/MAVERRIC/batch.xlsx
-
+python A_read_files_info.py -o "${SEGEVAL_OUTPUT_DIR:?set SEGEVAL_OUTPUT_DIR}" -b "${SEGEVAL_BATCH_XLSX:?set SEGEVAL_BATCH_XLSX}"

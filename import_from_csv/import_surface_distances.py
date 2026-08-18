@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 import itertools
 
 
-df = pd.read_excel("C:\develop\segmentation-eval\Radiomics_Radii_Chemo_LTP_ECALSS.xlsx")
-rootdir = r"C:\Figures"
-outdir = r"C:\develop\segmentation-eval"
+df = pd.read_excel("/path/to/data/radiomics_radii_chemo_ltp.xlsx")
+rootdir = "/path/to/output/figures"
+outdir = "/path/to/output"
 
 frames = []
 for subdir, dirs, files in os.walk(rootdir):

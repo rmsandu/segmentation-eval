@@ -2,7 +2,6 @@
 """
 @author: Raluca Sandu
 """
-from mpl_toolkits.mplot3d import axes3d
 import cvxpy as cp
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,13 +15,13 @@ def random_point_ellipsoid(a, b, c, x0, y0, z0):
     v = np.random.rand()
     theta = u * 2.0 * np.pi
     phi = np.arccos(2.0 * v - 1.0)
-    sinTheta = np.sin(theta);
-    cosTheta = np.cos(theta);
-    sinPhi = np.sin(phi);
-    cosPhi = np.cos(phi);
-    rx = a * sinPhi * cosTheta;
-    ry = b * sinPhi * sinTheta;
-    rz = c * cosPhi;
+    sinTheta = np.sin(theta)
+    cosTheta = np.cos(theta)
+    sinPhi = np.sin(phi)
+    cosPhi = np.cos(phi)
+    rx = a * sinPhi * cosTheta
+    ry = b * sinPhi * sinTheta
+    rz = c * cosPhi
     return rx, ry, rz
 
 

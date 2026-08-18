@@ -20,7 +20,6 @@ import pandas as pd
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--input_dir", required=True, help="input patient folder path to be processed")
 ap.add_argument("-f", "--input_excel_filename", required=True, help="input excel file patients info")
-# input_excel_filename = "Batch_processing_MAVERRIC_1106.xlsx"
 
 args = vars(ap.parse_args())
 input_dir = args["input_dir"]
@@ -29,10 +28,6 @@ df = pd.read_excel(input_excel_filename)
 
 df["Patient Name"] = df['Lesion_ID']
 df["Patient Name"] = df["Patient Name"].map(lambda x: x.partition("-L")[0])
-# df["Date_of_Birth"] = df["Date_of_Birth"].map(lambda x: x[0:9])
-# df["Ablation_IR_Date"] = df["Ablation_IR_Date"].map(lambda x: x.split(":")[2])
-# df["Ablation_IR_Date"] = df["Ablation_IR_Date"].map(lambda x: x.replace("-", ""))
-# df["Ablation_IR_Date"] = df["Ablation_IR_Date"].map(lambda x: x.replace(" ", ""))
 
 # iterate for each patient id from  the excel and look for substring in the list of dir_paths
 dir_paths = [os.path.join(input_dir, x) for x in os.listdir(input_dir)]
@@ -55,7 +50,5 @@ df["Patient_Dir_Paths"] = path_patient_dir_col
 df.reset_index(drop=True)
 filename = os.path.splitext(input_excel_filename)[0]
 timestr = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-writer = pd.ExcelWriter(filename + '_' + timestr + '.xlsx')
-# add date time to file and message that it has been printed
-df.to_excel(writer, index=False, float_format='%.4f')
-writer.save()
+with pd.ExcelWriter(filename + '_' + timestr + '.xlsx') as writer:
+    df.to_excel(writer, index=False, float_format='%.4f')

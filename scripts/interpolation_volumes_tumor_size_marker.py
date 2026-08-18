@@ -7,10 +7,10 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import griddata
 from sklearn import linear_model
 
 import utils.graphing as gh
+from utils.interpolation import predict_ablation_volume_griddata
 
 
 def interpolation_fct(df_ablation, df_radiomics, device_name, fontsize=24, flag=None,
@@ -25,22 +25,9 @@ def interpolation_fct(df_ablation, df_radiomics, device_name, fontsize=24, flag=
     :return:
     """
     # perform interpolation as a function of  power and time (multivariate interpolation)
-    points_power = np.asarray(df_ablation['Power']).reshape((len(df_ablation), 1))
-    points_time = np.asarray(df_ablation['Time_Duration_Applied']).reshape((len(df_ablation), 1))
-    power_and_time_brochure = np.hstack((points_power, points_time))
-    ablation_vol_brochure = np.asarray(df_ablation['Predicted Ablation Volume (ml)']).reshape((len(df_ablation), 1))
     df_radiomics.dropna(subset=['Power', 'Time_Duration_Applied'], inplace=True)
-    grid_x = df_radiomics['Power'].to_numpy()
-    grid_y = df_radiomics['Time_Duration_Applied'].to_numpy()
-    grid_x = np.array(pd.to_numeric(grid_x, errors='coerce'))
-    grid_y = np.array(pd.to_numeric(grid_y, errors='coerce'))
-    grid_x = grid_x.reshape(len(grid_x), 1)
-    grid_y = grid_y.reshape(len(grid_y), 1)
-    power_and_time_effective = np.asarray(np.hstack((grid_x, grid_y)))
-
-    ablation_vol_interpolated_brochure = griddata(power_and_time_brochure, ablation_vol_brochure,
-                                                  power_and_time_effective, method='linear')
-    ablation_vol_interpolated_brochure = ablation_vol_interpolated_brochure.reshape(len(df_radiomics), )
+    ablation_vol_interpolated_brochure = predict_ablation_volume_griddata(
+        df_ablation, df_radiomics, ablation_volume_col='Predicted Ablation Volume (ml)')
     ablation_vol_measured = np.asarray(df_radiomics['Ablation Volume [ml]']).reshape(len(df_radiomics), )
 
     # %% PLOT BOXPLOTS
@@ -139,8 +126,8 @@ def interpolation_fct(df_ablation, df_radiomics, device_name, fontsize=24, flag=
 
 
 if __name__ == '__main__':
-    df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_Acculis_MAVERRIC_22012020.xlsx")
+    df_ablation = pd.read_excel("/path/to/data/Ellipsoid_Brochure_Info.xlsx")
+    df_radiomics = pd.read_excel("/path/to/data/radiomics_population.xlsx")
     # select subcapsular values
     # Proximity_to_surface = False --> deep lesions
     # Proximity to surface = True --> subcapsular

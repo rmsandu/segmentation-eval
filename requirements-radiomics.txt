@@ -1,0 +1,20 @@
+# Optional: PyRadiomics-based shape/intensity feature extraction
+# (RadiomicsMetrics in DistanceMetrics.py, C_mainDistanceVolumeMetrics.py's
+# calculate_radiomics=True path, D_compile_population_radiomics.py,
+# E_radiomics_stats.py).
+#
+# PyRadiomics 3.1.0 (the last release, from 2022) only ships prebuilt wheels
+# for CPython 3.7-3.9, and its sdist cannot be built with a modern pip/
+# setuptools/numpy toolchain (its setup.py imports numpy before declaring it
+# as a build dependency). It is effectively unmaintained upstream for current
+# Python versions.
+#
+# To use radiomics feature extraction, create a SEPARATE Python 3.9
+# virtualenv, install this file into it, and run only the radiomics-dependent
+# scripts there. Do not try to install this into the same environment as the
+# main requirements.txt (Python 3.11+).
+#
+#   python3.9 -m venv .venv-radiomics
+#   .venv-radiomics/bin/pip install -r requirements.txt -r requirements-radiomics.txt
+numpy<1.22
+pyradiomics==3.1.0

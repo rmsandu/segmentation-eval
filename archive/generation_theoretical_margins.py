@@ -95,8 +95,8 @@ def interpolation_fct(df_ablation, df_radiomics, title, fontsize=24, flag_tumor=
 
 
 if __name__ == '__main__':
-    df_ablation = pd.read_excel(r"C:\develop\segmentation-eval\Ellipsoid_Brochure_Info.xlsx")
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_ablation_curated.xlsx")
+    df_ablation = pd.read_excel("/path/to/data/Ellipsoid_Brochure_Info.xlsx")
+    df_radiomics = pd.read_excel("/path/to/data/radiomics_ablation_curated.xlsx")
     radius = ((3 * df_radiomics['Tumour Volume [ml]'] * 1000) / 4 * pi) ** (1. / 3)
     df_radiomics['Tumor_Radius'] = radius
     df_radiomics['Tumour Volume + 10mm margin [ml]'] = (4 * pi * (df_radiomics['Tumor_Radius'] + 10) ** 3) / 3000

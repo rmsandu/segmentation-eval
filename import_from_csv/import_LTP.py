@@ -6,8 +6,8 @@
 
 import numpy as np
 import pandas as pd
-file_redcap = r"C:\develop\segmentation-eval\redcap_file_all_2019-10-14.xlsx"
-file_radiomics = r"C:\develop\segmentation-eval\Radiomics_Radii_Chemo_ECALSS.xlsx"
+file_redcap = "/path/to/data/redcap_export.xlsx"
+file_radiomics = "/path/to/data/radiomics_radii_chemo.xlsx"
 
 # Number of completely ablated lesions
 # Number of incomplete ablations

@@ -7,8 +7,8 @@ from ast import literal_eval
 
 
 
-lit_file = r"C:\develop\segmentation-eval\Radiomics_MAVERRIC_153011-20200313_.xlsx"
-redcap_file = r"C:\develop\segmentation-eval\SurveyOfAblationsFor_DATA_LABELS_2020-04-03_1637.xlsx"
+lit_file = "/path/to/data/radiomics_population.xlsx"
+redcap_file = "/path/to/data/redcap_export.xlsx"
 
 df_lit = pd.read_excel(lit_file)
 df_redcap = pd.read_excel(redcap_file)

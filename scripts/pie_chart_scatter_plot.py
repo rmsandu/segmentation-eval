@@ -114,7 +114,7 @@ def call_plot_pies(df_radiomics, title=None, flag_plot_type=None, flag_overlap=N
 
 
 if __name__ == '__main__':
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC----003328-20200523_.xlsx")
+    df_radiomics = pd.read_excel("/path/to/data/radiomics_population.xlsx")
     # df_acculis = df_radiomics[df_radiomics['Device_name'] == 'Angyodinamics (Acculis)']
 
     df_radiomics_all = df_radiomics[

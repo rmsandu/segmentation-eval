@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: pip install -r requirements-dev.txt
+      # Scoped to the maintained pipeline (see README "Repo layout" / CLAUDE.md).
+      # scripts/, utils/, import_from_csv/, Random_Forest/, archive/, scratch/
+      # hold standalone one-off analysis scripts that are intentionally not
+      # held to this lint standard.
+      - run: >
+          ruff check
+          A_read_files_info.py B_ResampleSegmentations.py C_mainDistanceVolumeMetrics.py
+          D_compile_population_radiomics.py E_radiomics_stats.py
+          DicomReader.py DicomWriter.py DistanceMetrics.py VolumeMetrics.py
+          calc_margin.py batch_processing_extract_patient_filepaths.py
+          customradiomics/ surface_distance/
+          scripts/plot_ablation_margin_hist.py scripts/ellipsoid_inner_outer.py scripts/inner_ellipsoid.py
+          utils/graphing.py utils/niftireader.py utils/interpolation.py
+          tests/
+      - run: pytest

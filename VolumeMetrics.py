@@ -5,9 +5,9 @@ Created on Wed Nov 15 14:17:41 2017
 @author: Raluca Sandu
 """
 
-import SimpleITK as sitk
 import numpy as np
 import pandas as pd
+import SimpleITK as sitk
 
 from scripts.ellipsoid_inner_outer import get_ellipsoid_fit_volumes
 
@@ -96,7 +96,7 @@ class VolumeMetrics:
             print(repr(e))
 
         self.dice = overlap_measures_filter.GetDiceCoefficient()
-        self.jaccard = overlap_measures_filter.GetDiceCoefficient()
+        self.jaccard = overlap_measures_filter.GetJaccardCoefficient()
         self.volumetric_overlap_error = 1. - overlap_measures_filter.GetJaccardCoefficient()
         self.volume_similarity = overlap_measures_filter.GetVolumeSimilarity()
         self.get_inner_outer_ellipsoids_volume()

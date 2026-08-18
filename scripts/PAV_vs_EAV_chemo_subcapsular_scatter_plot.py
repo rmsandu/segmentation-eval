@@ -301,7 +301,7 @@ def connected_mev_miv(df_radiomics):
     # labels = np.round(np.asarray(df['PAV']))
     # plt.xticks(x, labels, rotation=45, fontsize=24, color='white')
     timestr = time.strftime("%H%M%S-%Y%m%d")
-    folder_path = r"C:\develop\segmentation-eval\figures\MIV_MEV_ellipsoids"
+    folder_path = "/path/to/output/figures/MIV_MEV_ellipsoids"
     fig_path = os.path.join(folder_path, timestr)
     gh.save(fig_path, width=12, height=12, ext=["png"],
             close=True,
@@ -315,7 +315,7 @@ def connected_mev_miv(df_radiomics):
     # plt.grid()
     # plt.show()
     #timestr = time.strftime("%H%M%S-%Y%m%d")
-    #gh.save(r'C:\develop\segmentation-eval\figures\boxplots_ellipsoids', width=12, height=12, ext=["png"],close=True,tight=True, dpi=300)
+    #gh.save('/path/to/output/figures/boxplots_ellipsoids', width=12, height=12, ext=["png"],close=True,tight=True, dpi=300)
 
 
 def write_descriptive_stats(df_radiomics_PAV_EAV, device_name):
@@ -362,7 +362,7 @@ def write_descriptive_stats(df_radiomics_PAV_EAV, device_name):
     writer.save()
 
 if __name__ == '__main__':
-    df_radiomics = pd.read_excel(r"C:\develop\segmentation-eval\Radiomics_MAVERRIC----003328-20200523_.xlsx")
+    df_radiomics = pd.read_excel("/path/to/data/radiomics_population.xlsx")
     # change the name of the device
     df_radiomics.loc[df_radiomics.Device_name == 'Angyodinamics (Acculis)', 'Device_name'] = 'Acculis'
     df_radiomics.loc[df_radiomics.Device_name == 'Covidien (Covidien MWA)', 'Device_name'] = 'Covidien'

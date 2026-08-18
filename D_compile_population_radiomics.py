@@ -62,7 +62,6 @@ result_inner_ellipsoid['Lesion_ID'] = result['Lesion_ID']
 result_inner_ellipsoid['Inner Ellipsoid Volume'] = result['Inner Ellipsoid Volume']
 df_final = pd.merge(df_download_db_all_info, result_inner_ellipsoid, how="left", on=['Patient_ID', 'Lesion_ID'])
 timestr = time.strftime("%H%M%S-%Y%m%d")
-filepath_excel = 'Radiomics_MAVERRIC----' + timestr + '_.xlsx'
-writer = pd.ExcelWriter(filepath_excel)
-df_final.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
-writer.save()
+filepath_excel = 'Radiomics_population_' + timestr + '.xlsx'
+with pd.ExcelWriter(filepath_excel) as writer:
+    df_final.to_excel(writer, sheet_name='radiomics', index=False, float_format='%.4f')
