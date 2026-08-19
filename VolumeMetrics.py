@@ -77,7 +77,6 @@ class VolumeMetrics:
         volume_tumor = self.get_volume_ml(self.tumor_segmentation)
         volume_residual = volume_tumor - volume_intersection
         coverage_ratio = 1 - volume_residual / volume_tumor
-        # coverage_ratio = 1- volume_intersection / volume_tumor
         return volume_residual, coverage_ratio
 
     def set_volume_metrics(self):

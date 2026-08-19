@@ -256,8 +256,5 @@ class DistanceMetrics(object):
     def get_SitkDistances(self):
         return self.surface_distance_results_df
 
-    def get_ablation_dist_map(self):
-        return self.tumor2ablation_distance_map
-
     def get_surface_distances(self):
         return self.surface_distances

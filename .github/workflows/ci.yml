@@ -23,9 +23,9 @@ jobs:
           ruff check
           A_read_files_info.py B_ResampleSegmentations.py C_mainDistanceVolumeMetrics.py
           D_compile_population_radiomics.py E_radiomics_stats.py
-          DicomReader.py DicomWriter.py DistanceMetrics.py VolumeMetrics.py
+          DicomReader.py DistanceMetrics.py VolumeMetrics.py
           calc_margin.py batch_processing_extract_patient_filepaths.py
-          customradiomics/ surface_distance/
+          customradiomics/
           scripts/plot_ablation_margin_hist.py scripts/ellipsoid_inner_outer.py scripts/inner_ellipsoid.py
           utils/graphing.py utils/niftireader.py utils/interpolation.py
           tests/
