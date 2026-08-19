@@ -4,8 +4,33 @@ Builds small binary cube segmentations directly as SimpleITK images (in
 memory, no files, no patient data) with known geometric relationships, so
 metric values can be asserted against hand-computed expected results.
 """
+import os
+
 import numpy as np
 import SimpleITK as sitk
+
+
+def write_dcm_series(directory, image, series_uid="1.2.3.4.5.6"):
+    """Write a synthetic (non-patient) SimpleITK image out as a minimal DICOM series.
+
+    Sets just enough tags (series UID, position, orientation, instance
+    number) for sitk.ImageSeriesReader to reassemble it in slice order.
+    """
+    writer = sitk.ImageFileWriter()
+    writer.KeepOriginalImageUIDOn()
+    for i in range(image.GetDepth()):
+        image_slice = image[:, :, i]
+        image_slice.SetMetaData("0008|0060", "CT")
+        image_slice.SetMetaData("0020|000e", series_uid)
+        image_slice.SetMetaData("0020|0037", "1\\0\\0\\0\\1\\0")
+        image_slice.SetMetaData(
+            "0020|0032", "\\".join(str(v) for v in image.TransformIndexToPhysicalPoint((0, 0, i)))
+        )
+        image_slice.SetMetaData("0020|0013", str(i))
+        fname = os.path.join(directory, f"slice{i:03d}.dcm")
+        writer.SetFileName(fname)
+        writer.Execute(image_slice)
+    return directory
 
 
 def make_image(mask, spacing=(1.0, 1.0, 1.0)):

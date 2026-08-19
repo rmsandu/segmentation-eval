@@ -192,9 +192,8 @@ The patient data consists of files and folder has the following folder structure
 See [`CLAUDE.md`](CLAUDE.md) for the full architecture writeup (pipeline flow,
 module responsibilities, conventions). Briefly:
 
-- Root `A_`-`E_` scripts + `DicomReader.py`, `DicomWriter.py`,
-  `DistanceMetrics.py`, `VolumeMetrics.py`, `customradiomics/`,
-  `surface_distance/` -- the maintained, tested pipeline.
+- Root `A_`-`E_` scripts + `DicomReader.py`, `DistanceMetrics.py`,
+  `VolumeMetrics.py`, `customradiomics/` -- the maintained, tested pipeline.
 - `scripts/`, `utils/` -- a mix of modules the pipeline imports and
   standalone analysis/plotting scripts meant to be run directly by hand.
 - `import_from_csv/`, `Random_Forest/` -- one-off data-import/analysis

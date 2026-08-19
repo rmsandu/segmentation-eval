@@ -6,8 +6,6 @@ Created on Wed Apr 25 13:45:50 2018
 """
 import os
 
-import numpy as np
-import pydicom
 import SimpleITK as sitk
 
 #%%
@@ -52,26 +50,3 @@ def read_dcm_series(folder_path, reader_flag=True):
             return None, None
         else:
             return None
-
-def read_single_dcm(path):
-    try:
-        ds = pydicom.read_file(path)
-    except Exception:
-        return None
-    return ds
-
-
-def read_dcm_series_pydicom(path):
-    # Load the scans in given folder path
-    slices = [pydicom.read_file(path + '/' + s) for s in os.listdir(path)]
-#    slices.sort(key = lambda x: float(x.ImagePositionPatient[2]), reverse=True)
-    slices.sort(key=lambda x: int(x.InstanceNumber))
-    try:
-        slice_thickness = np.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
-    except Exception:
-        slice_thickness = np.abs(slices[0].SliceLocation - slices[1].SliceLocation)
-
-    for s in slices:
-        s.SliceThickness = slice_thickness
-
-    return slices

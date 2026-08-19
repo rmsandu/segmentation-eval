@@ -51,10 +51,6 @@ if __name__ == '__main__':
                 # rename the columns
                 # concatenate the rest of the pandas dataframe based on the lesion id.
                 # first edit the lesion id.
-#
-# result = pd.concat(frames, axis=1, keys=['Patient ID', 'Lesion id', 'ablation_date'], ignore_index=True)
-# df_final = result
-# print(len(frames))
 result = pd.concat(frames, ignore_index=True)
 result_inner_ellipsoid = pd.DataFrame()
 result_inner_ellipsoid['Patient_ID'] = result['Patient_ID']

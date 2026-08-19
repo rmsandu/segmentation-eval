@@ -31,7 +31,7 @@ Flow: **Read Images → Resample → Extract Distance Metrics → Extract Volume
 1. **`A_read_files_info.py`** — entry point. Walks a patient DICOM folder tree, uses `DicomReader.py` to identify and pair CT source images with their tumor/ablation segmentation series (matched via DICOM `ReferencedImageSequence`/`SourceImageSequence` tags). Supports single-patient mode (`--i`) or batch mode over multiple patients (`--b`, an xlsx with `Patient_ID`, `Ablation_IR_Date`, `Nr_Lesions`, `Patient_Dir_Paths` columns).
 2. **`B_ResampleSegmentations.py`** (`ResizeSegmentation` class) — resamples tumor/ablation masks onto the same size/spacing/origin (nearest-neighbor interpolation, so no new labels are introduced) since the two segmentations often come from differently-spaced series.
 3. **`C_mainDistanceVolumeMetrics.py`** (`main_distance_volume_metrics`) — orchestrates per-lesion metric extraction, called once per tumor/ablation pair:
-   - `DistanceMetrics.py`: `DistanceMetrics` class computes surface-to-surface Euclidean distances (Maurer distance transform, via `surface_distance/metrics.py` and SimpleITK); `RadiomicsMetrics` class wraps PyRadiomics shape/intensity feature extraction.
+   - `DistanceMetrics.py`: `DistanceMetrics` class computes surface-to-surface Euclidean distances (Maurer distance transform via SimpleITK); `RadiomicsMetrics` class wraps PyRadiomics shape/intensity feature extraction.
    - `VolumeMetrics.py`: `VolumeMetrics` class computes Dice/Jaccard/volume similarity/overlap error via `sitk.LabelOverlapMeasuresImageFilter`, plus tumor coverage/residual volume and inner/outer ellipsoid volumes (via `scripts/ellipsoid_inner_outer.py`, convex optimization with CVXPY).
    - `scripts/plot_ablation_margin_hist.py`: plots the color-coded histogram of surface distances.
    - Writes one Excel file per patient/lesion with all metrics combined.
@@ -40,9 +40,7 @@ Flow: **Read Images → Resample → Extract Distance Metrics → Extract Volume
 
 ## Key modules
 
-- **`DicomReader.py`** — reads a DICOM series folder into a `SimpleITK` image (`read_dcm_series`), or raw slices via `pydicom` (`read_dcm_series_pydicom`).
-- **`DicomWriter.py`** — writes SimpleITK images back out as DICOM series.
-- **`surface_distance/`** — vendored surface-distance metric library (`metrics.py`, `lookup_tables.py`) used for the Maurer-algorithm surface distance computation.
+- **`DicomReader.py`** — reads a DICOM series folder into a `SimpleITK` image (`read_dcm_series`).
 - **`customradiomics/margin.py`** — bounding-box/crop/masked-distance helpers used in margin computations, independent of the DICOM pipeline (used by `calc_margin.py`).
 - **`utils/`** — grab-bag of standalone helper scripts (resampling, ROI pasting, plotting, animation, keyboard input) invoked ad hoc, not imported as a package from the main pipeline.
 - **`scripts/`** — plotting and ellipsoid-fitting helpers called from the main pipeline (`ellipsoid_inner_outer.py`, `plot_ablation_margin_hist.py`) plus standalone analysis/plotting scripts run independently.
