@@ -247,5 +247,21 @@ if __name__ == '__main__':
                         continue
                     else:
                         # call function to resample images and output csv for main metrics.
-                        get_paths_from_metatags(df_paths_mapping, args["plots_dir"])
+                        tumor_path, source_ct_tumor_path, ablation_path, source_ct_ablation_path, \
+                            lesion_number, ablation_date, patient_id = get_paths_from_metatags(df_paths_mapping)
+                        tumor_segmentation_sitk, source_ct_tumor_sitk, ablation_segmentation_sitk, \
+                            source_ct_ablation_sitk = read_dcm_imgs(
+                                tumor_path, source_ct_tumor_path, ablation_path, source_ct_ablation_path)
+                        tumor_segmentation_resampled, ablation_segmentation_resampled = resample_tumor_ablation(
+                            tumor_segmentation_sitk, ablation_segmentation_sitk, source_ct_ablation_sitk)
+                        main_distance_volume_metrics(
+                            patient_id,
+                            source_ct_ablation_sitk, source_ct_tumor_sitk,
+                            ablation_segmentation_resampled, tumor_segmentation_resampled,
+                            lesion_number,
+                            ablation_date_redcap,
+                            args["plots_dir"],
+                            FLAG_SAVE_TO_EXCEL=True, title='Ablation to Tumor Euclidean Distances',
+                            calculate_volume_metrics=True, calculate_radiomics=True
+                        )
                         print('Extracted metrics from the patient dir: ', rootdir)
